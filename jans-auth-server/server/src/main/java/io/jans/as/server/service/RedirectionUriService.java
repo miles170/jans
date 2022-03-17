@@ -112,12 +112,12 @@ public class RedirectionUriService {
 
             if (StringUtils.isNotBlank(redirectionUri)) {
                 if (redirectUris != null) {
-                    log.debug("Validating redirection URI: clientIdentifier = {}, redirectionUri = {}, found = {}",
+                    log.info("Validating redirection URI: clientIdentifier = {}, redirectionUri = {}, found = {}",
                             client.getClientId(), redirectionUri, redirectUris.length);
                     if (isUriEqual(redirectionUri, redirectUris)) {
                         return redirectionUri;
                     } else {
-                        log.debug("RedirectionUri didn't match with any of the client redirect uris, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
+                        log.info("RedirectionUri didn't match with any of the client redirect uris, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
                     }
                 }
 
@@ -125,8 +125,10 @@ public class RedirectionUriService {
                     if (redirectionUri.matches(client.getAttributes().getRedirectUrisRegex())) {
                         return redirectionUri;
                     } else {
-                        log.debug("RedirectionUri didn't match with client regular expression, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
+                        log.info("RedirectionUri didn't match with client regular expression, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
                     }
+                } else {
+                    log.info("RedirectUri flag disabled");
                 }
             } else {
                 log.warn("RedirectionUri is blank, clientId = {}", client.getClientId());
