@@ -43,7 +43,7 @@ class ConfigApiInstaller(JettyInstaller):
                 (os.path.join(Config.distJansFolder, 'jans-config-api.war'), 'https://maven.jans.io/maven/io/jans/jans-config-api-server/{0}/jans-config-api-server-{0}.war'.format(Config.oxVersion)),
                 (os.path.join(Config.distJansFolder, 'scim-plugin.jar'), 'https://maven.jans.io/maven/io/jans/scim-plugin/{0}/scim-plugin-{0}-distribution.jar'.format(Config.oxVersion)),
                 (os.path.join(Config.distJansFolder, 'facter'), 'https://raw.githubusercontent.com/GluuFederation/gluu-snap/master/facter/facter'),
-                (os.path.join(Config.install_dir, 'jans_setup/data/jans-config-api-swagger.yaml'), 'https://raw.githubusercontent.com/JanssenProject/jans/main/jans-config-api/docs/jans-config-api-swagger.yaml'),
+                (os.path.join(Config.install_dir, 'setup_app/data/jans-config-api-swagger.yaml'), 'https://raw.githubusercontent.com/JanssenProject/jans/main/jans-config-api/docs/jans-config-api-swagger.yaml'),
                 ]
 
     def install(self):
