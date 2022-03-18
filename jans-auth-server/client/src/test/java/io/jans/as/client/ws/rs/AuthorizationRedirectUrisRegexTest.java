@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static io.jans.as.client.client.Asserter.*;
+import static io.jans.as.client.client.Asserter.assertRegisterResponseClaimsNotNull;
 import static io.jans.as.model.register.RegisterRequestParam.*;
 
 /**
@@ -25,8 +25,12 @@ public class AuthorizationRedirectUrisRegexTest extends BaseTest {
     @Test
     public void requestClientValidateUsingRedirectUrisRegex( final String userId, final String userSecret,
                                                 final String redirectUris, final String sectorIdentifierUri,
-                                                final String redirectUrisRegex, final String redirectUri) {
+                                                String redirectUrisRegex, final String redirectUri) {
         showTitle("requestClientValidateUsingRedirectUrisRegex");
+
+        if (org.apache.commons.lang3.StringUtils.isBlank(redirectUrisRegex)) {
+            redirectUrisRegex = "/^([a-z0-9+.-]+):(?://(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?$/i";
+        }
 
         List<ResponseType> responseTypes = Arrays.asList(ResponseType.CODE);
 

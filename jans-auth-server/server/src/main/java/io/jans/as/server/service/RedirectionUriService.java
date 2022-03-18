@@ -99,6 +99,7 @@ public class RedirectionUriService {
 
     public String validateRedirectionUri(@NotNull Client client, String redirectionUri) {
         try {
+            log.info("[TEST] Validating redirection uri, client {}, rediUi = {}", client.getClientId(), redirectionUri);
             String sectorIdentifierUri = client.getSectorIdentifierUri();
             String[] redirectUris = client.getRedirectUris();
 
@@ -112,27 +113,30 @@ public class RedirectionUriService {
 
             if (StringUtils.isNotBlank(redirectionUri)) {
                 if (redirectUris != null) {
-                    log.debug("Validating redirection URI: clientIdentifier = {}, redirectionUri = {}, found = {}",
+                    log.info("[TEST] Validating redirection URI: clientIdentifier = {}, redirectionUri = {}, found = {}",
                             client.getClientId(), redirectionUri, redirectUris.length);
                     if (isUriEqual(redirectionUri, redirectUris)) {
                         return redirectionUri;
                     } else {
-                        log.debug("RedirectionUri didn't match with any of the client redirect uris, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
+                        log.info("[TEST] RedirectionUri didn't match with any of the client redirect uris, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
                     }
                 }
 
                 if (appConfiguration.getRedirectUrisRegexEnabled()) {
+                    log.info("[TEST] Validating using regex: {}", client.getAttributes().getRedirectUrisRegex());
                     if (redirectionUri.matches(client.getAttributes().getRedirectUrisRegex())) {
                         return redirectionUri;
                     } else {
-                        log.debug("RedirectionUri didn't match with client regular expression, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
+                        log.info("[TEST] RedirectionUri didn't match with client regular expression, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
                     }
+                } else {
+                    log.info("[TEST] Flag not enabled");
                 }
             } else {
-                log.warn("RedirectionUri is blank, clientId = {}", client.getClientId());
+                log.warn("[TEST] RedirectionUri is blank, clientId = {}", client.getClientId());
             }
         } catch (Exception e) {
-            log.error("Problems validating redirection uri, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
+            log.error("[TEST] Problems validating redirection uri, clientId = {}, redirectionUri = {}", client.getClientId(), redirectionUri);
             return null;
         }
         return null;
