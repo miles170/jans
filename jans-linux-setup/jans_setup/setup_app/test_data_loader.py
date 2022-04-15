@@ -32,6 +32,10 @@ class TestDataLoader(BaseInstaller, SetupUtils):
         self.register_progess()
         self.template_base = os.path.join(Config.templateFolder, 'test')
 
+        self.oxauth_test_schema_fn = os.path.join(Config.templateFolder, 'test/jans-auth/schema/102-oxauth_test.ldif')
+        self.scim_test_schema_fn = os.path.join(Config.templateFolder, 'test/scim-client/schema/103-scim_test.ldif')
+
+
     def create_test_client_keystore(self):
         self.logIt("Creating client_keystore.p12")
         client_keystore_fn = os.path.join(Config.outputFolder, 'test/jans-auth/client/client_keystore.p12')
@@ -61,6 +65,69 @@ class TestDataLoader(BaseInstaller, SetupUtils):
 
         self.copyFile(client_keystore_fn, os.path.join(Config.outputFolder, 'test/jans-auth/server'))
         self.copyFile(keys_json_fn, os.path.join(Config.outputFolder, 'test/jans-auth/server'))
+
+
+
+    def update_local_schema(self):
+        # Update LDAP schema
+        Config.pbar.progress(self.service_name, "Updating schema", False)
+        openDjSchemaFolder = os.path.join(Config.ldapBaseFolder, 'config/schema/')
+        self.copyFile(os.path.join(Config.outputFolder, 'test/jans-auth/schema/102-oxauth_test.ldif'), openDjSchemaFolder)
+        self.copyFile(os.path.join(Config.outputFolder, 'test/scim-client/schema/103-scim_test.ldif'), openDjSchemaFolder)
+
+        schema_fn = os.path.join(openDjSchemaFolder, '77-customAttributes.ldif')
+
+        obcl_parser = myLdifParser(schema_fn)
+        obcl_parser.parse()
+
+        for i, o in enumerate(obcl_parser.entries[0][1]['objectClasses']):
+            objcl = ObjectClass(o)
+            if 'jansCustomPerson' in objcl.tokens['NAME']:
+                may_list = list(objcl.tokens['MAY'])
+                for a in ('scimCustomFirst','scimCustomSecond', 'scimCustomThird'):
+                    if not a in may_list:
+                        may_list.append(a)
+
+                objcl.tokens['MAY'] = tuple(may_list)
+                obcl_parser.entries[0][1]['objectClasses'][i] = objcl.getstr()
+
+        tmp_fn = '/tmp/77-customAttributes.ldif'
+        with open(tmp_fn, 'wb') as w:
+            ldif_writer = LDIFWriter(w)
+            for dn, entry in obcl_parser.entries:
+                ldif_writer.unparse(dn, entry)
+
+        self.copyFile(tmp_fn, openDjSchemaFolder)
+
+        self.logIt("Making opndj listen all interfaces")
+        ldap_operation_result = self.dbUtils.ldap_conn.modify(
+                'cn=LDAPS Connection Handler,cn=Connection Handlers,cn=config', 
+                 {'ds-cfg-listen-address': [ldap3.MODIFY_REPLACE, '0.0.0.0']}
+                )
+
+        if not ldap_operation_result:
+                self.logIt("Ldap modify operation failed {}".format(str(self.ldap_conn.result)))
+                self.logIt("Ldap modify operation failed {}".format(str(self.ldap_conn.result)), True)
+
+        self.dbUtils.ldap_conn.unbind()
+
+        self.logIt("Re-starting opendj")
+        self.restart('opendj')
+
+        self.logIt("Re-binding opendj")
+        # try 5 times to re-bind opendj
+        for i in range(5):
+            time.sleep(5)
+            self.logIt("Try binding {} ...".format(i+1))
+            bind_result = self.dbUtils.ldap_conn.bind()
+            if bind_result:
+                self.logIt("Binding to opendj was successful")
+                break
+            self.logIt("Re-try in 5 seconds")
+        else:
+            self.logIt("Re-binding opendj FAILED")
+            sys.exit("Re-binding opendj FAILED")
+
 
     def load_test_data(self):
         Config.pbar.progress(self.service_name, "Loading Test Data", False)
@@ -126,11 +193,11 @@ class TestDataLoader(BaseInstaller, SetupUtils):
             self.logIt("Adding custom attributs and indexes")
 
             schema2json(
-                    os.path.join(Config.templateFolder, 'test/jans-auth/schema/102-oxauth_test.ldif'),
+                    self.oxauth_test_schema_fn,
                     os.path.join(Config.outputFolder, 'test/jans-auth/schema/')
                     )
             schema2json(
-                    os.path.join(Config.templateFolder, 'test/scim-client/schema/103-scim_test.ldif'),
+                    self.scim_test_schema_fn,
                     os.path.join(Config.outputFolder, 'test/scim-client/schema/'),
                     )
 
@@ -276,64 +343,9 @@ class TestDataLoader(BaseInstaller, SetupUtils):
             self.dbUtils.enable_script(inum)
 
         if self.dbUtils.moddb == static.BackendTypes.LDAP:
-            # Update LDAP schema
-            Config.pbar.progress(self.service_name, "Updating schema", False)
-            openDjSchemaFolder = os.path.join(Config.ldapBaseFolder, 'config/schema/')
-            self.copyFile(os.path.join(Config.outputFolder, 'test/jans-auth/schema/102-oxauth_test.ldif'), openDjSchemaFolder)
-            self.copyFile(os.path.join(Config.outputFolder, 'test/scim-client/schema/103-scim_test.ldif'), openDjSchemaFolder)
 
-            schema_fn = os.path.join(openDjSchemaFolder, '77-customAttributes.ldif')
-
-            obcl_parser = myLdifParser(schema_fn)
-            obcl_parser.parse()
-
-            for i, o in enumerate(obcl_parser.entries[0][1]['objectClasses']):
-                objcl = ObjectClass(o)
-                if 'jansCustomPerson' in objcl.tokens['NAME']:
-                    may_list = list(objcl.tokens['MAY'])
-                    for a in ('scimCustomFirst','scimCustomSecond', 'scimCustomThird'):
-                        if not a in may_list:
-                            may_list.append(a)
-
-                    objcl.tokens['MAY'] = tuple(may_list)
-                    obcl_parser.entries[0][1]['objectClasses'][i] = objcl.getstr()
-
-            tmp_fn = '/tmp/77-customAttributes.ldif'
-            with open(tmp_fn, 'wb') as w:
-                ldif_writer = LDIFWriter(w)
-                for dn, entry in obcl_parser.entries:
-                    ldif_writer.unparse(dn, entry)
-
-            self.copyFile(tmp_fn, openDjSchemaFolder)
-
-            self.logIt("Making opndj listen all interfaces")
-            ldap_operation_result = self.dbUtils.ldap_conn.modify(
-                    'cn=LDAPS Connection Handler,cn=Connection Handlers,cn=config', 
-                     {'ds-cfg-listen-address': [ldap3.MODIFY_REPLACE, '0.0.0.0']}
-                    )
-
-            if not ldap_operation_result:
-                    self.logIt("Ldap modify operation failed {}".format(str(self.ldap_conn.result)))
-                    self.logIt("Ldap modify operation failed {}".format(str(self.ldap_conn.result)), True)
-
-            self.dbUtils.ldap_conn.unbind()
-
-            self.logIt("Re-starting opendj")
-            self.restart('opendj')
-
-            self.logIt("Re-binding opendj")
-            # try 5 times to re-bind opendj
-            for i in range(5):
-                time.sleep(5)
-                self.logIt("Try binding {} ...".format(i+1))
-                bind_result = self.dbUtils.ldap_conn.bind()
-                if bind_result:
-                    self.logIt("Binding to opendj was successful")
-                    break
-                self.logIt("Re-try in 5 seconds")
-            else:
-                self.logIt("Re-binding opendj FAILED")
-                sys.exit("Re-binding opendj FAILED")
+            if not Config.get('remote_test_data'):
+                self.update_local_schema()
 
             for atr in ('myCustomAttr1', 'myCustomAttr2'):
 
@@ -369,13 +381,6 @@ class TestDataLoader(BaseInstaller, SetupUtils):
 
         self.create_test_client_keystore()
 
-        # Disable token binding module
-        if base.os_name in ('ubuntu18', 'ubuntu20'):
-            self.run(['a2dismod', 'mod_token_binding'])
-            self.restart('apache2')
-
-        self.restart('jans-auth')
-
         if Config.installEleven:
             eleven_tokens_package = os.path.join(Config.staticFolder, 'eleven/jans-eleven-tokens.tar.gz')
             target_dir = '/var/lib/softhsm/tokens/'
@@ -383,27 +388,37 @@ class TestDataLoader(BaseInstaller, SetupUtils):
                 os.makedirs(target_dir)
             self.run([paths.cmd_tar, '-zxf', eleven_tokens_package, '-C', target_dir])
 
-        if Config.installScimServer:
-            self.restart('jans-scim')
 
-        if Config.installFido2:
-            self.restart('jans-fido2')
+        if not Config.get('remote_test_data'):
 
-        if Config.installConfigApi:
-            self.restart('jans-config-api')
+            # Disable token binding module
+            if base.os_name in ('ubuntu18', 'ubuntu20'):
+                self.run(['a2dismod', 'mod_token_binding'])
+                self.restart('apache2')
 
-        if Config.installEleven:
-            self.restart('jans-eleven')
+            self.restart('jans-auth')
+
+            if Config.installScimServer:
+                self.restart('jans-scim')
+
+            if Config.installFido2:
+                self.restart('jans-fido2')
+
+            if Config.installConfigApi:
+                self.restart('jans-config-api')
+
+            if Config.installEleven:
+                self.restart('jans-eleven')
 
 
-        # Prepare for tests run
-        #install_command, update_command, query_command, check_text = self.get_install_commands()
-        #self.run_command(install_command.format('git'))
-        #self.run([self.cmd_mkdir, '-p', 'jans-auth/Client/profiles/ce_test'])
-        #self.run([self.cmd_mkdir, '-p', 'jans-auth/Server/profiles/ce_test'])
-        # Todo: Download and unzip file test_data.zip from CE server.
-        # Todo: Copy files from unziped folder test/jans-auth/client/* into jans-auth/Client/profiles/ce_test
-        # Todo: Copy files from unziped folder test/jans-auth/server/* into jans-auth/Server/profiles/ce_test
-        #self.run([self.cmd_keytool, '-import', '-alias', 'seed22.gluu.org_httpd', '-keystore', 'cacerts', '-file', '%s/httpd.crt' % self.certFolder, '-storepass', 'changeit', '-noprompt'])
-        #self.run([self.cmd_keytool, '-import', '-alias', 'seed22.gluu.org_opendj', '-keystore', 'cacerts', '-file', '%s/opendj.crt' % self.certFolder, '-storepass', 'changeit', '-noprompt'])
- 
+            # Prepare for tests run
+            #install_command, update_command, query_command, check_text = self.get_install_commands()
+            #self.run_command(install_command.format('git'))
+            #self.run([self.cmd_mkdir, '-p', 'jans-auth/Client/profiles/ce_test'])
+            #self.run([self.cmd_mkdir, '-p', 'jans-auth/Server/profiles/ce_test'])
+            # Todo: Download and unzip file test_data.zip from CE server.
+            # Todo: Copy files from unziped folder test/jans-auth/client/* into jans-auth/Client/profiles/ce_test
+            # Todo: Copy files from unziped folder test/jans-auth/server/* into jans-auth/Server/profiles/ce_test
+            #self.run([self.cmd_keytool, '-import', '-alias', 'seed22.gluu.org_httpd', '-keystore', 'cacerts', '-file', '%s/httpd.crt' % self.certFolder, '-storepass', 'changeit', '-noprompt'])
+            #self.run([self.cmd_keytool, '-import', '-alias', 'seed22.gluu.org_opendj', '-keystore', 'cacerts', '-file', '%s/opendj.crt' % self.certFolder, '-storepass', 'changeit', '-noprompt'])
+     
