@@ -728,7 +728,8 @@
 				<!-- Test: Embedded Jetty -->
 				<dependency>
 					<groupId>org.jboss.arquillian.container</groupId>
-					<artifactId>arquillian-jetty-embedded-9</artifactId>
+					<artifactId>arquillian-jetty-embedded-11</artifactId>
+					<version>1.0.0.CR4</version>
 					<scope>test</scope>
 				</dependency>
 				<dependency>
