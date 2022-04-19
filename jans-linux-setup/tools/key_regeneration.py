@@ -108,7 +108,8 @@ class CBM:
     def exec_query(self, query):
         print("Executing n1ql {}".format(query))
         data = {'statement': query}
-        result = requests.post(self.n1ql_api, data=data, auth=self.auth, verify=False)
+        verify_ssl = False
+        result = requests.post(self.n1ql_api, data=data, auth=self.auth, verify=verify_ssl)
         return result
 
 
@@ -122,7 +123,7 @@ class Spanner:
         emulator_host = self.credentials.get('connection.emulator-host')
         if emulator_host:
             parsed_host = urlparse(emulator_host)
-            spanner_base_url = 'http://{}:9020/v1/'.format(parsed_host.scheme)
+            spanner_base_url = '{}://{}:9020/v1/'.format('http', parsed_host.scheme)
             session_url = os.path.join(
                 spanner_base_url,
                 'projects/{}/instances/{}/databases/{}/sessions'.format(
