@@ -613,25 +613,25 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-test-impl-base</artifactId>
-			<version>1.4.0.Final</version>
+			<version>1.6.0.Final</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-spi</artifactId>
-			<version>1.4.0.Final</version>
+			<version>1.6.0.Final</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-test-spi</artifactId>
-			<version>1.4.0.Final</version>
+			<version>1.6.0.Final</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.testenricher</groupId>
 			<artifactId>arquillian-testenricher-cdi</artifactId>
-			<version>1.4.0.Final</version>
+			<version>1.6.0.Final</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -728,7 +728,7 @@
 				<!-- Test: Embedded Jetty -->
 				<dependency>
 					<groupId>org.jboss.arquillian.container</groupId>
-					<artifactId>arquillian-jetty-embedded-10</artifactId>
+					<artifactId>arquillian-jetty-embedded-11</artifactId>
 					<version>1.0.0.CR4</version>
 					<scope>test</scope>
 				</dependency>
