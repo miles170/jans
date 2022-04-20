@@ -47,13 +47,6 @@
 			<artifactId>weld-core-impl</artifactId>
 		</dependency>
 
-		<!-- CDI -->
-		<dependency>
-			<groupId>javax.enterprise</groupId>
-			<artifactId>cdi-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- RestEasy -->
 		<dependency>
 			<groupId>org.jboss.resteasy</groupId>
