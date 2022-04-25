@@ -9,14 +9,14 @@
 			<Arg>-javax.mail.</Arg>
 		</Call>
 	</Get>
-	<Get name="systemClassMatcher">
-		<Call name="add">
-			<Arg>javax.mail.</Arg>
-		</Call>
-	</Get>
+
 	<!-- End: Workaround for JRE 11 -->
 
 	<Get name="serverClassMatcher">
+	
+		<Call name="add">
+			<Arg>javax.mail.</Arg>
+		</Call>
   
 		<Call name="add">
 			<Arg>-org.eclipse.jetty.util.Decorator</Arg>

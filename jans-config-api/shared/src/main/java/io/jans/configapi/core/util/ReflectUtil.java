@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 
@@ -175,9 +175,15 @@ public class ReflectUtil {
             log.error("getterMethod:{}, getValue(obj:{},entryData.getKey():{}) ->:{} ", getterMethod, obj,
                     entryData.getKey(), getValue(obj, entryData.getKey()));
             getValue(obj, entryData.getKey());
+            
+            getterMethod.getMethodName();
         }
 
         return obj;
+    }
+    
+    private Object invokeGetterMethod(Object obj, String variableName) {
+        return JsonApplier.getInstance().invokeReflectionGetter(obj, variableName);
     }
 
     private boolean isKeyPresentInMap(String key, Map<String, String> map) {
@@ -185,8 +191,27 @@ public class ReflectUtil {
         if (StringHelper.isEmpty(key) || map == null || map.isEmpty()) {
             return false;
         }
-        log.error(" key:{} present in map:{} ?:{}", key, map, map.keySet().equals(key));
-        return map.keySet().equals(key);
+        log.error(" key:{} present in map:{} ?:{}", key, map, map.keySet().contains(key));
+        return map.keySet().contains(key);
     }
+    
+    private boolean isAttributeInExclusion(String baseDn, String attribute, Map<String, List<String>> exclusionMap) {
+        log.error("Check if object:{} attribute:{} is in exclusionMap:{}", baseDn, attribute, exclusionMap);
+        if (StringHelper.isEmpty(baseDn) || StringHelper.isEmpty(attribute)  || exclusionMap == null || exclusionMap.isEmpty()) {
+            return false;
+        }
+        
+        log.error("Map contains key exclusionMap.keySet().contains(baseDn)" , exclusionMap.keySet().contains(baseDn));
+        
+        if(exclusionMap.keySet().contains(baseDn)) {
+            if(exclusionMap.get(baseDn)!=null) {
+                return false;
+            }else if(exclusionMap.get(baseDn).contains(attribute)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }

@@ -1,5 +1,6 @@
 package io.jans.configapi.core.util;
 
+import java.util.List;
 import java.util.Map;
 
 public class DataTypeConversionMapping {
@@ -18,6 +19,11 @@ public class DataTypeConversionMapping {
      * Map of DataType and method to invoke for decoding
      */
     private Map<String, String> decoder;
+    
+    /**
+     * Map of Class and attribute to be ignored for conversion
+     */
+    private Map<String, List<String>> exclusion;
     
     /**
      * Name of the class to be used for DataType conversion
@@ -48,6 +54,14 @@ public class DataTypeConversionMapping {
         this.decoder = decoder;
     }
 
+    public Map<String, List<String>> getExclusion() {
+        return exclusion;
+    }
+
+    public void setExclusion(Map<String, List<String>> exclusion) {
+        this.exclusion = exclusion;
+    }
+
     public String getDataTypeConverterClassName() {
         return dataTypeConverterClassName;
     }
@@ -59,7 +73,7 @@ public class DataTypeConversionMapping {
     @Override
     public String toString() {
         return "DataTypeConversionMapping [dateFormat=" + dateFormat + ", encoder=" + encoder + ", decoder=" + decoder
-                + ", dataTypeConverterClassName=" + dataTypeConverterClassName + "]";
-    }
+                + ", exclusion=" + exclusion + ", dataTypeConverterClassName=" + dataTypeConverterClassName + "]";
+    }    
 
 }
