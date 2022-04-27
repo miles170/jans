@@ -9,6 +9,7 @@ package io.jans.configapi.filters;
 import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.security.service.AuthorizationService;
 import io.jans.configapi.util.ApiConstants;
+import io.jans.configapi.util.DataProcessingUtil;
 
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
@@ -22,6 +23,8 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.Provider;
+
+import java.util.Enumeration;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -53,6 +56,9 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
     @Inject
     AuthorizationService authorizationService;
+    
+    @Inject
+    DataProcessingUtil dataProcessingUtil;
 
     @SuppressWarnings({ "all" })
     public void filter(ContainerRequestContext context) {
@@ -90,6 +96,13 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                 context.getHeaders().remove(HttpHeaders.AUTHORIZATION);
                 context.getHeaders().add(HttpHeaders.AUTHORIZATION, authorizationHeader);
             }
+            
+            //encode data
+            log.error("======AuthorizationFilter - resourceInfo:{}, resourceInfo.getResourceMethod():{} ",resourceInfo, resourceInfo.getResourceMethod());
+            log.error("======AuthorizationFilter - resourceInfo.getResourceMethod().getParameterCount():{}, resourceInfo.getResourceMethod().getParameters():{},  resourceInfo.getResourceMethod().getParameterTypes():{}", resourceInfo.getResourceMethod().getParameterCount(), resourceInfo.getResourceMethod().getParameters(), resourceInfo.getResourceMethod().getParameterTypes());
+            processData();
+            
+            
             log.info("======AUTHORIZATION  GRANTED===========================================");
         } catch (Exception ex) {
             log.error("======AUTHORIZATION  FAILED ===========================================", ex);
@@ -108,4 +121,20 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                 .header(HttpHeaders.WWW_AUTHENTICATE, AUTHENTICATION_SCHEME).build());
     }
 
+    private void processData() {
+        log.error("AuthorizationFilter Processing  Data -  request.getAttributeNames():{} , request.getParameterNames():{} ", request.getAttributeNames(), request.getParameterNames());
+        for (Enumeration en =  request.getAttributeNames(); en.hasMoreElements(); ) {
+            String name = (String)en.nextElement();
+            log.error(" name:{} ",name);
+            String values[] = request.getParameterValues(name);
+            log.error(" values:{} ",values);
+            if(values!=null && values.length>0) {
+            int n = values.length;
+                for(int i=0; i < n; i++) {
+                 //values[i] = values[i].replaceAll("[^\\dA-Za-z ]","").replaceAll("\\s+","+").trim();   
+                    dataProcessingUtil.encodeObjDataType(null);
+                }
+            }
+        }
+    }
 }
