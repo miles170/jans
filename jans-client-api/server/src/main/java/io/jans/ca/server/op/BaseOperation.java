@@ -3,16 +3,18 @@
  */
 package io.jans.ca.server.op;
 
-import com.google.inject.Injector;
 import io.jans.as.model.crypto.AuthCryptoProvider;
 import io.jans.ca.common.Command;
 import io.jans.ca.common.ErrorResponseCode;
 import io.jans.ca.common.params.HasRpIdParams;
 import io.jans.ca.common.params.IParams;
-import io.jans.ca.server.Convertor;
 import io.jans.ca.server.HttpException;
-import io.jans.ca.server.RpServerConfiguration;
-import io.jans.ca.server.service.*;
+import io.jans.ca.server.configuration.model.ApiConf;
+import io.jans.ca.server.configuration.model.Rp;
+import io.jans.ca.server.service.RpSyncService;
+import io.jans.ca.server.service.ValidationService;
+import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.utils.Convertor;
 
 /**
  * Base abstract class for all operations.
@@ -25,17 +27,18 @@ import io.jans.ca.server.service.*;
 public abstract class BaseOperation<T extends IParams> implements IOperation<T> {
 
     private final Command command;
-    private final Injector injector;
     private final Class<T> parameterClass;
     private final T params;
 
+    private ConfigurationService configurationService;
+    private ValidationService validationService;
+    private RpSyncService rpSyncService;
     /**
      * Base constructor
      *
      * @param command command
      */
-    protected BaseOperation(Command command, final Injector injector, Class<T> parameterClass) {
-        this.injector = injector;
+    protected BaseOperation(Command command, Class<T> parameterClass) {
         this.command = command;
         this.parameterClass = parameterClass;
         this.params = Convertor.asParams(parameterClass, command);
@@ -50,70 +53,33 @@ public abstract class BaseOperation<T extends IParams> implements IOperation<T> 
         return params;
     }
 
-    /**
-     * Gets injector.
-     *
-     * @return injector
-     */
-    public Injector getInjector() {
-        return injector;
+    public ValidationService getValidationService() {
+        return validationService;
     }
 
-    public HttpService getHttpService() {
-        return getInstance(HttpService.class);
-    }
-
-    public IntrospectionService getIntrospectionService() {
-        return getInstance(IntrospectionService.class);
-    }
-
-    public PublicOpKeyService getKeyService() {
-        return getInstance(PublicOpKeyService.class);
-    }
-
-    public <T> T getInstance(Class<T> type) {
-        return injector.getInstance(type);
-    }
-
-    public StateService getStateService() {
-        return getInstance(StateService.class);
-    }
-
-    public RequestObjectService getRequestObjectService() {
-        return getInstance(RequestObjectService.class);
-    }
-
-    public DiscoveryService getDiscoveryService() {
-        return getInstance(DiscoveryService.class);
-    }
-
-    public UmaTokenService getUmaTokenService() {
-        return getInstance(UmaTokenService.class);
-    }
-
-    public RpService getRpService() {
-        return getInstance(RpService.class);
+    public void setValidationService(ValidationService validationService) {
+        this.validationService = validationService;
     }
 
     public RpSyncService getRpSyncService() {
-        return getInstance(RpSyncService.class);
+        return rpSyncService;
+    }
+
+    public void setRpSyncService(RpSyncService rpSyncService) {
+        this.rpSyncService = rpSyncService;
     }
 
     public ConfigurationService getConfigurationService() {
-        return getInstance(ConfigurationService.class);
+        return configurationService;
     }
 
-    public KeyGeneratorService getKeyGeneratorService() {
-        return getInstance(KeyGeneratorService.class);
+    public void setConfigurationService(ConfigurationService configurationService) {
+        this.configurationService = configurationService;
     }
 
     public AuthCryptoProvider getCryptoProvider() throws Exception {
-        RpServerConfiguration conf = getConfigurationService().get();
-        return new AuthCryptoProvider(conf.getCryptProviderKeyStorePath(), conf.getCryptProviderKeyStorePassword(), conf.getCryptProviderDnName());
-    }
-
-    public OpClientFactory getOpClientFactory() {
-        return getInstance(OpClientFactory.class);
+        ApiConf conf = getConfigurationService().findConf();
+        return new AuthCryptoProvider(conf.getDynamicConf().getCryptProviderKeyStorePath(), conf.getDynamicConf().getCryptProviderKeyStorePassword(), conf.getDynamicConf().getCryptProviderDnName());
     }
 
     public Rp getRp() {
@@ -123,10 +89,6 @@ public abstract class BaseOperation<T extends IParams> implements IOperation<T> 
             return getRpSyncService().getRp(hasRpId.getRpId());
         }
         throw new HttpException(ErrorResponseCode.BAD_REQUEST_NO_RP_ID);
-    }
-
-    public ValidationService getValidationService() {
-        return getInstance(ValidationService.class);
     }
 
     /**

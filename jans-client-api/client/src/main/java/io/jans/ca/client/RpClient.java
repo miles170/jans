@@ -1,5 +1,7 @@
 package io.jans.ca.client;
 
+
+
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
 
 import javax.net.ssl.SSLContext;
@@ -17,28 +19,28 @@ public class RpClient {
 
     private RpClient() {
     }
-
-    public static ClientInterface newClient(String target) {
-        WebTarget webTarget = ClientBuilder.newClient().target(target);
-        return WebResourceFactory.newResource(ClientInterface.class, webTarget);
-    }
-
-    public static ClientInterface newTrustAllClient(String target) throws Exception {
-        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-            public X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
-
-            public void checkClientTrusted(X509Certificate[] certs, String authType) {
-            }
-
-            public void checkServerTrusted(X509Certificate[] certs, String authType) {
-            }
-        }};
-        SSLContext sc = SSLContext.getInstance("TLS");
-        sc.init(null, trustAllCerts, new SecureRandom());
-
-        WebTarget webTarget = ClientBuilder.newBuilder().sslContext(sc).build().target(target);
-        return WebResourceFactory.newResource(ClientInterface.class, webTarget);
-    }
+//
+//    public static ClientInterface newClient(String target) {
+//        WebTarget webTarget = ClientBuilder.newClient().target(target);
+//        return WebResourceFactory.newResource(ClientInterface.class, webTarget);
+//    }
+//
+//    public static ClientInterface newTrustAllClient(String target) throws Exception {
+//        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+//            public X509Certificate[] getAcceptedIssuers() {
+//                return null;
+//            }
+//
+//            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+//            }
+//
+//            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+//            }
+//        }};
+//        SSLContext sc = SSLContext.getInstance("TLS");
+//        sc.init(null, trustAllCerts, new SecureRandom());
+//
+//        WebTarget webTarget = ClientBuilder.newBuilder().sslContext(sc).build().target(target);
+//        return WebResourceFactory.newResource(ClientInterface.class, webTarget);
+//    }
 }

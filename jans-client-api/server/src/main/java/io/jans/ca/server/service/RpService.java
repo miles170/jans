@@ -5,12 +5,16 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
-import org.apache.commons.lang.StringUtils;
+import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.persistence.service.PersistenceService;
+import io.jans.ca.server.persistence.service.PersistenceServiceImpl;
+import io.jans.ca.server.service.auth.ConfigurationService;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -19,33 +23,33 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Yuriy Zabrovarnyy
  */
-
+@ApplicationScoped
 public class RpService {
 
-    /**
-     * Logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(RpService.class);
-
+    @Inject
+    Logger logger;
     private static Cache<String, Rp> rpCache;
 
-    private ValidationService validationService;
-
-    private PersistenceService persistenceService;
+    @Inject
+    ConfigurationService configurationService;
 
     @Inject
-    public RpService(ValidationService validationService, PersistenceService persistenceService, ConfigurationService configurationService) {
+    ValidationService validationService;
+    @Inject
+    PersistenceServiceImpl persistenceService;
 
-        rpCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(configurationService.get() != null ? configurationService.get().getRpCacheExpirationInMinutes() : 60, TimeUnit.MINUTES)
-                .build();
-
-        this.validationService = validationService;
-        this.persistenceService = persistenceService;
+    private Cache<String, Rp> getRpCache() {
+        if (rpCache != null) {
+            return rpCache;
+        } else {
+            return CacheBuilder.newBuilder()
+                    .expireAfterWrite(configurationService.findConf() != null ? configurationService.findConf().getDynamicConf().getRpCacheExpirationInMinutes() : 60, TimeUnit.MINUTES)
+                    .build();
+        }
     }
 
     public void removeAllRps() {
-        rpCache.invalidateAll();
+        getRpCache().invalidateAll();
         persistenceService.removeAllRps();
     }
 
@@ -63,11 +67,11 @@ public class RpService {
         Preconditions.checkNotNull(rpId);
         Preconditions.checkState(!Strings.isNullOrEmpty(rpId));
 
-        Rp rp = rpCache.getIfPresent(rpId);
+        Rp rp = getRpCache().getIfPresent(rpId);
         if (rp == null) {
             rp = persistenceService.getRp(rpId);
             if (rp != null) {
-                rpCache.put(rpId, rp);
+                getRpCache().put(rpId, rp);
             }
         }
         rp = validationService.validate(rp);
@@ -75,7 +79,7 @@ public class RpService {
     }
 
     public Map<String, Rp> getRps() {
-        return Maps.newHashMap(rpCache.asMap());
+        return Maps.newHashMap(getRpCache().asMap());
     }
 
     public void update(Rp rp) {
@@ -87,7 +91,7 @@ public class RpService {
         try {
             update(rp);
         } catch (Exception e) {
-            LOG.error("Failed to update site configuration: " + rp, e);
+            logger.error("Failed to update site configuration: " + rp, e);
         }
     }
 
@@ -96,31 +100,31 @@ public class RpService {
             rp.setRpId(UUID.randomUUID().toString());
         }
 
-        if (rpCache.getIfPresent(rp.getRpId()) == null) {
+        if (getRpCache().getIfPresent(rp.getRpId()) == null) {
             put(rp);
             persistenceService.create(rp);
         } else {
-            LOG.error("RP already exists in database, rp_id: " + rp.getRpId());
+            logger.error("RP already exists in database, rp_id: " + rp.getRpId());
         }
     }
 
     private Rp put(Rp rp) {
-        rpCache.put(rp.getRpId(), rp);
+        getRpCache().put(rp.getRpId(), rp);
         return rp;
     }
 
     public boolean remove(String rpId) {
         boolean ok = persistenceService.remove(rpId);
         if (ok) {
-            rpCache.invalidate(rpId);
+            getRpCache().invalidate(rpId);
         }
         return ok;
     }
 
     public Rp getRpByClientId(String clientId) {
-        for (Rp rp : rpCache.asMap().values()) {
+        for (Rp rp : getRpCache().asMap().values()) {
             if (rp.getClientId().equalsIgnoreCase(clientId)) {
-                LOG.trace("Found rp by client_id: " + clientId + ", rp: " + rp);
+                logger.trace("Found rp by client_id: " + clientId + ", rp: " + rp);
                 return rp;
             }
         }

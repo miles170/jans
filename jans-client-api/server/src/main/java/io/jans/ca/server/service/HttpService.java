@@ -3,40 +3,39 @@
  */
 package io.jans.ca.server.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
-import com.google.inject.Inject;
-import io.jans.ca.server.RpServerConfiguration;
-import org.apache.http.client.HttpClient;
 import io.jans.ca.common.CoreUtils;
-import io.jans.ca.common.Jackson2;
 import io.jans.ca.common.proxy.ProxyConfiguration;
+import io.jans.ca.server.configuration.ApiAppConfiguration;
+import io.jans.ca.server.service.auth.ConfigurationService;
+import org.apache.http.client.HttpClient;
 import org.jboss.resteasy.client.jaxrs.ClientHttpEngine;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.io.File;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Yuriy Zabrovarnyy
  */
-
+@ApplicationScoped
 public class HttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpService.class);
-
-    private RpServerConfiguration configuration;
-
     @Inject
-    public HttpService(RpServerConfiguration configuration) {
-        this.configuration = configuration;
+    ConfigurationService configurationService;
+
+    private ApiAppConfiguration getConfiguration() {
+        return configurationService.findConf().getDynamicConf();
     }
 
     public HttpClient getHttpClient() {
-        final Optional<ProxyConfiguration> proxyConfig = asProxyConfiguration(configuration);
+        ApiAppConfiguration configuration = getConfiguration();
+        final ProxyConfiguration proxyConfig = configuration.getProxyConfiguration();
         final String[] tlsVersions = listToArray(configuration.getTlsVersion());
         final String[] tlsSecureCiphers = listToArray(configuration.getTlsSecureCipher());
         try {
@@ -80,25 +79,9 @@ public class HttpService {
         return CoreUtils.createClientFallback(proxyConfig);
     }
 
-    private static Optional<ProxyConfiguration> asProxyConfiguration(RpServerConfiguration configuration) {
-        try {
-            JsonNode node = configuration.getProxyConfiguration();
-            if (node != null) {
-                return Optional.ofNullable(Jackson2.createJsonMapper().treeToValue(node, ProxyConfiguration.class));
-            }
-        } catch (Exception e) {
-            LOG.error("Failed to parse ProxyConfiguration.", e);
-        }
-        return Optional.empty();
-    }
+    private void validate(ProxyConfiguration proxyConfiguration) {
 
-    private void validate(Optional<ProxyConfiguration> proxyConfiguration) {
-
-        if (!proxyConfiguration.isPresent()) {
-            return;
-        }
-
-        if (Strings.isNullOrEmpty(proxyConfiguration.get().getHost())) {
+        if (Strings.isNullOrEmpty(proxyConfiguration.getHost())) {
             throw new RuntimeException("Invalid proxy server `hostname` provided (empty or null). jans_client_api will connect to OP_HOST without proxy configuration.");
         }
     }

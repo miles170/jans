@@ -5,6 +5,7 @@ import brave.opentracing.BraveTracer;
 import com.google.common.base.Strings;
 import io.jaegertracing.Configuration;
 import io.jaegertracing.internal.samplers.ConstSampler;
+import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
@@ -20,12 +21,12 @@ public class TracingUtil {
     private TracingUtil() {
     }
 
-    public static boolean configureGlobalTracer(RpServerConfiguration configuration, String componentName) {
+    public static boolean configureGlobalTracer(ApiAppConfiguration configuration, String componentName) {
         GlobalTracer.register(createTracer(configuration, componentName));
         return true;
     }
 
-    private static Tracer createTracer(RpServerConfiguration configuration, String componentName) {
+    private static Tracer createTracer(ApiAppConfiguration configuration, String componentName) {
         String tracerName = configuration.getTracer();
 
         if (!configuration.getEnableTracing() || Strings.isNullOrEmpty(tracerName)) {

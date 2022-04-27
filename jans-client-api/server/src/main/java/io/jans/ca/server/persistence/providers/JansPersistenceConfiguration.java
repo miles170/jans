@@ -3,8 +3,8 @@ package io.jans.ca.server.persistence.providers;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.jans.ca.common.Jackson2;
 import io.jans.ca.common.PersistenceConfigKeys;
-import io.jans.ca.server.RpServerConfiguration;
 import io.jans.ca.server.Utils;
+import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.jans.ca.server.persistence.configuration.JansConfiguration;
 import io.jans.util.exception.ConfigurationException;
 import io.jans.util.security.PropertiesDecrypter;
@@ -18,12 +18,12 @@ import java.util.Properties;
 
 public class JansPersistenceConfiguration {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JDBCPersistenceProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JansPersistenceConfiguration.class);
 
-    private RpServerConfiguration configuration;
+    private ApiAppConfiguration configuration;
     private Properties connectionProperties;
 
-    public JansPersistenceConfiguration(RpServerConfiguration configuration) {
+    public JansPersistenceConfiguration(ApiAppConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -61,7 +61,7 @@ public class JansPersistenceConfiguration {
         return decryptedConnectionProperties;
     }
 
-    public static Optional<JansConfiguration> asJansConfiguration(RpServerConfiguration configuration) {
+    public static Optional<JansConfiguration> asJansConfiguration(ApiAppConfiguration configuration) {
         try {
             JsonNode node = configuration.getStorageConfiguration();
             if (node != null) {
@@ -73,14 +73,14 @@ public class JansPersistenceConfiguration {
         return Optional.empty();
     }
 
-    private void validate(Optional<JansConfiguration> gluuConfiguration) {
+    private void validate(Optional<JansConfiguration> jansConfiguration) {
 
-        if (!gluuConfiguration.isPresent()) {
+        if (!jansConfiguration.isPresent()) {
             LOG.error("The `storage_configuration` has been not provided in `client-api-server.yml`");
             throw new RuntimeException("The `storage_configuration` has been not provided in `client-api-server.yml`");
         }
 
-        JansConfiguration configuration = gluuConfiguration.get();
+        JansConfiguration configuration = jansConfiguration.get();
 
         if (StringUtils.isBlank(configuration.getBaseDn())) {
             LOG.error("The `baseDn` field under storage_configuration is blank. Please provide value of this field (in `client-api-server.yml`)");

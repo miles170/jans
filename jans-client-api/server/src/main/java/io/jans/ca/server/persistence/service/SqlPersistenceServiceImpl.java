@@ -1,15 +1,13 @@
 package io.jans.ca.server.persistence.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
-import com.google.inject.Inject;
 import io.jans.ca.common.ExpiredObject;
 import io.jans.ca.common.ExpiredObjectType;
 import io.jans.ca.common.Jackson2;
+import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.persistence.providers.SqlPersistenceProvider;
-import io.jans.ca.server.service.ConfigurationService;
 import io.jans.ca.server.service.MigrationService;
-import io.jans.ca.server.service.Rp;
+import io.jans.ca.server.service.auth.ConfigurationService;
 import org.h2.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +26,6 @@ public class SqlPersistenceServiceImpl implements PersistenceService {
     private SqlPersistenceProvider provider;
     private ConfigurationService configurationService;
 
-    @Inject
     public SqlPersistenceServiceImpl(SqlPersistenceProvider provider, ConfigurationService configurationService) {
         this.provider = provider;
         this.configurationService = configurationService;

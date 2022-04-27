@@ -5,10 +5,11 @@ package io.jans.ca.server;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
 import io.jans.as.model.util.Util;
 import io.jans.ca.common.ErrorResponseCode;
+import io.jans.ca.server.rest.ApiApplication;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -143,6 +144,6 @@ public class Utils {
     }
 
     public static String getOxdVersion() {
-        return !Strings.isNullOrEmpty(System.getProperty("projectVersion")) ? System.getProperty("projectVersion") : RpServerApplication.class.getPackage().getImplementationVersion();
+        return !Strings.isNullOrEmpty(System.getProperty("projectVersion")) ? System.getProperty("projectVersion") : ApiApplication.class.getPackage().getImplementationVersion();
     }
 }

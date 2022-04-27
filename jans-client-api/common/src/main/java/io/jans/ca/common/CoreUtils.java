@@ -192,7 +192,7 @@ public class CoreUtils {
      */
 
 
-    public static HttpClient createHttpClientWithKeyStore(File trustStoreFile, String trustStorePassword, String[] tlsVersions, String[] tlsSecureCiphers, Optional<ProxyConfiguration> proxyConfiguration) throws Exception {
+    public static HttpClient createHttpClientWithKeyStore(File trustStoreFile, String trustStorePassword, String[] tlsVersions, String[] tlsSecureCiphers, ProxyConfiguration proxyConfiguration) throws Exception {
 
         SSLContext sslcontext = SSLContexts.custom()
                 .loadTrustMaterial(trustStoreFile, trustStorePassword.toCharArray())
@@ -204,7 +204,7 @@ public class CoreUtils {
         return createClient(sslConSocFactory, proxyConfiguration);
     }
 
-    public static HttpClient createHttpClientForMutualAuthentication(File trustStoreFile, String trustStorePassword, File mtlsClientKeyStoreFile, String mtlsClientKeyStorePassword, String[] tlsVersions, String[] tlsSecureCiphers, Optional<ProxyConfiguration> proxyConfiguration) throws Exception {
+    public static HttpClient createHttpClientForMutualAuthentication(File trustStoreFile, String trustStorePassword, File mtlsClientKeyStoreFile, String mtlsClientKeyStorePassword, String[] tlsVersions, String[] tlsSecureCiphers, ProxyConfiguration proxyConfiguration) throws Exception {
 
         SSLContext sslcontext = SSLContexts.custom()
                 .loadKeyMaterial(mtlsClientKeyStoreFile, mtlsClientKeyStorePassword.toCharArray(), mtlsClientKeyStorePassword.toCharArray())
@@ -217,7 +217,7 @@ public class CoreUtils {
         return createClient(sslConSocFactory, proxyConfiguration);
     }
 
-    public static HttpClient createHttpClientTrustAll(Optional<ProxyConfiguration> proxyConfiguration, String[] tlsVersions, String[] tlsSecureCiphers) throws NoSuchAlgorithmException, KeyManagementException,
+    public static HttpClient createHttpClientTrustAll(ProxyConfiguration proxyConfiguration, String[] tlsVersions, String[] tlsSecureCiphers) throws NoSuchAlgorithmException, KeyManagementException,
             KeyStoreException {
 
         SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(new TrustStrategy() {
@@ -243,10 +243,10 @@ public class CoreUtils {
         return createClient(sslContextFactory, proxyConfiguration);
     }
 
-    public static HttpClient createClientFallback(Optional<ProxyConfiguration> proxyConfiguration) {
-        if (proxyConfiguration.isPresent() && !Strings.isNullOrEmpty(proxyConfiguration.get().getHost())) {
+    public static HttpClient createClientFallback(ProxyConfiguration proxyConfiguration) {
+        if (!Strings.isNullOrEmpty(proxyConfiguration.getHost())) {
             HttpHost proxyhost = null;
-            ProxyConfiguration proxyConfigObj = proxyConfiguration.get();
+            ProxyConfiguration proxyConfigObj = proxyConfiguration;
 
             if (isSafePort(proxyConfigObj.getPort()) && !Strings.isNullOrEmpty(proxyConfigObj.getProtocol())) {
                 proxyhost = new HttpHost(proxyConfigObj.getHost(), proxyConfigObj.getPort(), proxyConfigObj.getProtocol());
@@ -261,7 +261,7 @@ public class CoreUtils {
         return HttpClientBuilder.create().build();
     }
 
-    public static HttpClient createClient(SSLConnectionSocketFactory connectionFactory, Optional<ProxyConfiguration> proxyConfiguration) {
+    public static HttpClient createClient(SSLConnectionSocketFactory connectionFactory, ProxyConfiguration proxyConfiguration) {
 
         HttpClientBuilder httClientBuilder = HttpClients.custom();
 
@@ -276,9 +276,9 @@ public class CoreUtils {
             httClientBuilder = httClientBuilder.setSSLSocketFactory(connectionFactory);
         }
 
-        if (proxyConfiguration.isPresent() && !Strings.isNullOrEmpty(proxyConfiguration.get().getHost())) {
+        if (!Strings.isNullOrEmpty(proxyConfiguration.getHost())) {
             HttpHost proxyhost = null;
-            ProxyConfiguration proxyConfigObj = proxyConfiguration.get();
+            ProxyConfiguration proxyConfigObj = proxyConfiguration;
 
             if (isSafePort(proxyConfigObj.getPort()) && !Strings.isNullOrEmpty(proxyConfigObj.getProtocol())) {
                 proxyhost = new HttpHost(proxyConfigObj.getHost(), proxyConfigObj.getPort(), proxyConfigObj.getProtocol());

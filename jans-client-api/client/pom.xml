@@ -35,7 +35,7 @@
             </testResource>
         </testResources>
         <filters>
-            <filter>${project.basedir}/../test/test.properties</filter>
+<!--            <filter>${project.basedir}/../test/test.properties</filter>-->
         </filters>
 
         <plugins>
@@ -122,6 +122,13 @@
             <groupId>io.jans</groupId>
             <artifactId>jans-client-api-common</artifactId>
         </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

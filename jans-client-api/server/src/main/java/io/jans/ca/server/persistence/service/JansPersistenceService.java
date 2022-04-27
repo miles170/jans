@@ -1,46 +1,40 @@
 package io.jans.ca.server.persistence.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Strings;
 import io.jans.ca.common.ExpiredObject;
 import io.jans.ca.common.ExpiredObjectType;
 import io.jans.ca.common.Jackson2;
 import io.jans.ca.common.PersistenceConfigKeys;
-import io.jans.ca.server.RpServerConfiguration;
+import io.jans.ca.server.configuration.ApiAppConfiguration;
+import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.persistence.modal.OrganizationBranch;
 import io.jans.ca.server.persistence.modal.RpObject;
 import io.jans.ca.server.persistence.providers.ClientApiPersistenceEntryManagerFactory;
 import io.jans.ca.server.persistence.providers.JansPersistenceConfiguration;
-import io.jans.ca.server.service.ConfigurationService;
 import io.jans.ca.server.service.MigrationService;
-import io.jans.ca.server.service.Rp;
 import io.jans.orm.PersistenceEntryManager;
 import io.jans.orm.exception.EntryPersistenceException;
 import io.jans.orm.model.base.SimpleBranch;
 import io.jans.orm.search.filter.Filter;
-import io.jans.orm.sql.operation.SqlOperationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.*;
-
+@ApplicationScoped
 public class JansPersistenceService implements PersistenceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(JansPersistenceService.class);
-    private RpServerConfiguration configuration;
+    private ApiAppConfiguration configuration;
     private PersistenceEntryManager persistenceEntryManager;
     private String persistenceType;
     private String baseDn;
     //private String expiredObjectColumnName;
 
-    public JansPersistenceService(RpServerConfiguration configuration) {
+    public JansPersistenceService(ApiAppConfiguration configuration) {
         this.configuration = configuration;
     }
 
-    public JansPersistenceService(RpServerConfiguration configuration, String persistenceType) {
+    public JansPersistenceService(ApiAppConfiguration configuration, String persistenceType) {
         this.configuration = configuration;
         this.persistenceType = persistenceType;
         //this.expiredObjectColumnName = getKeyColumnName(configurationService);

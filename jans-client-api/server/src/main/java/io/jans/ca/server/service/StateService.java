@@ -1,13 +1,16 @@
 package io.jans.ca.server.service;
 
-import com.google.inject.Inject;
 import io.jans.ca.common.ExpiredObject;
 import io.jans.ca.common.ExpiredObjectType;
 import io.jans.ca.server.Utils;
 import io.jans.ca.server.persistence.service.PersistenceService;
+import io.jans.ca.server.persistence.service.PersistenceServiceImpl;
+import io.jans.ca.server.service.auth.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -15,22 +18,16 @@ import java.security.SecureRandom;
 /**
  * @author Yuriy Zabrovarnyy
  */
-
+@ApplicationScoped
 public class StateService {
 
     private static final Logger LOG = LoggerFactory.getLogger(StateService.class);
-
-    private PersistenceService persistenceService;
-
-    private ConfigurationService configurationService;
+    @Inject
+    PersistenceServiceImpl persistenceService;
+    @Inject
+    ConfigurationService configurationService;
 
     private final SecureRandom random = new SecureRandom();
-
-    @Inject
-    public StateService(PersistenceService persistenceService, ConfigurationService configurationService) {
-        this.persistenceService = persistenceService;
-        this.configurationService = configurationService;
-    }
 
     public String generateState() {
         return putState(generateSecureString());
@@ -53,21 +50,21 @@ public class StateService {
     }
 
     public String putState(String state) {
-        persistenceService.createExpiredObject(new ExpiredObject(state, state, ExpiredObjectType.STATE, configurationService.get().getStateExpirationInMinutes()));
+        persistenceService.createExpiredObject(new ExpiredObject(state, state, ExpiredObjectType.STATE, configurationService.findConf().getDynamicConf().getStateExpirationInMinutes()));
         return state;
     }
 
     public String putNonce(String nonce) {
-        persistenceService.createExpiredObject(new ExpiredObject(nonce, nonce, ExpiredObjectType.NONCE, configurationService.get().getNonceExpirationInMinutes()));
+        persistenceService.createExpiredObject(new ExpiredObject(nonce, nonce, ExpiredObjectType.NONCE, configurationService.findConf().getDynamicConf().getNonceExpirationInMinutes()));
         return nonce;
     }
 
     public String encodeExpiredObject(String expiredObject, ExpiredObjectType type) throws UnsupportedEncodingException {
-        if (type == ExpiredObjectType.STATE && configurationService.get().getEncodeStateFromRequestParameter()) {
+        if (type == ExpiredObjectType.STATE && configurationService.findConf().getDynamicConf().getEncodeStateFromRequestParameter()) {
             return Utils.encode(expiredObject);
         }
 
-        if (type == ExpiredObjectType.NONCE && configurationService.get().getEncodeNonceFromRequestParameter()) {
+        if (type == ExpiredObjectType.NONCE && configurationService.findConf().getDynamicConf().getEncodeNonceFromRequestParameter()) {
             return Utils.encode(expiredObject);
         }
 
