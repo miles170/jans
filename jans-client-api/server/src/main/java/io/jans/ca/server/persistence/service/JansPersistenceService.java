@@ -61,7 +61,7 @@ public class JansPersistenceService implements PersistenceService {
             }
             prepareBranch();
         } catch (Exception e) {
-            throw new IllegalStateException("Error starting GluuPersistenceService", e);
+            throw new IllegalStateException("Error starting JansPersistenceService", e);
         }
     }
 
@@ -70,27 +70,27 @@ public class JansPersistenceService implements PersistenceService {
         if (!this.persistenceEntryManager.hasBranchesSupport(this.baseDn)) {
             return;
         }
-        //create `o=gluu` if not present
+        //create `o=jans` if not present
         if (!containsBranch(this.baseDn)) {
             addOrganizationBranch(this.baseDn, null);
         }
-        //create `ou=configuration,o=gluu` if not present
+        //create `ou=configuration,o=jans` if not present
         if (!containsBranch(String.format("%s,%s", ou("configuration"), this.baseDn))) {
             addBranch(String.format("%s,%s", ou("configuration"), this.baseDn), "configuration");
         }
-        //create `ou=client-api,ou=configuration,o=gluu` if not present
+        //create `ou=client-api,ou=configuration,o=jans` if not present
         if (!containsBranch(String.format("%s,%s,%s", ou("client-api"), ou("configuration"), this.baseDn))) {
             addBranch(String.format("%s,%s,%s", ou("client-api"), ou("configuration"), this.baseDn), "client-api");
         }
-        //create `ou=client-api,o=gluu` if not present
+        //create `ou=client-api,o=jans` if not present
         if (!containsBranch(getClientApiDn())) {
             addBranch(getClientApiDn(), "client-api");
         }
-        //create `ou=rp,ou=client-api,o=gluu` if not present
+        //create `ou=rp,ou=client-api,o=jans` if not present
         if (!containsBranch(String.format("%s,%s", getRpOu(), getClientApiDn()))) {
             addBranch(String.format("%s,%s", getRpOu(), getClientApiDn()), "rp");
         }
-        //create `ou=expiredObjects,ou=rp,o=gluu` if not present
+        //create `ou=expiredObjects,ou=rp,o=jans` if not present
         if (!containsBranch(String.format("%s,%s", getExpiredObjOu(), getClientApiDn()))) {
             addBranch(String.format("%s,%s", getExpiredObjOu(), getClientApiDn()), "expiredObjects");
         }
