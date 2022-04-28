@@ -158,8 +158,17 @@ public class DataUtil {
         for (Map.Entry<String, String> entry : objectPropertyMap.entrySet()) {
             logger.error("entry.getKey():{}, entry.getValue():{}", entry.getKey(), entry.getValue());
             
+            
+            //check if attribute is in exclusion map
+            logger.error("obj.getClass().getName():{}, entry.getKey():{} dataTypeConversionMap.getExclusion():{}, isAttributeInExclusion:{}", obj.getClass().getName(), entry.getKey(), dataTypeConversionMap.getExclusion(), isAttributeInExclusion(obj.getClass().getName(), entry.getKey(), dataTypeConversionMap.getExclusion()));
+            if(isAttributeInExclusion(obj.getClass().getName(), entry.getKey(), dataTypeConversionMap.getExclusion())) {
+                
+                return obj;
+            }
+            
             //encode data
             encodeData(obj, entry, dataTypeConversionMap.getEncoder());
+            logger.error("Final obj:{} ", obj);
         }
 
         return obj;
@@ -171,6 +180,9 @@ public class DataUtil {
         if (obj == null || entryData == null || encoderMap == null || encoderMap.isEmpty()) {
             return obj;
         }
+        
+      
+            
         logger.error("isKeyPresentInMap(entryData.getKey():{}, encoderMap:{}):{} ", entryData.getKey(), encoderMap,
                 isKeyPresentInMap(entryData.getKey(), encoderMap));
 
@@ -203,18 +215,18 @@ public class DataUtil {
         return map.keySet().contains(key);
     }
     
-    public static boolean isAttributeInExclusion(String baseDn, String attribute, Map<String, List<String>> exclusionMap) {
-        logger.error("Check if object:{} attribute:{} is in exclusionMap:{}", baseDn, attribute, exclusionMap);
-        if (StringHelper.isEmpty(baseDn) || StringHelper.isEmpty(attribute)  || exclusionMap == null || exclusionMap.isEmpty()) {
+    public static boolean isAttributeInExclusion(String className, String attribute, Map<String, List<String>> exclusionMap) {
+        logger.error("Check if object:{} attribute:{} is in exclusionMap:{}", className, attribute, exclusionMap);
+        if (StringHelper.isEmpty(className) || StringHelper.isEmpty(attribute)  || exclusionMap == null || exclusionMap.isEmpty()) {
             return false;
         }
         
-        logger.error("Map contains key exclusionMap.keySet().contains(baseDn):{}" , exclusionMap.keySet().contains(baseDn));
+        logger.error("Map contains key exclusionMap.keySet().contains(className):{}" , exclusionMap.keySet().contains(className));
         
-        if(exclusionMap.keySet().contains(baseDn)) {
-            if(exclusionMap.get(baseDn)!=null) {
+        if(exclusionMap.keySet().contains(className)) {
+            if(exclusionMap.get(className)!=null) {
                 return false;
-            }else if(exclusionMap.get(baseDn).contains(attribute)) {
+            }else if(exclusionMap.get(className).contains(attribute)) {
                 return true;
             }
         }

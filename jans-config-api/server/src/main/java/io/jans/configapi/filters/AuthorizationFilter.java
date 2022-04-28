@@ -9,7 +9,6 @@ package io.jans.configapi.filters;
 import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.security.service.AuthorizationService;
 import io.jans.configapi.util.ApiConstants;
-import io.jans.configapi.util.DataProcessingUtil;
 
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
@@ -23,11 +22,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.Provider;
-
-import java.io.*;
-import java.lang.reflect.Parameter;
-import java.util.Enumeration;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -59,9 +53,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
     @Inject
     AuthorizationService authorizationService;
-
-    @Inject
-    DataProcessingUtil dataProcessingUtil;
 
     @SuppressWarnings({ "all" })
     public void filter(ContainerRequestContext context) {
@@ -99,17 +90,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                 context.getHeaders().remove(HttpHeaders.AUTHORIZATION);
                 context.getHeaders().add(HttpHeaders.AUTHORIZATION, authorizationHeader);
             }
-
-            // encode data
-            log.error("======AuthorizationFilter - resourceInfo:{}, resourceInfo.getResourceMethod():{} ", resourceInfo,
-                    resourceInfo.getResourceMethod());
-            log.error(
-                    "======AuthorizationFilter - resourceInfo.getResourceMethod().getParameterCount():{}, resourceInfo.getResourceMethod().getParameters():{},  resourceInfo.getResourceMethod().getParameterTypes():{}",
-                    resourceInfo.getResourceMethod().getParameterCount(),
-                    resourceInfo.getResourceMethod().getParameters(),
-                    resourceInfo.getResourceMethod().getParameterTypes());
-            processData(context);
-
             log.info("======AUTHORIZATION  GRANTED===========================================");
         } catch (Exception ex) {
             log.error("======AUTHORIZATION  FAILED ===========================================", ex);
@@ -128,78 +108,4 @@ public class AuthorizationFilter implements ContainerRequestFilter {
                 .header(HttpHeaders.WWW_AUTHENTICATE, AUTHENTICATION_SCHEME).build());
     }
 
-    private void processData(ContainerRequestContext context) {
-        log.error(
-                "AuthorizationFilter Processing  Data -  request.getAttributeNames():{} , request.getAttributeNames():{} ",
-                request.getAttributeNames(), request.getAttributeNames());
-
-        log.error(
-                "AuthorizationFilter Processing  Data -  request.getParameterMap():{} , request.getParameterNames():{} ",
-                request.getParameterMap(), request.getParameterNames());
-
-        // get path parameters
-        context.getUriInfo().getPathParameters();
-        // get request message body
-        InputStream inputStreamOriginal = context.getEntityStream();
-        log.error(
-                "AuthorizationFilter Processing  Data -  context.getUriInfo().getPathParameters():{} , inputStreamOriginal:{} ",
-                context.getUriInfo().getPathParameters(), inputStreamOriginal);
-
-        int paramCount = resourceInfo.getResourceMethod().getParameterCount();
-        Parameter[] parameters = resourceInfo.getResourceMethod().getParameters();
-        Map<String, String[]> parameterMap = request.getParameterMap();
-        log.error("AuthorizationFilter Processing  Data -  paramCount:{} , parameters:{, parameterMap:{} }", paramCount,
-                parameters, parameterMap);
-
-        /*
-         * if(parameterMap!=null && !parameterMap.isEmpty()) { for (Map.Entry<String,
-         * String[]> entry : parameterMap.entrySet()) {
-         * log.error("entry.getKey():{}, entry.getValue():{}", entry.getKey(),
-         * entry.getValue());
-         * 
-         * //encode data
-         * dataProcessingUtil.encodeObjDataType(request.getParameter(entry.getKey()));
-         * 
-         * log.error("Final entry.getKey():{}, entry.getValue():{}", entry.getKey(),
-         * entry.getValue()); } }
-         */
-
-        /*
-         * for(int i = 0; i< parameters.length; i ++) { log.
-         * error("AuthorizationFilter Processing  Data -   parameters[i].getName():{} ,  parameters[i].getParameterizedType():{}, parameters[i].getType():{}"
-         * , parameters[i].getName() , parameters[i].getParameterizedType(),
-         * parameters[i].getType()); Object obj =
-         * dataProcessingUtil.encodeObjDataType(request.getAttribute(parameters[i].
-         * getName())); request.setAttribute(parameters[i].getName(), obj);
-         * 
-         * }
-         */
-    }
-/*
-    private void getEntityInputStream(ContainerRequestContext context) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        InputStream in = request.getInputStream();
-        final StringBuilder b = new StringBuilder();
-        try {
-            if (in.available() > 0) {
-                //ReaderWriter.writeTo(in, out);
-
-                byte[] requestEntity = out.toByteArray();
-                printEntity(b, requestEntity);
-
-              
-            }
-          
-        } catch (IOException ex) {
-            throw new  Exception(ex);
-        }
-    }
-    */
-    private void printEntity(StringBuilder b, byte[] entity) throws IOException {
-        if (entity.length == 0)
-            return;
-        b.append(new String(entity)).append("\n");
-        log.error("#### Intercepted Entity ####");
-        log.error(b.toString());
-    }
 }
