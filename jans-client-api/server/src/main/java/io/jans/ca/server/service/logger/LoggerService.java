@@ -20,7 +20,6 @@ public class LoggerService extends io.jans.service.logger.LoggerService {
 
     @Override
     public String getLoggingLevel() {
-        System.out.println("Logging Level : " + appConfiguration.getLoggingLevel());
         return appConfiguration.getLoggingLevel();
     }
 
@@ -32,7 +31,6 @@ public class LoggerService extends io.jans.service.logger.LoggerService {
 
     @Override
     public String getLoggingLayout() {
-        System.out.println("Logging Layout : " + appConfiguration.getLoggingLayout());
         return appConfiguration.getLoggingLayout();
     }
 

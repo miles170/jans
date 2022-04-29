@@ -77,15 +77,15 @@ public class Processor {
         if (command != null && command.getCommandType() != null) {
             switch (command.getCommandType()) {
                 case GET_RP_JWKS:
-                    operation = new GetRpJwksOperation(command, keyGeneratorService);
+                    return new GetRpJwksOperation(command, keyGeneratorService);
                 case GET_DISCOVERY:
-                    operation = new GetDiscoveryOperation(command, discoveryService);
+                    return new GetDiscoveryOperation(command, discoveryService);
                 case REGISTER_SITE:
-                    operation = new RegisterSiteOperation(command, rpService, discoveryService);
+                    return new RegisterSiteOperation(command, rpService, discoveryService);
                 case UPDATE_SITE:
-                    operation = new UpdateSiteOperation(command, rpService);
+                    return new UpdateSiteOperation(command, rpService);
                 case GET_CLIENT_TOKEN:
-                    operation = new GetClientTokenOperation(command, discoveryService);
+                    return new GetClientTokenOperation(command, discoveryService);
             }
             if (operation != null) {
                 operation.setValidationService(validationService);
