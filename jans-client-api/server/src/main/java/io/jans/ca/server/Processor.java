@@ -79,11 +79,13 @@ public class Processor {
                 case GET_RP_JWKS:
                     operation = new GetRpJwksOperation(command, keyGeneratorService);
                 case GET_DISCOVERY:
-                    return new GetDiscoveryOperation(command, discoveryService);
+                    operation = new GetDiscoveryOperation(command, discoveryService);
                 case REGISTER_SITE:
-                    return new RegisterSiteOperation(command, rpService, discoveryService);
+                    operation = new RegisterSiteOperation(command, rpService, discoveryService);
                 case UPDATE_SITE:
-                    return new UpdateSiteOperation(command, rpService);
+                    operation = new UpdateSiteOperation(command, rpService);
+                case GET_CLIENT_TOKEN:
+                    operation = new GetClientTokenOperation(command, discoveryService);
             }
             if (operation != null) {
                 operation.setValidationService(validationService);

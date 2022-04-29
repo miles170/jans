@@ -23,6 +23,7 @@ public class ApiApplication extends Application {
         classes.add(RpJwksResource.class);
         classes.add(GetDiscoveryResource.class);
         classes.add(SiteResource.class);
+        classes.add(GetClientTokenResource.class);
 
         return classes;
     }

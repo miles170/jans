@@ -172,4 +172,15 @@ public class DiscoveryService {
         return opHost;
     }
 
+    public HttpService getHttpService() {
+        return httpService;
+    }
+
+    public ValidationService getValidationService() {
+        return validationService;
+    }
+
+    public OpClientFactoryImpl getOpClientFactory() {
+        return opClientFactory;
+    }
 }

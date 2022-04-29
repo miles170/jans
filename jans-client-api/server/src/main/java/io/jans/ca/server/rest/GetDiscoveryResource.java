@@ -17,9 +17,9 @@ public class GetDiscoveryResource extends BaseResource {
     @Path("/get-discovery")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDiscovery(String params) {
-        logger.info("Api Resource: /get-rp-jwks  Params: {}", params);
+        logger.info("Api Resource: /get-discovery  Params: {}", params);
         String result = process(CommandType.GET_DISCOVERY, params, GetDiscoveryParams.class, null, null);
-        logger.info("Api Resource: /get-rp-jwks - result:{}", result);
+        logger.info("Api Resource: /get-discovery - result:{}", result);
 
         return Response.ok(result).build();
     }
