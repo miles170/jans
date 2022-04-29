@@ -2,9 +2,6 @@ package io.jans.ca.server.rest;
 
 import io.jans.ca.common.CommandType;
 import io.jans.ca.common.params.GetJwksParams;
-import io.jans.ca.server.Utils;
-import org.json.JSONObject;
-
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -18,9 +15,9 @@ public class RpJwksResource extends BaseResource {
     @Path("/get-rp-jwks")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRpJwks() {
-        logger.info("Api get-rp-jwks");
+        logger.info("Api Resource: get-rp-jwks");
         String result = process(CommandType.GET_RP_JWKS, null, GetJwksParams.class, null, null);
-        logger.info("Api get-rp-jwks - result:{}", result);
+        logger.info("Api Resource: get-rp-jwks - result:{}", result);
 
         return Response.ok(result).build();
     }

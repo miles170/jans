@@ -11,22 +11,20 @@ import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.common.response.POJOResponse;
 import io.jans.ca.server.HttpException;
 import io.jans.ca.server.Processor;
-import io.jans.ca.server.TracingUtil;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.jans.ca.server.configuration.model.ApiConf;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.service.RpSyncService;
 import io.jans.ca.server.service.ValidationService;
 import io.jans.ca.server.service.auth.ConfigurationService;
-import io.opentracing.Scope;
-import org.slf4j.Logger;
-
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -52,32 +50,29 @@ public class BaseResource {
         try {
             return Jackson2.createJsonMapper().readValue(params, clazz);
         } catch (IOException e) {
-            TracingUtil.errorLog(e);
             logger.error("Invalid params: " + params + " exception: {}", e.getMessage());
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity("Invalid parameters. Message: " + e.getMessage()).build());
         }
     }
 
     public <T extends IParams> String process(CommandType commandType, String paramsAsString, Class<T> paramsClass, String authorization, String AuthorizationRpId) {
-        try (Scope orderSpanScope = TracingUtil.buildSpan(commandType.toString(), true)) {
-            TracingUtil.setTag("end-point", httpRequest.getRequestURL().toString());
-            TracingUtil.log("Request parameters: " + paramsAsString);
-            TracingUtil.log("CommandType: " + commandType);
+        logger.info("Endpoint: {}", httpRequest.getRequestURL().toString());
+        logger.info("Request parameters: {}", paramsAsString);
+        logger.info("CommandType: {}", commandType);
 
-            validateIpAddressAllowed(httpRequest.getRemoteAddr());
-            Object forJsonConversion = getObjectForJsonConversion(commandType, paramsAsString, paramsClass, authorization, AuthorizationRpId);
-            String response = null;
+        validateIpAddressAllowed(httpRequest.getRemoteAddr());
+        Object forJsonConversion = getObjectForJsonConversion(commandType, paramsAsString, paramsClass, authorization, AuthorizationRpId);
+        String response = null;
 
-            if (commandType.getReturnType().equalsIgnoreCase(MediaType.APPLICATION_JSON)) {
-                response = Jackson2.asJsonSilently(forJsonConversion);
-            } else if (commandType.getReturnType().equalsIgnoreCase(MediaType.TEXT_PLAIN)) {
-                response = forJsonConversion.toString();
-            }
-
-            TracingUtil.log("Send back response: " + response);
-            logger.trace("Send back response: {}", response);
-            return response;
+        if (commandType.getReturnType().equalsIgnoreCase(MediaType.APPLICATION_JSON)) {
+            response = Jackson2.asJsonSilently(forJsonConversion);
+        } else if (commandType.getReturnType().equalsIgnoreCase(MediaType.TEXT_PLAIN)) {
+            response = forJsonConversion.toString();
         }
+
+        logger.info("Send back response: {}", response);
+        logger.trace("Send back response: {}", response);
+        return response;
     }
 
     private void validateIpAddressAllowed(String callerIpAddress) {

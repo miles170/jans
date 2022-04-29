@@ -8,12 +8,8 @@ import io.jans.ca.common.ErrorResponseCode;
 import io.jans.ca.common.params.IParams;
 import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.rs.protect.resteasy.Configuration;
-import io.jans.ca.server.op.BaseOperation;
-import io.jans.ca.server.op.GetRpJwksOperation;
-import io.jans.ca.server.op.IOperation;
-import io.jans.ca.server.service.KeyGeneratorService;
-import io.jans.ca.server.service.RpSyncService;
-import io.jans.ca.server.service.ValidationService;
+import io.jans.ca.server.op.*;
+import io.jans.ca.server.service.*;
 import io.jans.ca.server.service.auth.ConfigurationService;
 import io.jans.ca.server.utils.Convertor;
 import org.slf4j.Logger;
@@ -40,6 +36,11 @@ public class Processor {
     RpSyncService rpSyncService;
     @Inject
     KeyGeneratorService keyGeneratorService;
+    @Inject
+    DiscoveryService discoveryService;
+    @Inject
+    RpService rpService;
+
 
     public IOpResponse process(Command command) {
         if (command != null) {
@@ -77,6 +78,12 @@ public class Processor {
             switch (command.getCommandType()) {
                 case GET_RP_JWKS:
                     operation = new GetRpJwksOperation(command, keyGeneratorService);
+                case GET_DISCOVERY:
+                    return new GetDiscoveryOperation(command, discoveryService);
+                case REGISTER_SITE:
+                    return new RegisterSiteOperation(command, rpService, discoveryService);
+                case UPDATE_SITE:
+                    return new UpdateSiteOperation(command, rpService);
             }
             if (operation != null) {
                 operation.setValidationService(validationService);

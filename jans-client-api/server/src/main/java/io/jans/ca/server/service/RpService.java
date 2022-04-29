@@ -5,7 +5,11 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
+import io.jans.as.client.RegisterClient;
+import io.jans.as.client.RegisterRequest;
+import io.jans.ca.common.Jackson2;
 import io.jans.ca.server.configuration.model.Rp;
+import io.jans.ca.server.op.OpClientFactoryImpl;
 import io.jans.ca.server.persistence.service.PersistenceService;
 import io.jans.ca.server.persistence.service.PersistenceServiceImpl;
 import io.jans.ca.server.service.auth.ConfigurationService;
@@ -15,6 +19,8 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -37,6 +43,10 @@ public class RpService {
     ValidationService validationService;
     @Inject
     PersistenceServiceImpl persistenceService;
+    @Inject
+    OpClientFactoryImpl opClientFactory;
+    @Inject
+    HttpService httpService;
 
     private Cache<String, Rp> getRpCache() {
         if (rpCache != null) {
@@ -129,5 +139,20 @@ public class RpService {
             }
         }
         return null;
+    }
+
+    public Rp defaultRp() {
+        return configurationService.find().getDefaultSiteConfig();
+    }
+
+    public RegisterClient createRegisterClient(String registrationEndpoint, RegisterRequest registerRequest) {
+        RegisterClient registerClient = opClientFactory.createRegisterClient(registrationEndpoint);
+        registerClient.setRequest(registerRequest);
+        registerClient.setExecutor(httpService.getClientEngine());
+        return registerClient;
+    }
+
+    public ConfigurationService getConfigurationService() {
+        return configurationService;
     }
 }

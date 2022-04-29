@@ -132,6 +132,7 @@ public class KeyGeneratorService {
     public JSONWebKeySet getKeys() {
         ApiAppConfiguration configuration = getConfiguration();
         if (configuration.getEnableJwksGeneration()) {
+            logger.info("Keys found: {}", keys);
             if (keys != null && !keys.getKeys().isEmpty()) {
                 return this.keys;
             }
@@ -145,7 +146,7 @@ public class KeyGeneratorService {
             generateKeys();
             return this.keys;
         }
-        logger.info("Relying party JWKS generation is disabled in running jans_client_api instance. To enable it set `enable_jwks_generation` field to true in `client-api-server.yml`.");
+        logger.info("Relying party JWKS generation is disabled in running jans_client_api instance. To enable it set `enableJwksGeneration` field to true in ApiAppConfiguration.");
         throw new HttpException(ErrorResponseCode.JWKS_GENERATION_DISABLE);
     }
 
@@ -177,7 +178,7 @@ public class KeyGeneratorService {
 
     public JSONWebKeySet getKeysFromStorage() {
         ExpiredObject expiredObject = persistenceService.getExpiredObject(ExpiredObjectType.JWKS.getValue());
-
+        logger.info("Expired Object found from Storage: {}", expiredObject);
         if (expiredObject == null || Util.isNullOrEmpty(expiredObject.getValue())) {
             return null;
         }

@@ -8,9 +8,11 @@ package io.jans.ca.server.service.auth;
 
 import io.jans.as.common.service.common.ApplicationFactory;
 import io.jans.as.persistence.model.configuration.GluuConfiguration;
+import io.jans.ca.common.Jackson2;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.jans.ca.server.configuration.ConfigurationFactory;
 import io.jans.ca.server.configuration.model.ApiConf;
+import io.jans.ca.server.configuration.model.Rp;
 import io.jans.configapi.model.status.StatsData;
 import io.jans.orm.PersistenceEntryManager;
 import io.jans.util.StringHelper;
@@ -18,6 +20,9 @@ import io.jans.util.StringHelper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import org.slf4j.Logger;
+
+import java.io.IOException;
 
 import static io.jans.ca.server.configuration.ConfigurationFactory.CONFIGURATION_ENTRY_DN;
 
@@ -33,6 +38,9 @@ public class ConfigurationService {
 
     @Inject
     ConfigurationFactory configurationFactory;
+
+    @Inject
+    Logger logger;
     
     private StatsData statsData;
 
@@ -73,6 +81,6 @@ public class ConfigurationService {
 
     public void setStatsData(StatsData statsData) {
         this.statsData = statsData;
-    }    
-  
+    }
+
 }

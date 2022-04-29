@@ -21,6 +21,8 @@ public class ApiApplication extends Application {
                 // General
         classes.add(ApiHealthCheck.class);
         classes.add(RpJwksResource.class);
+        classes.add(GetDiscoveryResource.class);
+        classes.add(SiteResource.class);
 
         return classes;
     }

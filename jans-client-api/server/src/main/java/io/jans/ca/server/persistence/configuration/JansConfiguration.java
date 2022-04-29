@@ -1,5 +1,10 @@
 package io.jans.ca.server.persistence.configuration;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(
+        ignoreUnknown = true
+)
 public class JansConfiguration {
 
     private String baseDn;

@@ -60,17 +60,13 @@ public class ApiAppConfiguration implements Configuration {
     private Boolean idTokenValidationAtHashRequired = true;
     private Boolean idTokenValidationSHashRequired = false;
     private Boolean validateUserInfoWithIdToken = false;
-    private Boolean uma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient;
+    private Boolean uma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient;
     private Boolean addClientCredentialsGrantTypeAutomaticallyDuringClientRegistration = true;
     private String migrationSourceFolderPath;
     private List<String> allowedOpHosts = Lists.newArrayList();
     private String storage;
     private JsonNode storageConfiguration;
     private Rp defaultSiteConfig;
-    private String tracer;
-    private String tracerHost;
-    private int tracerPort = 5775;
-    private Boolean enableTracing = false;
     private ProxyConfiguration proxyConfiguration;
     private List<String> protectCommandsWithRpId;
     private int persistenceManagerRemoveCount = 1000;
@@ -458,12 +454,12 @@ public class ApiAppConfiguration implements Configuration {
         this.validateUserInfoWithIdToken = validateUserInfoWithIdToken;
     }
 
-    public Boolean getUma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient() {
-        return uma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient;
+    public Boolean getUma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient() {
+        return uma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient;
     }
 
-    public void setUma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient(Boolean uma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient) {
-        this.uma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient = uma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient;
+    public void setUma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient(Boolean uma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient) {
+        this.uma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient = uma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient;
     }
 
     public Boolean getAddClientCredentialsGrantTypeAutomaticallyDuringClientRegistration() {
@@ -514,39 +510,7 @@ public class ApiAppConfiguration implements Configuration {
         this.defaultSiteConfig = defaultSiteConfig;
     }
 
-    public String getTracer() {
-        return tracer;
-    }
-
-    public void setTracer(String tracer) {
-        this.tracer = tracer;
-    }
-
-    public String getTracerHost() {
-        return tracerHost;
-    }
-
-    public void setTracerHost(String tracerHost) {
-        this.tracerHost = tracerHost;
-    }
-
-    public int getTracerPort() {
-        return tracerPort;
-    }
-
-    public void setTracerPort(int tracerPort) {
-        this.tracerPort = tracerPort;
-    }
-
-    public Boolean getEnableTracing() {
-        return enableTracing;
-    }
-
-    public void setEnableTracing(Boolean enableTracing) {
-        this.enableTracing = enableTracing;
-    }
-
-    public ProxyConfiguration getProxyConfiguration() {
+     public ProxyConfiguration getProxyConfiguration() {
         return proxyConfiguration;
     }
 
@@ -705,17 +669,13 @@ public class ApiAppConfiguration implements Configuration {
                 ", idTokenValidationAtHashRequired=" + idTokenValidationAtHashRequired +
                 ", idTokenValidationSHashRequired=" + idTokenValidationSHashRequired +
                 ", validateUserInfoWithIdToken=" + validateUserInfoWithIdToken +
-                ", uma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient=" + uma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient +
+                ", uma2AuthRegisterClaimsGatheringEndpointAsRedirectUriOfClient=" + uma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient +
                 ", addClientCredentialsGrantTypeAutomaticallyDuringClientRegistration=" + addClientCredentialsGrantTypeAutomaticallyDuringClientRegistration +
                 ", migrationSourceFolderPath='" + migrationSourceFolderPath + '\'' +
                 ", allowedOpHosts=" + allowedOpHosts +
                 ", storage='" + storage + '\'' +
                 ", storageConfiguration=" + storageConfiguration +
                 ", defaultSiteConfig=" + defaultSiteConfig +
-                ", tracer='" + tracer + '\'' +
-                ", tracerHost='" + tracerHost + '\'' +
-                ", tracerPort=" + tracerPort +
-                ", enableTracing=" + enableTracing +
                 ", proxyConfiguration=" + proxyConfiguration +
                 ", protectCommandsWithRpId=" + protectCommandsWithRpId +
                 ", persistenceManagerRemoveCount=" + persistenceManagerRemoveCount +
