@@ -44,7 +44,7 @@ public class KeyGeneratorService {
 
     private JSONWebKeySet keys;
 
-    private AbstractCryptoProvider getCryptoProvider() throws KeyStoreException {
+    public AbstractCryptoProvider getCryptoProvider() throws KeyStoreException {
         ApiAppConfiguration configuration = getConfiguration();
         try {
             return new AuthCryptoProvider(configuration.getCryptProviderKeyStorePath(), configuration.getCryptProviderKeyStorePassword(), configuration.getCryptProviderDnName());

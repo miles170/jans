@@ -70,4 +70,8 @@ public class StateService {
 
         return expiredObject;
     }
+
+    public ConfigurationService getConfigurationService() {
+        return configurationService;
+    }
 }

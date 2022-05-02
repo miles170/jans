@@ -244,7 +244,7 @@ public class JansPersistenceService implements PersistenceService {
 
     public boolean remove(String rpId) {
         try {
-            this.persistenceEntryManager.remove(getDnForRp(rpId));
+            this.persistenceEntryManager.remove(getDnForRp(rpId), RpObject.class);
 
             LOG.debug("Removed rp successfully. rpId: {} ", rpId);
             return true;
@@ -256,7 +256,7 @@ public class JansPersistenceService implements PersistenceService {
 
     public boolean deleteExpiredObjectsByKey(String key) {
         try {
-            this.persistenceEntryManager.remove(getDnForExpiredObj(key));
+            this.persistenceEntryManager.remove(getDnForExpiredObj(key), ExpiredObject.class);
             LOG.debug("Removed expired_objects successfully: {} ", key);
             return true;
         } catch (Exception e) {

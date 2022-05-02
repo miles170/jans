@@ -12,6 +12,7 @@ import io.jans.ca.server.HttpException;
 import io.jans.ca.server.configuration.model.ApiConf;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.service.RpSyncService;
+import io.jans.ca.server.service.ServiceProvider;
 import io.jans.ca.server.service.ValidationService;
 import io.jans.ca.server.service.auth.ConfigurationService;
 import io.jans.ca.server.utils.Convertor;
@@ -21,7 +22,6 @@ import io.jans.ca.server.utils.Convertor;
  *
  * @author Yuriy Zabrovarnyy
  * @version 0.9, 09/08/2013
- *
  */
 
 public abstract class BaseOperation<T extends IParams> implements IOperation<T> {
@@ -30,9 +30,8 @@ public abstract class BaseOperation<T extends IParams> implements IOperation<T> 
     private final Class<T> parameterClass;
     private final T params;
 
-    private ConfigurationService configurationService;
-    private ValidationService validationService;
-    private RpSyncService rpSyncService;
+    private ServiceProvider serviceProvider;
+
     /**
      * Base constructor
      *
@@ -44,6 +43,17 @@ public abstract class BaseOperation<T extends IParams> implements IOperation<T> 
         this.params = Convertor.asParams(parameterClass, command);
     }
 
+    protected BaseOperation(Command command, ServiceProvider serviceProvider, Class<T> parameterClass) {
+        this.command = command;
+        this.parameterClass = parameterClass;
+        this.params = Convertor.asParams(parameterClass, command);
+        this.serviceProvider = serviceProvider;
+    }
+
+    public ValidationService getValidationService() {
+        return serviceProvider.getValidationService();
+    }
+
     @Override
     public Class<T> getParameterClass() {
         return parameterClass;
@@ -53,40 +63,17 @@ public abstract class BaseOperation<T extends IParams> implements IOperation<T> 
         return params;
     }
 
-    public ValidationService getValidationService() {
-        return validationService;
-    }
-
-    public void setValidationService(ValidationService validationService) {
-        this.validationService = validationService;
-    }
-
-    public RpSyncService getRpSyncService() {
-        return rpSyncService;
-    }
-
-    public void setRpSyncService(RpSyncService rpSyncService) {
-        this.rpSyncService = rpSyncService;
-    }
-
-    public ConfigurationService getConfigurationService() {
-        return configurationService;
-    }
-
-    public void setConfigurationService(ConfigurationService configurationService) {
-        this.configurationService = configurationService;
-    }
 
     public AuthCryptoProvider getCryptoProvider() throws Exception {
-        ApiConf conf = getConfigurationService().findConf();
+        ApiConf conf = serviceProvider.getConfigurationService().findConf();
         return new AuthCryptoProvider(conf.getDynamicConf().getCryptProviderKeyStorePath(), conf.getDynamicConf().getCryptProviderKeyStorePassword(), conf.getDynamicConf().getCryptProviderDnName());
     }
 
     public Rp getRp() {
         if (params instanceof HasRpIdParams) {
-            getValidationService().validate((HasRpIdParams) params);
+            serviceProvider.getValidationService().validate((HasRpIdParams) params);
             HasRpIdParams hasRpId = (HasRpIdParams) params;
-            return getRpSyncService().getRp(hasRpId.getRpId());
+            return serviceProvider.getRpSyncService().getRp(hasRpId.getRpId());
         }
         throw new HttpException(ErrorResponseCode.BAD_REQUEST_NO_RP_ID);
     }

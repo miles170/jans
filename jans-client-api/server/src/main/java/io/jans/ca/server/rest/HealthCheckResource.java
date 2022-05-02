@@ -15,7 +15,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("/health-check")
-public class ApiHealthCheck {
+public class HealthCheckResource {
 
     @Inject
     Logger logger;

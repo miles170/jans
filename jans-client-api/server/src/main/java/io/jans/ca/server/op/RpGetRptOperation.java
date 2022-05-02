@@ -35,7 +35,7 @@ public class RpGetRptOperation extends BaseOperation<RpGetRptParams> {
     private static final Logger LOG = LoggerFactory.getLogger(RpGetRptOperation.class);
     private UmaTokenService umaTokenService;
 
-    protected RpGetRptOperation(Command command, UmaTokenService umaTokenService) {
+    public RpGetRptOperation(Command command, UmaTokenService umaTokenService) {
         super(command, RpGetRptParams.class);
         this.umaTokenService = umaTokenService;
     }

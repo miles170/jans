@@ -7,17 +7,15 @@ import io.jans.ca.common.Command;
 import io.jans.ca.common.ErrorResponseCode;
 import io.jans.ca.common.params.IParams;
 import io.jans.ca.common.response.IOpResponse;
-import io.jans.ca.rs.protect.resteasy.Configuration;
 import io.jans.ca.server.op.*;
 import io.jans.ca.server.service.*;
 import io.jans.ca.server.service.auth.ConfigurationService;
 import io.jans.ca.server.utils.Convertor;
-import org.slf4j.Logger;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.WebApplicationException;
+import org.slf4j.Logger;
 
 /**
  * oxD operation processor.
@@ -40,6 +38,12 @@ public class Processor {
     DiscoveryService discoveryService;
     @Inject
     RpService rpService;
+    @Inject
+    StateService stateService;
+    @Inject
+    UmaTokenService umaTokenService;
+    @Inject
+    PublicOpKeyService publicOpKeyService;
 
 
     public IOpResponse process(Command command) {
@@ -72,26 +76,55 @@ public class Processor {
         throw HttpException.internalError();
     }
 
+    private ServiceProvider getServiceProvider() {
+        ServiceProvider serviceProvider = new ServiceProvider();
+        serviceProvider.setRpService(rpService);
+        serviceProvider.setConfigurationService(configurationService);
+        serviceProvider.setDiscoveryService(discoveryService);
+        serviceProvider.setValidationService(validationService);
+        serviceProvider.setHttpService(discoveryService.getHttpService());
+        serviceProvider.setRpSyncService(rpSyncService);
+        return serviceProvider;
+    }
+
     private IOperation<? extends IParams> create(Command command) {
-        BaseOperation operation = null;
+
         if (command != null && command.getCommandType() != null) {
             switch (command.getCommandType()) {
-                case GET_RP_JWKS:
-                    return new GetRpJwksOperation(command, keyGeneratorService);
-                case GET_DISCOVERY:
-                    return new GetDiscoveryOperation(command, discoveryService);
                 case REGISTER_SITE:
                     return new RegisterSiteOperation(command, rpService, discoveryService);
                 case UPDATE_SITE:
                     return new UpdateSiteOperation(command, rpService);
+                case REMOVE_SITE:
+                    return new RemoveSiteOperation(command, getServiceProvider());
                 case GET_CLIENT_TOKEN:
                     return new GetClientTokenOperation(command, discoveryService);
-            }
-            if (operation != null) {
-                operation.setValidationService(validationService);
-                operation.setRpSyncService(rpSyncService);
-                operation.setConfigurationService(configurationService);
-                return operation;
+                case GET_ACCESS_TOKEN_BY_REFRESH_TOKEN:
+                    return new GetAccessTokenByRefreshTokenOperation(command, discoveryService);
+                case INTROSPECT_ACCESS_TOKEN:
+                    return new IntrospectAccessTokenOperation(command, getServiceProvider());
+                case GET_USER_INFO:
+                    return new GetUserInfoOperation(command, getServiceProvider());
+                case GET_JWKS:
+                    return new GetJwksOperation(command, discoveryService);
+                case GET_DISCOVERY:
+                    return new GetDiscoveryOperation(command, discoveryService);
+                case GET_AUTHORIZATION_URL:
+                    return new GetAuthorizationUrlOperation(command, discoveryService, stateService, configurationService);
+                case GET_TOKENS_BY_CODE:
+                    return new GetTokensByCodeOperation(command, discoveryService, stateService, rpService, keyGeneratorService, publicOpKeyService);
+                case RS_PROTECT:
+                    return new RsProtectOperation(command, umaTokenService);
+                case RS_CHECK_ACCESS:
+                    return new RsCheckAccessOperation(command, umaTokenService);
+                case INTROSPECT_RPT:
+                    return new IntrospectRptOperation(command, getServiceProvider());
+                case RP_GET_RPT:
+                    return new RpGetRptOperation(command, umaTokenService);
+                case RP_GET_CLAIMS_GATHERING_URL:
+                    return new RpGetGetClaimsGatheringUrlOperation(command, discoveryService, stateService);
+                case GET_RP_JWKS:
+                    return new GetRpJwksOperation(command, keyGeneratorService);
             }
             logger.error("Command is not supported. Command: {}", command);
         } else {

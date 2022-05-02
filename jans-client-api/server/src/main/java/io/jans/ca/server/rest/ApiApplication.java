@@ -18,12 +18,15 @@ public class ApiApplication extends Application {
     @Override
     public Set<Class<?>> getClasses() {
         HashSet<Class<?>> classes = new HashSet<Class<?>>();
-                // General
-        classes.add(ApiHealthCheck.class);
+
+        classes.add(HealthCheckResource.class);
+
+        classes.add(OAuth20Resource.class);
+        classes.add(OpenIdConnectResource.class);
+        classes.add(UMA2ReourceServerResource.class);
+        classes.add(UMA2RelyingPartyResource.class);
+
         classes.add(RpJwksResource.class);
-        classes.add(GetDiscoveryResource.class);
-        classes.add(SiteResource.class);
-        classes.add(GetClientTokenResource.class);
 
         return classes;
     }

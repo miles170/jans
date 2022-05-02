@@ -362,4 +362,28 @@ public class UmaTokenService {
         }
         throw new RuntimeException("Failed to obtain Token, scopeType: " + scopeType + ", site: " + rp);
     }
+
+    public HttpService getHttpService() {
+        return httpService;
+    }
+
+    public OpClientFactoryImpl getOpClientFactory() {
+        return opClientFactory;
+    }
+
+    public IntrospectionService getIntrospectionService() {
+        return introspectionService;
+    }
+
+    public RpService getRpService() {
+        return rpService;
+    }
+
+    public DiscoveryService getDiscoveryService() {
+        return discoveryService;
+    }
+
+    public StateService getStateService() {
+        return stateService;
+    }
 }
