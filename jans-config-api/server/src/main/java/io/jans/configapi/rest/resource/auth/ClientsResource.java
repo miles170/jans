@@ -13,6 +13,7 @@ import io.jans.as.common.service.common.EncryptionService;
 import io.jans.as.common.service.common.InumService;
 import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.core.model.SearchRequest;
+import  io.jans.configapi.interceptor.RequestInterceptor;
 import io.jans.configapi.service.auth.ClientService;
 import io.jans.configapi.service.auth.ConfigurationService;
 import io.jans.configapi.util.ApiAccessConstants;
@@ -43,6 +44,7 @@ import org.slf4j.Logger;
  *
  */
 
+@RequestInterceptor
 @Path(ApiConstants.OPENID + ApiConstants.CLIENTS)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)

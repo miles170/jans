@@ -58,8 +58,8 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 
-@Provider
 @Interceptor
+@RequestInterceptor
 @Priority(Interceptor.Priority.APPLICATION)
 public class RequestReaderInterceptor  {
 
