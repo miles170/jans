@@ -6,11 +6,12 @@
 
 package io.jans.configapi.interceptor;
 
-import io.jans.as.common.model.common.User;
+//import io.jans.as.common.model.common.User;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.jans.configapi.core.interceptor.RequestInterceptor;
 import io.jans.configapi.core.util.Jackson;
 import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.core.util.DataUtil;
@@ -182,9 +183,9 @@ public class RequestReaderInterceptor  {
                 logger.error("RequestReaderInterceptor -  Processing  Data -  propertyName,{}, clazz.getClass():{}, clazz:{} , obj:{} , obj.getClass():{}",
                         propertyName, clazz.getClass(), clazz, parameters[i].getName(), obj, obj.getClass());
 
-                User user = new User();
-                user = Jackson.getObject(jsonNode, user);
-                logger.error("user:{} , user.getUserId():{}", user, user.getUserId());
+               //User user = new User();
+                //user = Jackson.getObject(jsonNode, user);
+                //logger.error("user:{} , user.getUserId():{}", user, user.getUserId());
                 
                 obj = Jackson.getObject(jsonNode, obj);
                 logger.error("obj:{} , obj.getClass():{},  dataProcessingUtil:{}", obj, obj.getClass(), dataProcessingUtil);

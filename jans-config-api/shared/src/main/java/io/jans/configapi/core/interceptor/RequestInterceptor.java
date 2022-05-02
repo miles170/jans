@@ -4,7 +4,7 @@
  * Copyright (c) 2020, Janssen Project
  */
 
-package io.jans.configapi.interceptor;
+package io.jans.configapi.core.interceptor;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
