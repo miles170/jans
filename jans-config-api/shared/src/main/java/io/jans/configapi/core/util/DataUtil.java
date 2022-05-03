@@ -10,6 +10,8 @@ import io.jans.util.StringHelper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -73,6 +75,14 @@ public class DataUtil {
     public static Object getValue(Object object, String property) throws MappingException {
         logger.error("Get value from object:{} for property:{} ", object, property);
         return ReflectHelper.getValue(object, property);
+    }
+
+    public static Method getSetter(String fieldName, Class clazz) throws Exception{
+        PropertyDescriptor[] props = Introspector.getBeanInfo(clazz).getPropertyDescriptors();
+        for (PropertyDescriptor p : props)
+            if (p.getName().equals(fieldName))
+                return p.getWriteMethod();
+        return null;
     }
 
     public static Object invokeMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes)
@@ -209,13 +219,19 @@ public class DataUtil {
             logger.error("getterMethod:{}, getValue(obj:{},entryData.getKey():{}) ->:{} ", getterMethod, obj,
                     entryData.getKey(), getValue(obj, entryData.getKey()));
 
-            Object propertyValue = getterMethod.get(obj);
-            logger.error("key:{}, propertyValue:{} , getterMethod.getReturnType():{},", entryData.getKey(),
+            Object propertyValue = getterMethod.getMethod().invoke(obj);
+            logger.error("from getterMethod() method -  key:{}, propertyValue:{} , getterMethod.getReturnType():{},", entryData.getKey(),
+                    propertyValue, getterMethod.getReturnType());
+
+            
+            propertyValue = getValue(obj, entryData.getKey());
+            logger.error("from getValue() method - key:{}, propertyValue:{} , getterMethod.getReturnType():{},", entryData.getKey(),
                     propertyValue, getterMethod.getReturnType());
 
             // Invoke encode method
             propertyValue = getEncodeMethod(entryData.getKey(), dataTypeConverterClassName, encoderMap, propertyValue);
-            logger.error("key:{}, propertyValue:{} ", entryData.getKey(), propertyValue);
+            logger.error("After encoding value key:{}, propertyValue:{}  ", entryData.getKey(), propertyValue);
+            
 
             Setter setterMethod = getSetterMethod(obj.getClass(), entryData.getKey());
             propertyValue = setterMethod.getMethod().invoke(obj, propertyValue);

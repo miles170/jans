@@ -170,7 +170,7 @@ public class RequestReaderInterceptor {
                 logger.error("propertyName:{}, clazz:{} , clazz.isPrimitive():{} ", propertyName, clazz,
                         clazz.isPrimitive());
 
-                Object obj = null;
+                Object obj = ctxParameters[i];
                 if (!clazz.isPrimitive()) {
                     obj = clazz.cast(dataProcessingUtil.getInstance(clazz));
 
@@ -178,16 +178,21 @@ public class RequestReaderInterceptor {
                             "RequestReaderInterceptor -  Processing  Data -  propertyName:{}, clazz.getClass():{}, clazz:{} , obj:{} , obj.getClass():{}",
                             propertyName, clazz.getClass(), clazz, parameters[i].getName(), obj, obj.getClass());
 
-                    try {
-                        obj = dataProcessingUtil.encodeObjDataType(obj);
-                        logger.error("RequestReaderInterceptor -  Data  after encoding -  obj:{}", obj);
-                    } catch (Exception ex) {
-                        logger.error("Exception while data conversion ", ex.getMessage());
-                    }
+                    performDataConversion(obj);
 
                 }
             }
         }
+    }
+    
+    private <T> T performDataConversion(T obj) {
+        try {
+            obj = dataProcessingUtil.encodeObjDataType(obj);
+            logger.error("RequestReaderInterceptor -  Data  after encoding -  obj:{}", obj);
+        } catch (Exception ex) {
+            logger.error("Exception while data conversion ", ex.getMessage());
+        }
+        return obj;
     }
 
 }
