@@ -37,9 +37,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.Collection;
@@ -88,59 +88,107 @@ public class RequestReaderInterceptor  {
     @SuppressWarnings({ "all" })
     @AroundInvoke    
     public Object aroundReadFrom(InvocationContext context) throws Exception {
-        System.out.println("\n\n\n RequestReaderInterceptor: entry - log:{} " + log + " logger:{} " + logger
-                + " ,  request:{} " + request + "  info:{} " + info + " , context:{} " + context+" , dataProcessingUtil = "+dataProcessingUtil);
+        System.out.println("\n\n\n RequestReaderInterceptor: entry - log=" + log + " logger=" + logger
+                + " ,  request:{} " + request + "  info:{} " + info + ". resourceInfo="+resourceInfo+" , context:{} " + context+" , dataProcessingUtil = "+dataProcessingUtil);
         try {
         logger.error(
                 "======================= RequestReaderInterceptor Performing DataType Conversion ============================");
-
-        // general
-        logger.error(
-                " request.getMethod()():{}, request.getRemoteAddr():{},  info.getPath():{} , context.getMethod():{}",
-                request.getMethod(), request.getRemoteAddr(), info.getPath(), context.getMethod());
-
+        
         // context
         logger.error(
                 "======ReaderInterceptorContext - context.getClass():{}, context.getConstructor(), context.getContextData():{},  context.getMethod():{},  context.getParameters():{}, context.getTarget():{}, context.getInputStream():{} ",
                 context.getClass(), context.getConstructor(), context.getContextData(), context.getMethod(), context.getParameters(),
                 context.getTarget());
 
-        // request
-        logger.error(
-                "======ReaderInterceptorContext - request.getMethod():{}, request.getAttributeNames():{},  request.getParameterMap():{}, request.getParameterNames():{} ",
-                request.getMethod(), request.getAttributeNames(), request.getParameterMap(),
-                request.getParameterNames());
-
+       
         // resourceInfo
+       /*
         logger.error(
                 "======ReaderInterceptorContext - resourceInfo:{}, resourceInfo.getResourceMethod():{} , getResourceMethod().getParameterCount():{}, resourceInfo.getResourceMethod().getParameters(), resourceInfo.getResourceMethod().getParameterTypes():{}",
                 resourceInfo, resourceInfo.getResourceMethod(), resourceInfo.getResourceMethod().getParameterCount(),
                 resourceInfo.getResourceMethod().getParameters(), resourceInfo.getResourceMethod().getParameterTypes());
+                */
 
-        boolean contains = Arrays.stream(IGNORE_METHODS).anyMatch(request.getMethod()::equals);
-        logger.error("====== request.getMethod():{} present in ignoreList contains:{}", request.getMethod(), contains);
+        boolean contains = Arrays.stream(IGNORE_METHODS).anyMatch(context.getMethod()::equals);
+        logger.error("====== context.getMethod():{} present in ignoreList contains:{}", context.getMethod(), contains);
         if (contains) {
             logger.error("====== Exiting ReaderInterceptorContext as no action required for {} method. ======",
-                    request.getMethod());
+                    context.getMethod());
             return context.proceed();
         }
 
+        Object createdObject = context.getTarget();
+        logger.error("====== createdObject:{] , createdObject.getClass():{}", createdObject, createdObject.getClass());
         /*
          * JsonNode jsonNode = readObject(context);
          * logger.error("====== ReaderInterceptorContext jsonNode:{} ",jsonNode);
          * processRequest(context, jsonNode);
          */
+        
+        processRequest(context);
 
-        String jsonNode = readObject(context);
-        logger.error("====== ReaderInterceptorContext jsonNode:{} ", jsonNode);
-        processRequest(context, jsonNode);
+        //String jsonNode = readObject(context);
+        //logger.error("====== ReaderInterceptorContext jsonNode:{} ", jsonNode);
+        //processRequest(context, jsonNode);
         } catch (Exception ex) {
             throw new WebApplicationException(ex);
         }
         return context.proceed();
     }
+    
+   
+    private void processRequest(InvocationContext context) throws IOException,IllegalAccessException, InstantiationException {
+        logger.error("ReaderInterceptorContext Data -  context:{} , context.getClass():{}, context.getContextData():{}, context.getMethod():{} , context.getParameters():{} , context.getTarget():{} ", context, context.getClass(), context.getContextData(), context.getMethod(), context.getParameters(), context.getTarget());
+        
+        Object beanInstance = context.getTarget();
+        logger.error("RequestReaderInterceptor - Processing  Data -  beanInstance:{} ", beanInstance);
+        
+        Object[] ctxParameters = context.getParameters();
+        logger.error("RequestReaderInterceptor - Processing  Data -  ctxParameters:{} ", ctxParameters);
+        
+        Method method = context.getMethod();
+        logger.error("RequestReaderInterceptor - Processing  Data -  method:{} ", method, method.getParameterCount());
+        
+        int paramCount = method.getParameterCount();
+        Parameter[] parameters = method.getParameters();
+        Class[] clazzArray = method.getParameterTypes();
 
-    private String readObject(InvocationContext context) throws WebApplicationException {
+        logger.error("RequestReaderInterceptor - Processing  Data -  paramCount:{} , parameters:{}, clazzArray:{} , dataProcessingUtil:{}", paramCount,
+                parameters, clazzArray,dataProcessingUtil);
+
+        if (clazzArray != null && clazzArray.length > 0) {
+            for (int i = 0; i < clazzArray.length; i++) {
+                Class<?> clazz = clazzArray[i];
+                String propertyName = parameters[i].getName();
+                logger.error("propertyName:{}, clazz:{} , clazz.isPrimitive():{} ", propertyName, clazz, clazz.isPrimitive());
+
+                Object obj = null;
+                if(!clazz.isPrimitive()){
+                   obj = clazz.cast(getInstance(clazz));                    
+                
+                logger.error("RequestReaderInterceptor -  Processing  Data -  propertyName:{}, clazz.getClass():{}, clazz:{} , obj:{} , obj.getClass():{}",
+                        propertyName, clazz.getClass(), clazz, parameters[i].getName(), obj, obj.getClass());
+
+                obj = dataProcessingUtil.encodeObjDataType(obj);
+                logger.error("RequestReaderInterceptor -  Data  after encoding -  obj:{}",obj);
+                
+               //User user = new User();
+                //user = Jackson.getObject(jsonNode, user);
+                //logger.error("user:{} , user.getUserId():{}", user, user.getUserId());
+                
+                //obj = Jackson.getObject(jsonNode, obj);
+                //ogger.error("obj:{} , obj.getClass():{},  dataProcessingUtil:{}", obj, obj.getClass(), dataProcessingUtil);
+                
+                // encode data
+                //context.setProperty(propertyName, dataProcessingUtil.encodeObjDataType(clazz));
+                //logger.error("Final context.getProperty(propertyName):{} ", context.getProperty(propertyName));
+                }
+            }
+        }
+    }
+
+
+    private String readObject_1(InvocationContext context) throws WebApplicationException {
         logger.error("======ReaderInterceptorContext - readObject() - context:{}, context.getType() ", context);
         JsonNode jsonNode = null;
         String entityStr = null;
@@ -164,7 +212,7 @@ public class RequestReaderInterceptor  {
         return entityStr;
     }
 
-    private void processRequest(InvocationContext context, String jsonNode) throws IOException,IllegalAccessException, InstantiationException {
+    private void processRequest_1(InvocationContext context, String jsonNode) throws IOException,IllegalAccessException, InstantiationException {
         logger.error("ReaderInterceptorContext Data -  context:{} , jsonNode:{} ", context, jsonNode);
         int paramCount = resourceInfo.getResourceMethod().getParameterCount();
         Parameter[] parameters = resourceInfo.getResourceMethod().getParameters();
