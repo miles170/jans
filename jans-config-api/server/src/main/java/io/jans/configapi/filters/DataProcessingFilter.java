@@ -91,7 +91,7 @@ public class DataProcessingFilter implements ContainerRequestFilter {
             int n = values.length;
                 for(int i=0; i < n; i++) {
                  //values[i] = values[i].replaceAll("[^\\dA-Za-z ]","").replaceAll("\\s+","+").trim();   
-                    dataProcessingUtil.encodeObjDataType(null);
+                    //dataProcessingUtil.encodeObjDataType(null);
                 }
             }
     }

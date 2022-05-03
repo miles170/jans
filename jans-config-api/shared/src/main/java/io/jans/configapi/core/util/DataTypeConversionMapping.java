@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 public class DataTypeConversionMapping {
+    
+    /**
+     * Name of the class to be used for DataType conversion
+     */
+    private String dataTypeConverterClassName;
 
     /**
      * Accepatable dateFormat
@@ -25,10 +30,15 @@ public class DataTypeConversionMapping {
      */
     private Map<String, List<String>> exclusion;
     
-    /**
-     * Name of the class to be used for DataType conversion
-     */
-    private String dataTypeConverterClassName;
+    
+
+    public String getDataTypeConverterClassName() {
+        return dataTypeConverterClassName;
+    }
+
+    public void setDataTypeConverterClassName(String dataTypeConverterClassName) {
+        this.dataTypeConverterClassName = dataTypeConverterClassName;
+    }
     
     public String getDateFormat() {
         return dateFormat;
@@ -62,18 +72,9 @@ public class DataTypeConversionMapping {
         this.exclusion = exclusion;
     }
 
-    public String getDataTypeConverterClassName() {
-        return dataTypeConverterClassName;
-    }
-
-    public void setDataTypeConverterClassName(String dataTypeConverterClassName) {
-        this.dataTypeConverterClassName = dataTypeConverterClassName;
-    }
-
     @Override
     public String toString() {
-        return "DataTypeConversionMapping [dateFormat=" + dateFormat + ", encoder=" + encoder + ", decoder=" + decoder
-                + ", exclusion=" + exclusion + ", dataTypeConverterClassName=" + dataTypeConverterClassName + "]";
-    }    
-
+        return "DataTypeConversionMapping [dataTypeConverterClassName=" + dataTypeConverterClassName + ", dateFormat="
+                + dateFormat + ", encoder=" + encoder + ", decoder=" + decoder + ", exclusion=" + exclusion + "]";
+    }
 }
