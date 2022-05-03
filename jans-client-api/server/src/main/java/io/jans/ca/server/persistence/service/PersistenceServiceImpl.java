@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.Set;
 
 /**
@@ -40,19 +41,17 @@ public class PersistenceServiceImpl {
     private PersistenceService createServiceInstance() {
         ApiConf apiConf = this.configurationService.findConf();
         String storage = apiConf.getDynamicConf().getStorage();
+        //Only jans_server persistence and h2(local file db) are supported
         switch (storage) {
+            case "jans_server_configuration":
+                return new JansPersistenceService(apiConf.getDynamicConf());
             case "h2":
                 this.sqlProvider = new H2PersistenceProvider(this.configurationService);
                 return new SqlPersistenceServiceImpl(this.sqlProvider, this.configurationService);
-            case "redis":
-                return new RedisPersistenceService(apiConf.getDynamicConf());
-            case "jans_server_configuration":
-                return new JansPersistenceService(apiConf.getDynamicConf());
-            case "sql":
-            case "spanner":
-            case "ldap":
-            case "couchbase":
-                return new JansPersistenceService(apiConf.getDynamicConf(), storage);
+//            case "redis":
+//                return new RedisPersistenceService(apiConf.getDynamicConf());
+//            case "couchbase":
+//                return new JansPersistenceService(apiConf.getDynamicConf(), storage);
         }
         throw new RuntimeException("Failed to create persistence provider. Unrecognized storage specified: " + storage + ", full configuration: " + this.configurationService.findConf());
     }
