@@ -116,16 +116,7 @@ public class DataProcessingFilter implements ContainerRequestFilter {
                         request.getMethod());
             }
 
-            /*
-             * JsonNode jsonNode = readObject(context);
-             * log.error("====== ReaderInterceptorContext jsonNode:{} ",jsonNode);
-             * processRequest(context, jsonNode);
-             */
-
-            String jsonNode = readObject(context);
-            log.error("====== ReaderInterceptorContext jsonNode:{} ", jsonNode);
-            processRequest(context, jsonNode);
-
+       
             log.error("======DataType Conversion SUCCESS===========================================");
         } catch (Exception ex) {
             log.error("======DataType Conversion FAILED ===========================================", ex);
@@ -168,6 +159,8 @@ public class DataProcessingFilter implements ContainerRequestFilter {
         log.error(
                 "DataProcessingFilter - Processing  Data -  paramCount:{} , parameters:{}, clazzArray:{} , dataProcessingUtil:{}",
                 paramCount, parameters, clazzArray, dataProcessingUtil);
+        
+        
 
         if (clazzArray != null && clazzArray.length > 0) {
             for (int i = 0; i < clazzArray.length; i++) {
@@ -175,24 +168,7 @@ public class DataProcessingFilter implements ContainerRequestFilter {
                 String propertyName = parameters[i].getName();
                 log.error("propertyName:{}, clazz:{} ", propertyName, clazz);
 
-                Object obj = getInstance(clazz);
-                log.error(
-                        "DataProcessingFilter -  Processing  Data -  propertyName,{}, clazz.getClass():{}, clazz:{} , obj:{} , obj.getClass():{}",
-                        propertyName, clazz.getClass(), clazz, parameters[i].getName(), obj, obj.getClass());
-
-                User user = new User();
-                user = Jackson.getObject(jsonNode, user);
-                log.error("user:{} , user.getUserId():{}", user, user.getUserId());
-
-                obj = Jackson.getObject(jsonNode, obj);
-                log.error("obj:{} , obj.getClass():{},  dataProcessingUtil:{}", obj, obj.getClass(),
-                        dataProcessingUtil);
-
-                // encode data
-                // context.setProperty(propertyName,
-                // dataProcessingUtil.encodeObjDataType(clazz));
-                // log.error("Final context.getProperty(propertyName):{} ",
-                // context.getProperty(propertyName));
+                T obj = read(context.getEntityStream(), getInstance(clazz));
                 performDataConversion(obj);
             }
         }
@@ -235,26 +211,7 @@ public class DataProcessingFilter implements ContainerRequestFilter {
         }
         return values;
     }
-
-    private void processData() {
-        log.error(
-                "DataProcessingFilter - Processing  Data -  request.getAttributeNames():{} , request.getParameterNames():{} ",
-                request.getAttributeNames(), request.getParameterNames());
-        for (Enumeration en = request.getAttributeNames(); en.hasMoreElements();) {
-            String name = (String) en.nextElement();
-            log.error(" name:{} ", name);
-            String values[] = request.getParameterValues(name);
-            log.error(" values:{} ", values);
-            int n = values.length;
-            for (int i = 0; i < n; i++) {
-                // values[i] = values[i].replaceAll("[^\\dA-Za-z
-                // ]","").replaceAll("\\s+","+").trim();
-                // dataProcessingUtil.encodeObjDataType(null);
-            }
-        }
-    }
-    
-    
+       
     private <T> T performDataConversion(T obj) {
         try {
             logger.error("DataProcessingFilter -  Data  for encoding -  obj:{} ", obj);
