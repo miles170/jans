@@ -1,5 +1,6 @@
 package io.jans.configapi.core.util;
 
+import io.jans.as.common.model.common.User;
 import io.jans.as.model.json.JsonApplier;
 import io.jans.configapi.core.util.Jackson;
 import io.jans.orm.exception.MappingException;
@@ -34,6 +35,8 @@ import jakarta.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class DataUtil {
@@ -210,6 +213,14 @@ public class DataUtil {
                 || encoderMap.isEmpty()) {
             return obj;
         }
+        
+        User user = new User();
+        if(obj instanceof User) {
+            user = (User) obj;
+            logger.error("user:{} , user.getUserId():{} , user.getCreatedAt():{}", user, user.getUserId(), user.getCreatedAt());
+        }
+       
+        
 
         logger.error("isKeyPresentInMap(entryData.getValue():{}, encoderMap:{}):{} ", entryData.getValue(), encoderMap,
                 isKeyPresentInMap(entryData.getValue(), encoderMap));
@@ -219,6 +230,7 @@ public class DataUtil {
             logger.error("getterMethod:{}, getValue(obj:{},entryData.getKey():{}) ->:{} ", getterMethod, obj,
                     entryData.getKey(), getValue(obj, entryData.getKey()));
 
+            
             Object propertyValue = getterMethod.getMethod().invoke(obj);
             logger.error("from getterMethod() method -  key:{}, propertyValue:{} , getterMethod.getReturnType():{},", entryData.getKey(),
                     propertyValue, getterMethod.getReturnType());
@@ -375,6 +387,10 @@ public class DataUtil {
         T t = type.cast(o);
         return t;
     }
+    
+    public static <T> String getJsonString(T obj) throws IOException {
+        return Jackson.getJsonString(obj);
+    }
 
     public static <T> T read(InputStream inputStream, T obj) throws IOException {
         return Jackson.read(inputStream, obj);
@@ -402,6 +418,14 @@ public class DataUtil {
         }
         return null;
 
+    }
+    
+    public static <T> T convertInstanceOfObject(Object o, Class<T> clazz) {
+        try {
+            return clazz.cast(o);
+        } catch(ClassCastException e) {
+            return null;
+        }
     }
 
 }

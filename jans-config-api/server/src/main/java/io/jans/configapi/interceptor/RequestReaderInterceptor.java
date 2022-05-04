@@ -148,6 +148,8 @@ public class RequestReaderInterceptor {
 
         Object beanInstance = context.getTarget();
         logger.error("RequestReaderInterceptor - Processing  Data -  beanInstance:{} ", beanInstance);
+        String json = getJsonString(beanInstance);
+        logger.error("RequestReaderInterceptor - target -  json:{} ", json);
 
         Object[] ctxParameters = context.getParameters();
         logger.error("RequestReaderInterceptor - Processing  Data -  ctxParameters:{} ", ctxParameters);
@@ -173,6 +175,11 @@ public class RequestReaderInterceptor {
                 Object obj = ctxParameters[i];
                 if (!clazz.isPrimitive()) {
                     obj = clazz.cast(dataProcessingUtil.getInstance(clazz));
+                    json = getJsonString(obj);
+                    logger.error("RequestReaderInterceptor final - obj -  json:{} ", json);
+                    
+                    json = getJsonString(obj);
+                    logger.error("RequestReaderInterceptor - obj -  json:{} ", json);
 
                     logger.error(
                             "RequestReaderInterceptor -  Processing  Data -  propertyName:{}, clazz.getClass():{}, clazz:{} , obj:{} , obj.getClass():{}",
@@ -188,11 +195,22 @@ public class RequestReaderInterceptor {
     private <T> T performDataConversion(T obj) {
         try {
             obj = dataProcessingUtil.encodeObjDataType(obj);
-            logger.error("RequestReaderInterceptor -  Data  after encoding -  obj:{}", obj);
+            logger.error("RequestReaderInterceptor -  Data  after encoding -  obj:{} , obj.getClass():{}", obj, obj.getClass());            
         } catch (Exception ex) {
             logger.error("Exception while data conversion ", ex.getMessage());
         }
         return obj;
+    }
+    
+    private <T> String getJsonString(T obj) {
+        String jsonStr = null;
+        try {
+            jsonStr = dataProcessingUtil.getJsonString(obj);
+            logger.error("RequestReaderInterceptor -  Object string -  sonStr:{}", jsonStr);            
+        } catch (Exception ex) {
+            logger.error("Exception while data conversion ", ex.getMessage());
+        }
+        return jsonStr;
     }
 
 }

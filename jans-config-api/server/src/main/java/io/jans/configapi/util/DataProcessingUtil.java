@@ -47,7 +47,7 @@ public class DataProcessingUtil {
    
     public <T> T encodeObjDataType(T obj) throws ClassNotFoundException, IllegalAccessException, InstantiationException, IllegalArgumentException,
     InvocationTargetException {
-        log.error("Encode DataType for obj:{} using dataTypeConversionMap:{} ", obj, getDataTypeConversionMapping());
+        log.error("Encode DataType for obj:{} using dataTypeConversionMap:{} ", obj,  getDataTypeConversionMapping());
         if (obj == null) {
             return (T) obj;
         }
@@ -57,6 +57,10 @@ public class DataProcessingUtil {
         log.error("Data after encoding - obj:{}", obj);
 
         return obj;
+    }
+
+    public static <T> T convertInstanceOfObject(Object o, Class<T> clazz) {
+        return DataUtil.convertInstanceOfObject(o, clazz);
     }
 
     public Object getObjectInstance(String name) throws  ClassNotFoundException, IllegalAccessException, InstantiationException {
@@ -69,6 +73,10 @@ public class DataProcessingUtil {
     
     public <T> T read(InputStream inputStream, T obj) throws IOException {
         return DataUtil.read(inputStream, obj);        
+    }
+    
+    public <T> String getJsonString(T obj) throws IOException {
+        return DataUtil.getJsonString(obj);
     }
     
 

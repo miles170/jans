@@ -1,4 +1,5 @@
 io.jans.configapi.filters.AuthorizationFilter
 io.jans.configapi.filters.LoggingFilter
+io.jans.configapi.filters.DataProcessingFilter
 
 
