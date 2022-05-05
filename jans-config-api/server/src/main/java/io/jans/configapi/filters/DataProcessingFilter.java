@@ -6,7 +6,10 @@
 
 package io.jans.configapi.filters;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jackson.JacksonUtils;
 
 import io.jans.as.common.model.common.User;
 import io.jans.configapi.util.DataProcessingUtil;
@@ -116,7 +119,7 @@ public class DataProcessingFilter implements ContainerRequestFilter {
                         request.getMethod());
             }
 
-       
+            processRequest(context);
             log.error("======DataType Conversion SUCCESS===========================================");
         } catch (Exception ex) {
             log.error("======DataType Conversion FAILED ===========================================", ex);
@@ -149,9 +152,9 @@ public class DataProcessingFilter implements ContainerRequestFilter {
         return entityStr;
     }
 
-    private void processRequest(ContainerRequestContext context, String jsonNode)
-            throws IOException, IllegalAccessException, InstantiationException {
-        log.error("ReaderInterceptorContext Data -  context:{} , jsonNode:{} ", context, jsonNode);
+    private void processRequest(ContainerRequestContext context)
+            throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        log.error("ReaderInterceptorContext Data -  context:{} ", context);
         int paramCount = resourceInfo.getResourceMethod().getParameterCount();
         Parameter[] parameters = resourceInfo.getResourceMethod().getParameters();
         Class[] clazzArray = resourceInfo.getResourceMethod().getParameterTypes();
@@ -166,10 +169,12 @@ public class DataProcessingFilter implements ContainerRequestFilter {
             for (int i = 0; i < clazzArray.length; i++) {
                 Class<?> clazz = clazzArray[i];
                 String propertyName = parameters[i].getName();
-                log.error("propertyName:{}, clazz:{} ", propertyName, clazz);
+               
+                log.error("propertyName:{}, clazz:{}, request.getParameter(propertyName):{} ", propertyName, clazz, request.getParameter(propertyName));
 
-                T obj = read(context.getEntityStream(), getInstance(clazz));
-                performDataConversion(obj);
+                String jsonStr = readObject(context);
+                log.error("Getting object for jsonStr:{}",jsonStr);
+                performDataConversion(getObject(jsonStr,readObject(clazz)));
             }
         }
     }
@@ -179,9 +184,9 @@ public class DataProcessingFilter implements ContainerRequestFilter {
         InputStream inputStream = request.getInputStream();
         T obj = (T) getObjectInstance(clazz.getName());
         log.error("getObjectInstance - obj:{} ", obj.getClass());
-        obj = (T) getInstance(clazz);
-        log.error("getInstance - obj:{}", obj);
-        return read(inputStream, obj);
+        //obj = (T) getInstance(clazz);
+        //log.error("getInstance - obj:{}", obj);
+        return obj;
 
     }
 
@@ -202,6 +207,7 @@ public class DataProcessingFilter implements ContainerRequestFilter {
         return Jackson.read(inputStream, obj);
     }
 
+    
     public String[] getParameterValues(String paramName) {
         String values[] = getParameterValues(paramName);
         if ("dangerousParamName".equals(paramName)) {
@@ -235,5 +241,13 @@ public class DataProcessingFilter implements ContainerRequestFilter {
         return jsonStr;
     }
 
+    private <T> T castObject(Object obj, Class<T> clazz) {
+        T t = (T) clazz.cast(obj);
+        return t;
+    }
+
+    public static <T> T getObject(String jsonString, T obj) throws IOException {       
+        return (T) Jackson.getObject(jsonString, obj);
+    }
 
 }

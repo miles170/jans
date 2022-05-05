@@ -217,7 +217,7 @@ public class DataUtil {
         User user = new User();
         if(obj instanceof User) {
             user = (User) obj;
-            logger.error("user:{} , user.getUserId():{} , user.getCreatedAt():{}", user, user.getUserId(), user.getCreatedAt());
+            logger.error("\n\n\n\n user:{} , user.getUserId():{} , user.getCreatedAt():{}", user, user.getUserId(), user.getCreatedAt());
         }
        
         

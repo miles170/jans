@@ -100,16 +100,6 @@ public class RequestReaderInterceptor {
                     context.getClass(), context.getConstructor(), context.getContextData(), context.getMethod(),
                     context.getParameters(), context.getTarget());
 
-            // resourceInfo
-            /*
-             * logger.error(
-             * "======ReaderInterceptorContext - resourceInfo:{}, resourceInfo.getResourceMethod():{} , getResourceMethod().getParameterCount():{}, resourceInfo.getResourceMethod().getParameters(), resourceInfo.getResourceMethod().getParameterTypes():{}"
-             * , resourceInfo, resourceInfo.getResourceMethod(),
-             * resourceInfo.getResourceMethod().getParameterCount(),
-             * resourceInfo.getResourceMethod().getParameters(),
-             * resourceInfo.getResourceMethod().getParameterTypes());
-             */
-
             boolean contains = Arrays.stream(IGNORE_METHODS).anyMatch(context.getMethod()::equals);
             logger.error("====== context.getMethod():{} present in ignoreList contains:{}", context.getMethod(),
                     contains);
@@ -119,20 +109,11 @@ public class RequestReaderInterceptor {
                 return context.proceed();
             }
 
-            Object createdObject = context.getTarget();
-            logger.error("====== createdObject:{] , createdObject.getClass():{}", createdObject,
-                    createdObject.getClass());
-            /*
-             * JsonNode jsonNode = readObject(context);
-             * logger.error("====== ReaderInterceptorContext jsonNode:{} ",jsonNode);
-             * processRequest(context, jsonNode);
-             */
+           // Object createdObject = context.getTarget();
+            //logger.error("====== createdObject:{] , createdObject.getClass():{}", createdObject,
+             //       createdObject.getClass());
+                processRequest(context);
 
-            processRequest(context);
-
-            // String jsonNode = readObject(context);
-            // logger.error("====== ReaderInterceptorContext jsonNode:{} ", jsonNode);
-            // processRequest(context, jsonNode);
         } catch (Exception ex) {
             throw new WebApplicationException(ex);
         }
@@ -145,11 +126,6 @@ public class RequestReaderInterceptor {
                 "ReaderInterceptorContext Data -  context:{} , context.getClass():{}, context.getContextData():{}, context.getMethod():{} , context.getParameters():{} , context.getTarget():{} ",
                 context, context.getClass(), context.getContextData(), context.getMethod(), context.getParameters(),
                 context.getTarget());
-
-        Object beanInstance = context.getTarget();
-        logger.error("RequestReaderInterceptor - Processing  Data -  beanInstance:{} ", beanInstance);
-        String json = getJsonString(beanInstance);
-        logger.error("RequestReaderInterceptor - target -  json:{} ", json);
 
         Object[] ctxParameters = context.getParameters();
         logger.error("RequestReaderInterceptor - Processing  Data -  ctxParameters:{} ", ctxParameters);
@@ -171,21 +147,19 @@ public class RequestReaderInterceptor {
                 String propertyName = parameters[i].getName();
                 logger.error("propertyName:{}, clazz:{} , clazz.isPrimitive():{} ", propertyName, clazz,
                         clazz.isPrimitive());
-
+                
                 Object obj = ctxParameters[i];
+                String jsonStr = null;
                 if (!clazz.isPrimitive()) {
-                    obj = clazz.cast(dataProcessingUtil.getInstance(clazz));
-                    json = getJsonString(obj);
-                    logger.error("RequestReaderInterceptor final - obj -  json:{} ", json);
+                   
+                    jsonStr = getJsonString(obj);
+                    logger.error("RequestReaderInterceptor final - obj -  jsonStr:{} ", jsonStr);
                     
-                    json = getJsonString(obj);
-                    logger.error("RequestReaderInterceptor - obj -  json:{} ", json);
+                    
 
-                    logger.error(
-                            "RequestReaderInterceptor -  Processing  Data -  propertyName:{}, clazz.getClass():{}, clazz:{} , obj:{} , obj.getClass():{}",
-                            propertyName, clazz.getClass(), clazz, parameters[i].getName(), obj, obj.getClass());
-
-                    performDataConversion(obj);
+                    performDataConversion(castObject(obj,clazz));
+                    
+                    logger.error("RequestReaderInterceptor final - obj -  obj:{} ", obj);
 
                 }
             }
@@ -206,11 +180,16 @@ public class RequestReaderInterceptor {
         String jsonStr = null;
         try {
             jsonStr = dataProcessingUtil.getJsonString(obj);
-            logger.error("RequestReaderInterceptor -  Object string -  sonStr:{}", jsonStr);            
+            logger.error("RequestReaderInterceptor -  Object string -  jsonStr:{}", jsonStr);            
         } catch (Exception ex) {
             logger.error("Exception while data conversion ", ex.getMessage());
         }
         return jsonStr;
     }
-
+    
+    private <T> T castObject(Object obj, Class<T> clazz) {
+        T t = (T) clazz.cast(obj);
+        return t;
+    }
+    
 }
