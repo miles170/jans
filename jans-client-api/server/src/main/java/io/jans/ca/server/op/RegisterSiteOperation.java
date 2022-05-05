@@ -25,9 +25,8 @@ import io.jans.ca.server.Utils;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.mapper.RegisterRequestMapper;
 import io.jans.ca.server.service.DiscoveryService;
-import io.jans.ca.server.service.HttpService;
 import io.jans.ca.server.service.RpService;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -51,7 +50,7 @@ public class RegisterSiteOperation extends BaseOperation<RegisterSiteParams> {
 
     private RpService rpService;
     private DiscoveryService discoveryService;
-    private ConfigurationService configurationService;
+    private JansConfigurationService jansConfigurationService;
 
     /**
      * Base constructor
@@ -62,7 +61,7 @@ public class RegisterSiteOperation extends BaseOperation<RegisterSiteParams> {
         super(command, RegisterSiteParams.class);
         this.discoveryService = discoveryService;
         this.rpService = rpService;
-        this.configurationService = rpService.getConfigurationService();
+        this.jansConfigurationService = rpService.getConfigurationService();
     }
 
     public RegisterSiteResponse execute_(RegisterSiteParams params) {
@@ -139,7 +138,7 @@ public class RegisterSiteOperation extends BaseOperation<RegisterSiteParams> {
             grantTypes.addAll(fallback.getGrantType());
         }
 
-        if (!grantTypes.contains(GrantType.CLIENT_CREDENTIALS.getValue()) && configurationService.find().getAddClientCredentialsGrantTypeAutomaticallyDuringClientRegistration()) {
+        if (!grantTypes.contains(GrantType.CLIENT_CREDENTIALS.getValue()) && jansConfigurationService.find().getAddClientCredentialsGrantTypeAutomaticallyDuringClientRegistration()) {
             grantTypes.add(GrantType.CLIENT_CREDENTIALS.getValue());
         }
 
@@ -174,7 +173,7 @@ public class RegisterSiteOperation extends BaseOperation<RegisterSiteParams> {
         } else {
             throw new HttpException(ErrorResponseCode.INVALID_REDIRECT_URI);
         }
-        final Boolean autoRegister = configurationService.find().getUma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient();
+        final Boolean autoRegister = jansConfigurationService.find().getUma2AutoRegisterClaimsGatheringEndpointAsRedirectUriOfClient();
         if (autoRegister != null && autoRegister && !redirectUris.isEmpty()) {
             String first = redirectUris.iterator().next();
             if (first.contains(discoveryService.getConnectDiscoveryResponse(params.getOpConfigurationEndpoint(), params.getOpHost(), params.getOpDiscoveryPath()).getIssuer())) {
@@ -617,7 +616,7 @@ public class RegisterSiteOperation extends BaseOperation<RegisterSiteParams> {
                 throw new HttpException(ErrorResponseCode.INVALID_SIGNATURE_ALGORITHM);
             }
 
-            if (signatureAlgorithms == SignatureAlgorithm.NONE && !configurationService.find().getAcceptIdTokenWithoutSignature()) {
+            if (signatureAlgorithms == SignatureAlgorithm.NONE && !jansConfigurationService.find().getAcceptIdTokenWithoutSignature()) {
                 LOG.error("`ID_TOKEN` without signature is not allowed. To allow `ID_TOKEN` without signature set `accept_id_token_without_signature` field to 'true' in client-api-server.yml.");
                 throw new HttpException(ErrorResponseCode.ID_TOKEN_WITHOUT_SIGNATURE_NOT_ALLOWED);
             }

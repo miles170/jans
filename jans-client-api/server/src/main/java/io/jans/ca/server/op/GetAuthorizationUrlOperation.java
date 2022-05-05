@@ -15,8 +15,7 @@ import io.jans.ca.server.Utils;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.service.DiscoveryService;
 import io.jans.ca.server.service.StateService;
-import io.jans.ca.server.service.auth.ConfigurationService;
-import jakarta.inject.Inject;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,18 +34,18 @@ public class GetAuthorizationUrlOperation extends BaseOperation<GetAuthorization
 
     DiscoveryService discoveryService;
     StateService stateService;
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
 
     /**
      * Base constructor
      *
      * @param command command
      */
-    public GetAuthorizationUrlOperation(Command command, DiscoveryService discoveryService, StateService stateService, ConfigurationService configurationService) {
+    public GetAuthorizationUrlOperation(Command command, DiscoveryService discoveryService, StateService stateService, JansConfigurationService jansConfigurationService) {
         super(command, GetAuthorizationUrlParams.class);
         this.discoveryService = discoveryService;
         this.stateService = stateService;
-        this.configurationService = configurationService;
+        this.jansConfigurationService = jansConfigurationService;
     }
 
     @Override
@@ -80,7 +79,7 @@ public class GetAuthorizationUrlOperation extends BaseOperation<GetAuthorization
 
         String state = StringUtils.isNotBlank(params.getState()) ? stateService.putState(stateService.encodeExpiredObject(params.getState(), ExpiredObjectType.STATE)) : stateService.generateState();
         String nonce = StringUtils.isNotBlank(params.getNonce()) ? stateService.putNonce(stateService.encodeExpiredObject(params.getNonce(), ExpiredObjectType.NONCE)) : stateService.generateNonce();
-        String clientId = configurationService.find().getEncodeClientIdInAuthorizationUrl() ? Utils.encode(rp.getClientId()) : rp.getClientId();
+        String clientId = jansConfigurationService.find().getEncodeClientIdInAuthorizationUrl() ? Utils.encode(rp.getClientId()) : rp.getClientId();
         String redirectUri = StringUtils.isNotBlank(params.getRedirectUri()) ? params.getRedirectUri() : rp.getRedirectUri();
 
         authorizationEndpoint += "?response_type=" + Utils.joinAndUrlEncode(responseTypes);

@@ -7,20 +7,16 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 import io.jans.as.client.RegisterClient;
 import io.jans.as.client.RegisterRequest;
-import io.jans.ca.common.Jackson2;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.op.OpClientFactoryImpl;
-import io.jans.ca.server.persistence.service.PersistenceService;
 import io.jans.ca.server.persistence.service.PersistenceServiceImpl;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -37,7 +33,7 @@ public class RpService {
     private static Cache<String, Rp> rpCache;
 
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
 
     @Inject
     ValidationService validationService;
@@ -53,7 +49,7 @@ public class RpService {
             return rpCache;
         } else {
             return CacheBuilder.newBuilder()
-                    .expireAfterWrite(configurationService.findConf() != null ? configurationService.findConf().getDynamicConf().getRpCacheExpirationInMinutes() : 60, TimeUnit.MINUTES)
+                    .expireAfterWrite(jansConfigurationService.findConf() != null ? jansConfigurationService.find().getRpCacheExpirationInMinutes() : 60, TimeUnit.MINUTES)
                     .build();
         }
     }
@@ -142,7 +138,7 @@ public class RpService {
     }
 
     public Rp defaultRp() {
-        return configurationService.find().getDefaultSiteConfig();
+        return jansConfigurationService.find().getDefaultSiteConfig();
     }
 
     public RegisterClient createRegisterClient(String registrationEndpoint, RegisterRequest registerRequest) {
@@ -152,7 +148,7 @@ public class RpService {
         return registerClient;
     }
 
-    public ConfigurationService getConfigurationService() {
-        return configurationService;
+    public JansConfigurationService getConfigurationService() {
+        return jansConfigurationService;
     }
 }

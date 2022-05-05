@@ -1,11 +1,11 @@
 package io.jans.ca.server.service;
 
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 
 public class ServiceProvider {
 
     private ValidationService validationService;
-    private ConfigurationService configurationService;
+    private JansConfigurationService jansConfigurationService;
     private HttpService httpService;
     private RpSyncService rpSyncService;
     private DiscoveryService discoveryService;
@@ -20,12 +20,12 @@ public class ServiceProvider {
         this.validationService = validationService;
     }
 
-    public ConfigurationService getConfigurationService() {
-        return configurationService;
+    public JansConfigurationService getConfigurationService() {
+        return jansConfigurationService;
     }
 
-    public void setConfigurationService(ConfigurationService configurationService) {
-        this.configurationService = configurationService;
+    public void setConfigurationService(JansConfigurationService jansConfigurationService) {
+        this.jansConfigurationService = jansConfigurationService;
     }
 
     public HttpService getHttpService() {

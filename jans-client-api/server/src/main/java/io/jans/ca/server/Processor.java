@@ -9,7 +9,7 @@ import io.jans.ca.common.params.IParams;
 import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.server.op.*;
 import io.jans.ca.server.service.*;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import io.jans.ca.server.utils.Convertor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -29,7 +29,7 @@ public class Processor {
     @Inject
     ValidationService validationService;
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
     @Inject
     RpSyncService rpSyncService;
     @Inject
@@ -79,7 +79,7 @@ public class Processor {
     private ServiceProvider getServiceProvider() {
         ServiceProvider serviceProvider = new ServiceProvider();
         serviceProvider.setRpService(rpService);
-        serviceProvider.setConfigurationService(configurationService);
+        serviceProvider.setConfigurationService(jansConfigurationService);
         serviceProvider.setDiscoveryService(discoveryService);
         serviceProvider.setValidationService(validationService);
         serviceProvider.setHttpService(discoveryService.getHttpService());
@@ -110,7 +110,7 @@ public class Processor {
                 case GET_DISCOVERY:
                     return new GetDiscoveryOperation(command, discoveryService);
                 case GET_AUTHORIZATION_URL:
-                    return new GetAuthorizationUrlOperation(command, discoveryService, stateService, configurationService);
+                    return new GetAuthorizationUrlOperation(command, discoveryService, stateService, jansConfigurationService);
                 case GET_TOKENS_BY_CODE:
                     return new GetTokensByCodeOperation(command, discoveryService, stateService, rpService, keyGeneratorService, publicOpKeyService);
                 case RS_PROTECT:

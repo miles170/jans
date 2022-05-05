@@ -1,11 +1,9 @@
 package io.jans.ca.server.persistence.service;
 
 import io.jans.ca.common.ExpiredObject;
-import io.jans.ca.server.configuration.model.ApiConf;
+import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.persistence.providers.H2PersistenceProvider;
-import io.jans.ca.server.persistence.providers.SqlPersistenceProvider;
-import io.jans.ca.server.service.auth.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +20,7 @@ public class PersistenceServiceImpl {
 
     private static final Logger LOG = LoggerFactory.getLogger(PersistenceServiceImpl.class);
     @Inject
-    ConfigurationService configurationService;
-    private SqlPersistenceProvider sqlProvider;
+    JansConfigurationService jansConfigurationService;
     private PersistenceService persistenceService;
 
     public void create() {
@@ -39,21 +36,19 @@ public class PersistenceServiceImpl {
     }
 
     private PersistenceService createServiceInstance() {
-        ApiConf apiConf = this.configurationService.findConf();
-        String storage = apiConf.getDynamicConf().getStorage();
-        //Only jans_server persistence and h2(local file db) are supported
+        ApiAppConfiguration apiConf = this.jansConfigurationService.find();
+        String storage = apiConf.getStorage();
         switch (storage) {
             case "jans_server_configuration":
-                return new JansPersistenceService(apiConf.getDynamicConf());
+                return jansConfigurationService;
             case "h2":
-                this.sqlProvider = new H2PersistenceProvider(this.configurationService);
-                return new SqlPersistenceServiceImpl(this.sqlProvider, this.configurationService);
-//            case "redis":
-//                return new RedisPersistenceService(apiConf.getDynamicConf());
+                return new SqlPersistenceServiceImpl(new H2PersistenceProvider(apiConf));
+            case "redis":
+                return new RedisPersistenceService(apiConf);
 //            case "couchbase":
-//                return new JansPersistenceService(apiConf.getDynamicConf(), storage);
+//                return new JansPersistenceService(apiConf, storage);
         }
-        throw new RuntimeException("Failed to create persistence provider. Unrecognized storage specified: " + storage + ", full configuration: " + this.configurationService.findConf());
+        throw new RuntimeException("Failed to create persistence provider. Unrecognized storage specified: " + storage + ", full configuration: " + apiConf);
     }
 
     public boolean create(Rp rp) {

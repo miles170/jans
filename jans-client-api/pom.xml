@@ -37,7 +37,14 @@
         <jackson.version>2.10.1</jackson.version>
         <slf4j.version>1.7.25</slf4j.version>
         <hibernate.version>7.0.1.Final</hibernate.version>
+
+        <arquillian.version>1.4.0.Final</arquillian.version>
+        <arquillian.rest.version>1.0.0.Alpha4</arquillian.rest.version>
+        <arquillian.drone.version>2.0.0.Final</arquillian.drone.version>
+        <arquillian.graphene.version>2.1.0.CR1</arquillian.graphene.version>
+        <shrinkwrap.version>2.1.0</shrinkwrap.version>
         <selenium.version>3.141.59</selenium.version>
+        <argLine>-Xms1024m -Xmx2048m -XX:+DisableExplicitGC</argLine>
     </properties>
 
     <prerequisites>
@@ -340,6 +347,50 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
+
+            <!-- Test -->
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${arquillian.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.graphene</groupId>
+                <artifactId>graphene-webdriver</artifactId>
+                <version>${arquillian.graphene.version}</version>
+                <type>pom</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.extension</groupId>
+                <artifactId>arquillian-drone-bom</artifactId>
+                <version>${arquillian.drone.version}</version>
+                <type>pom</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.extension</groupId>
+                <artifactId>arquillian-drone-webdriver-depchain</artifactId>
+                <version>${arquillian.drone.version}</version>
+                <type>pom</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.extension</groupId>
+                <artifactId>arquillian-rest-client-impl-3x</artifactId>
+                <version>${arquillian.rest.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eu.ingwar.tools</groupId>
+                <artifactId>arquillian-suite-extension</artifactId>
+                <version>1.2.0</version>
+                <scope>test</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
     <build>

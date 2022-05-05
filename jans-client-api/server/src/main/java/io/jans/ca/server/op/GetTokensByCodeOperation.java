@@ -22,7 +22,7 @@ import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.server.HttpException;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.service.*;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import org.python.jline.internal.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class GetTokensByCodeOperation extends BaseOperation<GetTokensByCodeParam
     private RpService rpService;
     private KeyGeneratorService keyGeneratorService;
     private PublicOpKeyService publicOpKeyService;
-    private ConfigurationService configurationService;
+    private JansConfigurationService jansConfigurationService;
     private OpClientFactoryImpl opClientFactory;
     private HttpService httpService;
 
@@ -52,7 +52,7 @@ public class GetTokensByCodeOperation extends BaseOperation<GetTokensByCodeParam
         this.keyGeneratorService = keyGeneratorService;
         this.httpService = discoveryService.getHttpService();
         this.opClientFactory = discoveryService.getOpClientFactory();
-        this.configurationService = stateService.getConfigurationService();
+        this.jansConfigurationService = stateService.getConfigurationService();
         this.publicOpKeyService = publicOpKeyService;
     }
 
@@ -86,7 +86,7 @@ public class GetTokensByCodeOperation extends BaseOperation<GetTokensByCodeParam
 
             tokenRequest.setAlgorithm(SignatureAlgorithm.fromString(rp.getTokenEndpointAuthSigningAlg()));
 
-            if (!configurationService.find().getEnableJwksGeneration()) {
+            if (!jansConfigurationService.find().getEnableJwksGeneration()) {
                 LOG.error("The Token Authentication Method is {}. Please set `enable_jwks_generation` (to `true`), `crypt_provider_key_store_path` and `crypt_provider_key_store_password` in `client-api-server.yml` to enable RP-jwks generation in jans-client-api.", authenticationMethod.toString());
                 throw new HttpException(ErrorResponseCode.JWKS_GENERATION_DISABLE);
             }
@@ -123,7 +123,7 @@ public class GetTokensByCodeOperation extends BaseOperation<GetTokensByCodeParam
                     .idToken(idToken)
                     .keyService(publicOpKeyService)
                     .opClientFactory(opClientFactory)
-                    .rpServerConfiguration(configurationService.find())
+                    .rpServerConfiguration(jansConfigurationService.find())
                     .rp(rp)
                     .build();
 

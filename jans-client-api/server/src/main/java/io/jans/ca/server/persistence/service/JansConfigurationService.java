@@ -1,73 +1,114 @@
+/*
+ * Janssen Project software is available under the MIT License (2008). See http://opensource.org/licenses/MIT for full text.
+ *
+ * Copyright (c) 2020, Janssen Project
+ */
+
 package io.jans.ca.server.persistence.service;
 
+import io.jans.as.common.service.common.ApplicationFactory;
+import io.jans.as.persistence.model.configuration.GluuConfiguration;
 import io.jans.ca.common.ExpiredObject;
 import io.jans.ca.common.ExpiredObjectType;
 import io.jans.ca.common.Jackson2;
-import io.jans.ca.common.PersistenceConfigKeys;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
+import io.jans.ca.server.configuration.ConfigurationFactory;
+import io.jans.ca.server.configuration.model.ApiConf;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.persistence.modal.OrganizationBranch;
 import io.jans.ca.server.persistence.modal.RpObject;
-import io.jans.ca.server.persistence.providers.ClientApiPersistenceEntryManagerFactory;
-import io.jans.ca.server.persistence.providers.JansPersistenceConfiguration;
+import io.jans.ca.server.persistence.service.PersistenceService;
 import io.jans.ca.server.service.MigrationService;
+import io.jans.configapi.model.status.StatsData;
 import io.jans.orm.PersistenceEntryManager;
 import io.jans.orm.exception.EntryPersistenceException;
 import io.jans.orm.model.base.SimpleBranch;
 import io.jans.orm.search.filter.Filter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.jans.util.StringHelper;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import org.slf4j.Logger;
+
 import java.util.*;
+
+import static io.jans.ca.server.configuration.ConfigurationFactory.CONFIGURATION_ENTRY_DN;
+
+/**
+ * @author Yuriy Zabrovarnyy
+ */
 @ApplicationScoped
-public class JansPersistenceService implements PersistenceService {
+public class JansConfigurationService implements PersistenceService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JansPersistenceService.class);
-    private ApiAppConfiguration configuration;
-    private PersistenceEntryManager persistenceEntryManager;
-    private String persistenceType;
+    @Inject
+    @Named(ApplicationFactory.PERSISTENCE_ENTRY_MANAGER_NAME)
+    PersistenceEntryManager persistenceManager;
+
+    @Inject
+    ConfigurationFactory configurationFactory;
+
+    @Inject
+    Logger logger;
+    
+    private StatsData statsData;
     private String baseDn;
-    //private String expiredObjectColumnName;
 
-    public JansPersistenceService(ApiAppConfiguration configuration) {
-        this.configuration = configuration;
+    private ApiAppConfiguration configuration;
+
+    public ApiConf findConf() {
+        final String dn = configurationFactory.getConfigurationDn(CONFIGURATION_ENTRY_DN);
+        return persistenceManager.find(dn, ApiConf.class, null);
     }
 
-    public JansPersistenceService(ApiAppConfiguration configuration, String persistenceType) {
-        this.configuration = configuration;
-        this.persistenceType = persistenceType;
-        //this.expiredObjectColumnName = getKeyColumnName(configurationService);
+    public void mergeConfiguration(ApiConf conf) {
+        conf.setRevision(conf.getRevision() + 1);
+        persistenceManager.merge(conf);
+    }
+
+    public void mergeGluuConfiguration(GluuConfiguration conf) {
+        persistenceManager.merge(conf);
+    }
+
+    public ApiAppConfiguration find() {
+        final ApiConf conf = findConf();
+        return conf.getDynamicConf();
+    }
+
+    public GluuConfiguration findGluuConfiguration() {
+        String configurationDn = findConf().getStaticConf().getBaseDn().getConfiguration();
+        if (StringHelper.isEmpty(configurationDn)) {
+            return null;
+        }
+        return persistenceManager.find(GluuConfiguration.class, configurationDn);
+    }
+
+    public String getPersistenceType() {
+        return configurationFactory.getBaseConfiguration().getString("persistence.type");
+    }
+
+    public StatsData getStatsData() {
+        return statsData;
+    }
+
+    public void setStatsData(StatsData statsData) {
+        this.statsData = statsData;
     }
 
     public void create() {
-        LOG.debug("Creating JansPersistenceService ...");
+        logger.debug("Creating JansPersistence for Api Client...");
         try {
-            JansPersistenceConfiguration jansPersistenceConfiguration = new JansPersistenceConfiguration(configuration);
-            Properties props = jansPersistenceConfiguration.getPersistenceProps();
-            this.baseDn = props.getProperty(PersistenceConfigKeys.BaseDn.getKeyName());
-            ClientApiPersistenceEntryManagerFactory clientApiPersistenceEntryManagerFactory = new ClientApiPersistenceEntryManagerFactory();
-            String persistenceType = props.getProperty(PersistenceConfigKeys.PersistenceType.getKeyName());
-            if (persistenceType.equalsIgnoreCase("hybrid")) {
-                persistenceType = PersistenceEntryManager.PERSITENCE_TYPES.ldap.name();
-            }
-            this.persistenceEntryManager = clientApiPersistenceEntryManagerFactory.createPersistenceEntryManager(props, persistenceType);
-
-            if (this.persistenceType != null && !this.persistenceType.equalsIgnoreCase(props.getProperty(PersistenceConfigKeys.PersistenceType.getKeyName()))) {
-                LOG.error("The value of the `storage` field in `client-api-server.yml` does not matches with `persistence.type` in `gluu.property` file. \n `storage` value: {} \n `persistence.type` value : {}"
-                        , this.persistenceType, this.persistenceEntryManager.getPersistenceType());
-                throw new RuntimeException("The value of the `storage` field in `client-api-server.yml` does not matches with `persistence.type` in `gluu.property` file. \n `storage` value: " + this.persistenceType + " \n `persistence.type` value : "
-                        + this.persistenceEntryManager.getPersistenceType());
-            }
+            this.configuration = find();
+            this.baseDn = configurationFactory.getConfigurationDn(CONFIGURATION_ENTRY_DN);
             prepareBranch();
         } catch (Exception e) {
-            throw new IllegalStateException("Error starting JansPersistenceService", e);
+            throw new IllegalStateException("Error JansPersistence for Api Client", e);
         }
     }
 
     public void prepareBranch() {
 
-        if (!this.persistenceEntryManager.hasBranchesSupport(this.baseDn)) {
+        if (!this.persistenceManager.hasBranchesSupport(this.baseDn)) {
             return;
         }
         //create `o=jans` if not present
@@ -97,7 +138,7 @@ public class JansPersistenceService implements PersistenceService {
     }
 
     public boolean containsBranch(String dn) {
-        return this.persistenceEntryManager.contains(dn, SimpleBranch.class);
+        return this.persistenceManager.contains(dn, SimpleBranch.class);
     }
 
     public void addOrganizationBranch(String dn, String oName) {
@@ -105,7 +146,7 @@ public class JansPersistenceService implements PersistenceService {
         branch.setOrganizationName(oName);
         branch.setDn(dn);
 
-        this.persistenceEntryManager.persist(branch);
+        this.persistenceManager.persist(branch);
     }
 
     public void addBranch(String dn, String ouName) {
@@ -113,17 +154,17 @@ public class JansPersistenceService implements PersistenceService {
         branch.setOrganizationalUnitName(ouName);
         branch.setDn(dn);
 
-        this.persistenceEntryManager.persist(branch);
+        this.persistenceManager.persist(branch);
     }
 
     public boolean create(Rp rp) {
         try {
             RpObject rpObj = new RpObject(getDnForRp(rp.getRpId()), rp.getRpId(), Jackson2.serializeWithoutNulls(rp));
-            this.persistenceEntryManager.persist(rpObj);
-            LOG.debug("RP created successfully. RP : {} ", rp);
+            this.persistenceManager.persist(rpObj);
+            logger.debug("RP created successfully. RP : {} ", rp);
             return true;
         } catch (Exception e) {
-            LOG.error("Failed to create RP: {} ", rp, e);
+            logger.error("Failed to create RP: {} ", rp, e);
         }
         return false;
     }
@@ -131,16 +172,16 @@ public class JansPersistenceService implements PersistenceService {
     public boolean createExpiredObject(ExpiredObject obj) {
         try {
             if (isExpiredObjectPresent(obj.getKey())) {
-                LOG.warn("Expired_object already present. Object : {} ", obj.getKey());
+                logger.warn("Expired_object already present. Object : {} ", obj.getKey());
                 return true;
             }
             obj.setTypeString(obj.getType().getValue());
             obj.setDn(getDnForExpiredObj(obj.getKey()));
-            this.persistenceEntryManager.persist(obj);
-            LOG.debug("Expired_object created successfully. Object : {} ", obj.getKey());
+            this.persistenceManager.persist(obj);
+            logger.debug("Expired_object created successfully. Object : {} ", obj.getKey());
             return true;
         } catch (Exception e) {
-            LOG.error("Failed to create ExpiredObject: {} ", obj.getKey(), e);
+            logger.error("Failed to create ExpiredObject: {} ", obj.getKey(), e);
         }
         return false;
     }
@@ -148,11 +189,11 @@ public class JansPersistenceService implements PersistenceService {
     public boolean update(Rp rp) {
         try {
             RpObject rpObj = new RpObject(getDnForRp(rp.getRpId()), rp.getRpId(), Jackson2.serializeWithoutNulls(rp));
-            this.persistenceEntryManager.merge(rpObj);
-            LOG.debug("RP updated successfully. RP : {} ", rpObj);
+            this.persistenceManager.merge(rpObj);
+            logger.debug("RP updated successfully. RP : {} ", rpObj);
             return true;
         } catch (Exception e) {
-            LOG.error("Failed to update RP: {} ", rp, e);
+            logger.error("Failed to update RP: {} ", rp, e);
         }
         return false;
     }
@@ -163,38 +204,38 @@ public class JansPersistenceService implements PersistenceService {
 
             Rp rp = MigrationService.parseRp(rpFromGluuPersistance.getData());
             if (rp != null) {
-                LOG.debug("Found RP id: {}, RP : {} ", rpId, rp);
+                logger.debug("Found RP id: {}, RP : {} ", rpId, rp);
                 return rp;
             }
-            LOG.error("Failed to fetch RP by id: {} ", rpId);
+            logger.error("Failed to fetch RP by id: {} ", rpId);
             return null;
         } catch (Exception e) {
-            LOG.error("Failed to update rpId: {} ", rpId, e);
+            logger.error("Failed to update rpId: {} ", rpId, e);
         }
         return null;
     }
 
     private RpObject getRpObject(String rpId, String... returnAttributes) {
-        return (RpObject) this.persistenceEntryManager.find(getDnForRp(rpId), RpObject.class, returnAttributes);
+        return (RpObject) this.persistenceManager.find(getDnForRp(rpId), RpObject.class, returnAttributes);
     }
 
     public ExpiredObject getExpiredObject(String key) {
         try {
-            ExpiredObject expiredObject = (ExpiredObject) this.persistenceEntryManager.find(getDnForExpiredObj(key), ExpiredObject.class, null);
+            ExpiredObject expiredObject = (ExpiredObject) this.persistenceManager.find(getDnForExpiredObj(key), ExpiredObject.class, null);
             if (expiredObject != null) {
                 expiredObject.setType(ExpiredObjectType.fromValue(expiredObject.getTypeString()));
-                LOG.debug("Found ExpiredObject id: {} , ExpiredObject : {} ", key, expiredObject);
+                logger.debug("Found ExpiredObject id: {} , ExpiredObject : {} ", key, expiredObject);
                 return expiredObject;
             }
 
-            LOG.error("Failed to fetch ExpiredObject by id: {} ", key);
+            logger.error("Failed to fetch ExpiredObject by id: {} ", key);
             return null;
         } catch (Exception e) {
             if (((e instanceof EntryPersistenceException)) && (e.getMessage().contains("Failed to find entry"))) {
-                LOG.warn("Failed to fetch ExpiredObject by id: {}. {} ", key, e.getMessage());
+                logger.warn("Failed to fetch ExpiredObject by id: {}. {} ", key, e.getMessage());
                 return null;
             }
-            LOG.error("Failed to fetch ExpiredObject by id: {} ", key, e);
+            logger.error("Failed to fetch ExpiredObject by id: {} ", key, e);
         }
         return null;
     }
@@ -205,18 +246,18 @@ public class JansPersistenceService implements PersistenceService {
 
     public boolean removeAllRps() {
         try {
-            this.persistenceEntryManager.remove(String.format("%s,%s", new Object[]{getRpOu(), getClientApiDn()}), RpObject.class, null, this.configuration.getPersistenceManagerRemoveCount());
-            LOG.debug("Removed all Rps successfully. ");
+            this.persistenceManager.remove(String.format("%s,%s", new Object[]{getRpOu(), getClientApiDn()}), RpObject.class, null, this.configuration.getPersistenceManagerRemoveCount());
+            logger.debug("Removed all Rps successfully. ");
             return true;
         } catch (Exception e) {
-            LOG.error("Failed to remove all Rps", e);
+            logger.error("Failed to remove all Rps", e);
         }
         return false;
     }
 
     public Set<Rp> getRps() {
         try {
-            List<RpObject> rpObjects = this.persistenceEntryManager.findEntries(String.format("%s,%s", new Object[]{getRpOu(), getClientApiDn()}), RpObject.class, null);
+            List<RpObject> rpObjects = this.persistenceManager.findEntries(String.format("%s,%s", new Object[]{getRpOu(), getClientApiDn()}), RpObject.class, null);
 
             Set<Rp> result = new HashSet();
             for (RpObject ele : rpObjects) {
@@ -224,43 +265,43 @@ public class JansPersistenceService implements PersistenceService {
                 if (rp != null) {
                     result.add(rp);
                 } else {
-                    LOG.error("Failed to parse rp, id: {}, dn: {} ", ele.getId(), ele.getDn());
+                    logger.error("Failed to parse rp, id: {}, dn: {} ", ele.getId(), ele.getDn());
                 }
             }
             return result;
         } catch (Exception e) {
             if (((e instanceof EntryPersistenceException)) && (e.getMessage().contains("Failed to find entries"))) {
-                LOG.warn("Failed to fetch RpObjects. {} ", e.getMessage());
+                logger.warn("Failed to fetch RpObjects. {} ", e.getMessage());
                 return null;
             }
-            LOG.error("Failed to fetch rps. Error: {} ", e.getMessage(), e);
+            logger.error("Failed to fetch rps. Error: {} ", e.getMessage(), e);
         }
         return null;
     }
 
     public void destroy() {
-        this.persistenceEntryManager.destroy();
+        this.persistenceManager.destroy();
     }
 
     public boolean remove(String rpId) {
         try {
-            this.persistenceEntryManager.remove(getDnForRp(rpId), RpObject.class);
+            this.persistenceManager.remove(getDnForRp(rpId), RpObject.class);
 
-            LOG.debug("Removed rp successfully. rpId: {} ", rpId);
+            logger.debug("Removed rp successfully. rpId: {} ", rpId);
             return true;
         } catch (Exception e) {
-            LOG.error("Failed to remove rp with rpId: {} ", rpId, e);
+            logger.error("Failed to remove rp with rpId: {} ", rpId, e);
         }
         return false;
     }
 
     public boolean deleteExpiredObjectsByKey(String key) {
         try {
-            this.persistenceEntryManager.remove(getDnForExpiredObj(key), ExpiredObject.class);
-            LOG.debug("Removed expired_objects successfully: {} ", key);
+            this.persistenceManager.remove(getDnForExpiredObj(key), ExpiredObject.class);
+            logger.debug("Removed expired_objects successfully: {} ", key);
             return true;
         } catch (Exception e) {
-            LOG.error("Failed to remove expired_objects: {} ", key, e);
+            logger.error("Failed to remove expired_objects: {} ", key, e);
         }
         return false;
     }
@@ -269,13 +310,13 @@ public class JansPersistenceService implements PersistenceService {
         try {
             final Calendar cal = Calendar.getInstance();
             final Date currentTime = cal.getTime();
-            Filter exirationDateFilter = Filter.createLessOrEqualFilter("exp", this.persistenceEntryManager.encodeTime(baseDn, currentTime));
+            Filter exirationDateFilter = Filter.createLessOrEqualFilter("exp", this.persistenceManager.encodeTime(baseDn, currentTime));
 
-            this.persistenceEntryManager.remove(String.format("%s,%s", new Object[]{getExpiredObjOu(), getClientApiDn()}), ExpiredObject.class, exirationDateFilter, this.configuration.getPersistenceManagerRemoveCount());
-            LOG.debug("Removed all expired_objects successfully. ");
+            this.persistenceManager.remove(String.format("%s,%s", new Object[]{getExpiredObjOu(), getClientApiDn()}), ExpiredObject.class, exirationDateFilter, this.configuration.getPersistenceManagerRemoveCount());
+            logger.debug("Removed all expired_objects successfully. ");
             return true;
         } catch (Exception e) {
-            LOG.error("Failed to remove expired_objects. ", e);
+            logger.error("Failed to remove expired_objects. ", e);
         }
         return false;
     }
@@ -303,4 +344,5 @@ public class JansPersistenceService implements PersistenceService {
     private String getExpiredObjOu() {
         return ou("expiredObjects");
     }
+
 }

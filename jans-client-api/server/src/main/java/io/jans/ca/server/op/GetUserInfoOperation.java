@@ -16,7 +16,7 @@ import io.jans.ca.server.HttpException;
 import io.jans.ca.server.service.DiscoveryService;
 import io.jans.ca.server.service.HttpService;
 import io.jans.ca.server.service.ServiceProvider;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class GetUserInfoOperation extends BaseOperation<GetUserInfoParams> {
 
     private static final Logger LOG = LoggerFactory.getLogger(GetUserInfoOperation.class);
     DiscoveryService discoveryService;
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
     OpClientFactoryImpl opClientFactory;
     HttpService httpService;
 
@@ -39,7 +39,7 @@ public class GetUserInfoOperation extends BaseOperation<GetUserInfoParams> {
     public GetUserInfoOperation(Command command, ServiceProvider serviceProvider) {
         super(command, serviceProvider, GetUserInfoParams.class);
         this.discoveryService = serviceProvider.getDiscoveryService();
-        this.configurationService = serviceProvider.getConfigurationService();
+        this.jansConfigurationService = serviceProvider.getConfigurationService();
         this.opClientFactory = discoveryService.getOpClientFactory();
         this.httpService = discoveryService.getHttpService();
     }
@@ -63,7 +63,7 @@ public class GetUserInfoOperation extends BaseOperation<GetUserInfoParams> {
 
     public void validateSubjectIdentifier(String idToken, UserInfoResponse response) {
         try {
-            boolean validateUserInfoWithIdToken = configurationService.find().getValidateUserInfoWithIdToken();
+            boolean validateUserInfoWithIdToken = jansConfigurationService.find().getValidateUserInfoWithIdToken();
             if (!validateUserInfoWithIdToken) {
                 return;
             }

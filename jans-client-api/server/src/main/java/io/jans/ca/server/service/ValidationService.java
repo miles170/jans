@@ -7,7 +7,7 @@ import io.jans.ca.common.params.*;
 import io.jans.ca.server.HttpException;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.jans.ca.server.configuration.model.Rp;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import io.jans.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -35,10 +35,10 @@ public class ValidationService {
     IntrospectionService introspectionService;
 
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
 
     private ApiAppConfiguration getConfiguration(){
-        return configurationService.findConf().getDynamicConf();
+        return jansConfigurationService.find();
     }
 
     private void notNull(IParams params) {

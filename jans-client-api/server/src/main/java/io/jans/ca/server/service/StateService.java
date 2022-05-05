@@ -3,9 +3,8 @@ package io.jans.ca.server.service;
 import io.jans.ca.common.ExpiredObject;
 import io.jans.ca.common.ExpiredObjectType;
 import io.jans.ca.server.Utils;
-import io.jans.ca.server.persistence.service.PersistenceService;
 import io.jans.ca.server.persistence.service.PersistenceServiceImpl;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,7 @@ public class StateService {
     @Inject
     PersistenceServiceImpl persistenceService;
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
 
     private final SecureRandom random = new SecureRandom();
 
@@ -50,28 +49,28 @@ public class StateService {
     }
 
     public String putState(String state) {
-        persistenceService.createExpiredObject(new ExpiredObject(state, state, ExpiredObjectType.STATE, configurationService.findConf().getDynamicConf().getStateExpirationInMinutes()));
+        persistenceService.createExpiredObject(new ExpiredObject(state, state, ExpiredObjectType.STATE, jansConfigurationService.find().getStateExpirationInMinutes()));
         return state;
     }
 
     public String putNonce(String nonce) {
-        persistenceService.createExpiredObject(new ExpiredObject(nonce, nonce, ExpiredObjectType.NONCE, configurationService.findConf().getDynamicConf().getNonceExpirationInMinutes()));
+        persistenceService.createExpiredObject(new ExpiredObject(nonce, nonce, ExpiredObjectType.NONCE, jansConfigurationService.find().getNonceExpirationInMinutes()));
         return nonce;
     }
 
     public String encodeExpiredObject(String expiredObject, ExpiredObjectType type) throws UnsupportedEncodingException {
-        if (type == ExpiredObjectType.STATE && configurationService.findConf().getDynamicConf().getEncodeStateFromRequestParameter()) {
+        if (type == ExpiredObjectType.STATE && jansConfigurationService.find().getEncodeStateFromRequestParameter()) {
             return Utils.encode(expiredObject);
         }
 
-        if (type == ExpiredObjectType.NONCE && configurationService.findConf().getDynamicConf().getEncodeNonceFromRequestParameter()) {
+        if (type == ExpiredObjectType.NONCE && jansConfigurationService.find().getEncodeNonceFromRequestParameter()) {
             return Utils.encode(expiredObject);
         }
 
         return expiredObject;
     }
 
-    public ConfigurationService getConfigurationService() {
-        return configurationService;
+    public JansConfigurationService getConfigurationService() {
+        return jansConfigurationService;
     }
 }

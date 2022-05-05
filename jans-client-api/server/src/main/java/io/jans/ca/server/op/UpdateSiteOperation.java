@@ -21,7 +21,7 @@ import io.jans.ca.server.Utils;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.mapper.RegisterRequestMapper;
 import io.jans.ca.server.service.RpService;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import jakarta.ws.rs.HttpMethod;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -43,7 +43,7 @@ public class UpdateSiteOperation extends BaseOperation<UpdateSiteParams> {
     private static final Logger LOG = LoggerFactory.getLogger(UpdateSiteOperation.class);
 
     private RpService rpService;
-    private ConfigurationService configurationService;
+    private JansConfigurationService jansConfigurationService;
 
     private Rp rp;
 
@@ -55,7 +55,7 @@ public class UpdateSiteOperation extends BaseOperation<UpdateSiteParams> {
     public UpdateSiteOperation(Command command, RpService rpService) {
         super(command, UpdateSiteParams.class);
         this.rpService = rpService;
-        this.configurationService = rpService.getConfigurationService();
+        this.jansConfigurationService = rpService.getConfigurationService();
     }
 
     @Override
@@ -252,7 +252,7 @@ public class UpdateSiteOperation extends BaseOperation<UpdateSiteParams> {
                 throw new HttpException(ErrorResponseCode.INVALID_SIGNATURE_ALGORITHM);
             }
 
-            if (signatureAlgorithms == SignatureAlgorithm.NONE && !configurationService.find().getAcceptIdTokenWithoutSignature()) {
+            if (signatureAlgorithms == SignatureAlgorithm.NONE && !jansConfigurationService.find().getAcceptIdTokenWithoutSignature()) {
                 LOG.error("`ID_TOKEN` without signature is not allowed. To allow `ID_TOKEN` without signature set `accept_id_token_without_signature` field to 'true' in client-api-server.yml.");
                 throw new HttpException(ErrorResponseCode.ID_TOKEN_WITHOUT_SIGNATURE_NOT_ALLOWED);
             }

@@ -31,9 +31,10 @@ public class OAuth20Resource extends BaseResource {
     @Path("/remove-site")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String removeSite(@HeaderParam("Authorization") String authorization, @HeaderParam("AuthorizationRpId") String AuthorizationRpId, String params) {
+    public Response removeSite(@HeaderParam("Authorization") String authorization, @HeaderParam("AuthorizationRpId") String AuthorizationRpId, String params) {
         logger.info("Api Resource: /remove-site  Params: {}", params);
-        return process(CommandType.REMOVE_SITE, params, RemoveSiteParams.class, authorization, AuthorizationRpId);
+        String result = process(CommandType.REMOVE_SITE, params, RemoveSiteParams.class, authorization, AuthorizationRpId);
+        return Response.ok(result).build();
     }
 
     @POST

@@ -18,7 +18,7 @@ import io.jans.ca.common.ExpiredObjectType;
 import io.jans.ca.server.HttpException;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.jans.ca.server.persistence.service.PersistenceServiceImpl;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.json.JSONObject;
@@ -40,7 +40,7 @@ public class KeyGeneratorService {
     PersistenceServiceImpl persistenceService;
 
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
 
     private JSONWebKeySet keys;
 
@@ -55,7 +55,7 @@ public class KeyGeneratorService {
     }
 
     private ApiAppConfiguration getConfiguration() {
-        return configurationService.findConf().getDynamicConf();
+        return jansConfigurationService.find();
     }
 
 

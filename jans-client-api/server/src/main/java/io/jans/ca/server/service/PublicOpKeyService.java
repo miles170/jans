@@ -14,7 +14,7 @@ import io.jans.as.model.jwk.JSONWebKey;
 import io.jans.as.model.jwk.JSONWebKeySet;
 import io.jans.as.model.jwk.Use;
 import io.jans.ca.server.op.OpClientFactory;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import io.jans.util.Pair;
 import jakarta.inject.Inject;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
@@ -39,7 +39,7 @@ public class PublicOpKeyService {
     @Inject
     OpClientFactory opClientFactory;
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
 
     public PublicKey getPublicKey(String jwkSetUrl, String keyId, SignatureAlgorithm signatureAlgorithm, Use use) {
         //Get keys from cache if present
@@ -102,7 +102,7 @@ public class PublicOpKeyService {
         }
         if (cache == null) {
             cache = CacheBuilder.newBuilder()
-                    .expireAfterWrite(configurationService.find().getPublicOpKeyCacheExpirationInMinutes(), TimeUnit.MINUTES)
+                    .expireAfterWrite(jansConfigurationService.find().getPublicOpKeyCacheExpirationInMinutes(), TimeUnit.MINUTES)
                     .build();
         }
         Pair<String, String> mapKey = new Pair<>(jwkSetUrl, keyId);

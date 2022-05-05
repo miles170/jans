@@ -18,6 +18,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <javaee.api>8.0.1</javaee.api>
         <h2.version>2.1.210</h2.version>
+        <jersey-test-framework-provider>3.0.2</jersey-test-framework-provider>
     </properties>
 
     <dependencies>
@@ -29,6 +30,7 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
@@ -124,6 +126,11 @@
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jans</groupId>
+            <artifactId>jans-client-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- OpenTracing Tracer Implementations -->
@@ -248,11 +255,97 @@
             <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.2.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>3.8.0</version>
+            <scope>test</scope>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.jans</groupId>-->
+<!--            <artifactId>jans-client-api</artifactId>-->
+<!--            <version>${project.version}</version>-->
+<!--            <type>test-jar</type>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test: Arquillian container and extensions -->
+        <dependency>
+            <groupId>org.jboss.arquillian.testng</groupId>
+            <artifactId>arquillian-testng-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.extension</groupId>
+            <artifactId>arquillian-rest-client-impl-3x</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eu.ingwar.tools</groupId>
+            <artifactId>arquillian-suite-extension</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- We have to explicitly specify version because arquillian-jetty-container depends on 1.1.11-->
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-test-impl-base</artifactId>
+            <version>1.4.0.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-spi</artifactId>
+            <version>1.4.0.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-test-spi</artifactId>
+            <version>1.4.0.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.testenricher</groupId>
+            <artifactId>arquillian-testenricher-cdi</artifactId>
+            <version>1.4.0.Final</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test: Shrinkwrap -->
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-depchain</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+            <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
     <build>
-        <finalName>jans-client-api</finalName>
+        <finalName>jans-client-api-server</finalName>
 
         <filters>
             <filter>profiles/${cfg}/config-build.properties</filter>
@@ -370,7 +463,7 @@
                             </resources>
                             <filters>
                                 <filter>${basedir}/profiles/${cfg}/config-oxd.properties</filter>
-                                <filter>${basedir}/profiles/${cfg}/config-oxd-test.properties</filter>
+                                <filter>${basedir}/profiles/${cfg}/config-oxd-test-sql.properties</filter>
                             </filters>
                         </configuration>
                     </execution>

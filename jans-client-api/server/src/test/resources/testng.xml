@@ -1,17 +1,54 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="jansAuthServer" parallel="false">
+<suite name="jansClientApiServer" parallel="false">
 
     <parameter name="serverUri" value="https://${test.server.name}"/>
-    <parameter name="authorizePath" value="restv1/authorize"/>
+    <parameter name="host" value="http://localhost"/>
+    <parameter name="port" value="8099"/>
+    <parameter name="opHost" value="https://${test.server.name}"/>
+    <parameter name="authServer" value="https://jenkins-build.jans.io"/>
+    <parameter name="opDiscoveryPath" value=""/>
+    <parameter name="emailWebfingerInput" value="${swd.resource}"/>
+    <parameter name="urlWebfingerInput" value="https://${test.server.name}/admin"/>
+    <parameter name="hostnameWebfingerInput" value="${test.server.name}"/>
+    <parameter name="opConfigurationEndpoint" value="https://${test.server.name}/.well-known/openid-configuration"/>
+    <parameter name="redirectUrls" value="https://client.example.com/cb/home1 https://client.example.com/cb/home2"/>
+    <parameter name="paramRedirectUrl" value="https://client.example.com/cb/home2"/>
+    <parameter name="postLogoutRedirectUrl" value="https://client.example.com/cb/logout"/>
+    <parameter name="postLogoutRedirectUrls" value="https://client.example.com/cb/logout/page1 https://client.example.com/cb/logout/page2"/>
+    <parameter name="logoutUrl" value="https://client.example.com/logout"/>
+    <parameter name="state" value="custom_state_for_testing"/>
+    <parameter name="userId" value="${auth.user.uid}"/>
+    <parameter name="userSecret" value="${auth.user.password}"/>
+    <parameter name="clientId" value="${auth.client.id}"/>
+    <parameter name="clientSecret" value="${auth.client.secret}"/>
+    <parameter name="rsProtect"
+               value="{'resources':[{'path':'/ws/phone','conditions':[{'httpMethods':['GET'],'scopes':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/view'],'ticketScopes':['http://photoz.example.com/dev/actions/view']},{'httpMethods':['PUT', 'POST'],'scopes':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/add'],'ticketScopes':['http://photoz.example.com/dev/actions/add']},{'httpMethods':['DELETE'],'scopes':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/remove'],'ticketScopes':['http://photoz.example.com/dev/actions/remove']}]}]}"/>
+    <parameter name="rsProtectWithSpontaneousScope"
+               value="{'resources':[{'path':'/ws/phone','conditions':[{'httpMethods':['GET'],'scopes':['^/user/.+$','http://photoz.example.com/dev/actions/view'],'ticketScopes':['/user/2']}]}]}"/>
+    <parameter name="rsProtectWithCreationExpiration"
+               value="{'resources':[{'path':'/ws/phone','conditions':[{'httpMethods':['GET'],'scopes':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/view'],'ticketScopes':['http://photoz.example.com/dev/actions/view']},{'httpMethods':['PUT', 'POST'],'scopes':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/add'],'ticketScopes':['http://photoz.example.com/dev/actions/add']},{'httpMethods':['DELETE'],'scopes':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/remove'],'ticketScopes':['http://photoz.example.com/dev/actions/remove']}],'iat': 1582890956, 'exp': 2079299799}]}"/>
+    <parameter name="rsProtectScopeExpression"
+               value="{'resources':[{'path':'/ws/phone','conditions':[{'httpMethods':['GET'],'scopes':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/view'],'scope_expression':{'rule':{'and':[{'or':[{'var':0},{'var':1}]},{'var':2}]},'data':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/add','http://photoz.example.com/dev/actions/view']}},{'httpMethods':['PUT','POST'],'scope_expression':{'rule':{'and':[{'or':[{'var':0},{'var':1}]},{'var':2}]},'data':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/add','http://photoz.example.com/dev/actions/view']},'ticketScopes':['http://photoz.example.com/dev/actions/add']},{'httpMethods':['DELETE'],'scopes':['http://photoz.example.com/dev/actions/all','http://photoz.example.com/dev/actions/remove'],'ticketScopes':['http://photoz.example.com/dev/actions/remove']}]}]}"/>
+    <parameter name="rsProtectScopeExpressionSecond"
+               value="{'resources':[{'path':'/GetAll','conditions':[{'httpMethods':['GET'],'scopes':['http://photoz.example.com/dev/actions/a1','http://photoz.example.com/dev/actions/a2','http://photoz.example.com/dev/actions/a3'],'ticketScopes':['http://photoz.example.com/dev/actions/a1','http://photoz.example.com/dev/actions/a2','http://photoz.example.com/dev/actions/a3'],'scope_expression':{'rule':{'and':[{'or':[{'var':0},{'var':1}]},{'var':2}]},'data':['http://photoz.example.com/dev/actions/a1','http://photoz.example.com/dev/actions/a2','http://photoz.example.com/dev/actions/a3']}}]}]}"/>
+    <parameter name="correctScopeExpression"
+               value="{'rule':{'or':[{'var':0},{'var':1}]},'data':['http://photoz.example.com/dev/actions/a1','http://photoz.example.com/dev/actions/a2']}"/>
+    <parameter name="incorrectScopeExpression"
+               value="{'rule':{'not':[{'or':[{'var':0},{'var':1}]},{'var':2}]},'data':['http://photoz.example.com/dev/actions/a1','http://photoz.example.com/dev/actions/a2','http://photoz.example.com/dev/actions/a3']}"/>
+    <parameter name="clientJwksUri" value="${clientJwksUri}"/>
+    <parameter name="accessTokenSigningAlg" value="${accessTokenSigningAlg}"/>
 
     <listeners>
         <listener class-name="io.jans.ca.server.JansUnitTestsListener"/>
     </listeners>
 
+
+    <!-- Connect -->
     <test name="HealthCheckTest" enabled="true">
         <classes>
-
+            <class name="io.jans.ca.server.HealthCheckTest"></class>
         </classes>
     </test>
+
 </suite>

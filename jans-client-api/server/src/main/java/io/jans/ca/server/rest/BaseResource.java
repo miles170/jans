@@ -12,11 +12,10 @@ import io.jans.ca.common.response.POJOResponse;
 import io.jans.ca.server.HttpException;
 import io.jans.ca.server.Processor;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
-import io.jans.ca.server.configuration.model.ApiConf;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.service.RpSyncService;
 import io.jans.ca.server.service.ValidationService;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.WebApplicationException;
@@ -34,7 +33,7 @@ public class BaseResource {
     Logger logger;
 
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
     @Inject
     RpSyncService rpSyncService;
     @Inject
@@ -78,8 +77,8 @@ public class BaseResource {
     private void validateIpAddressAllowed(String callerIpAddress) {
         logger.trace("Checking if caller ipAddress : {} is allowed to make request to jans_client_api.", callerIpAddress);
         logger.info("Checking if caller ipAddress : {} is allowed to make request to jans_client_api.", callerIpAddress);
-        final ApiConf conf = configurationService.findConf();
-        List<String> bindIpAddresses = conf.getDynamicConf().getBindIpAddresses();
+        final ApiAppConfiguration conf = jansConfigurationService.find();
+        List<String> bindIpAddresses = conf.getBindIpAddresses();
 
         //localhost as default bindAddress
         if ((bindIpAddresses == null || bindIpAddresses.isEmpty()) && LOCALHOST_IP_ADDRESS.equalsIgnoreCase(callerIpAddress)) {
@@ -106,10 +105,10 @@ public class BaseResource {
         logger.trace("Command: {}", paramsAsString);
         T params = read(safeToJson(paramsAsString), paramsClass);
 
-        final ApiConf conf = configurationService.findConf();
+        final ApiAppConfiguration conf = jansConfigurationService.find();
 
         if (commandType.isAuthorizationRequired()) {
-            validateAuthorizationRpId(conf.getDynamicConf(), AuthorizationRpId);
+            validateAuthorizationRpId(conf, AuthorizationRpId);
             validateAccessToken(authorization, safeToRpId((HasRpIdParams) params, AuthorizationRpId));
         }
 
@@ -147,9 +146,9 @@ public class BaseResource {
 
     private void validateAccessToken(String authorization, String AuthorizationRpId) {
         final String prefix = "Bearer ";
-        final ApiConf conf = configurationService.findConf();
+        final ApiAppConfiguration conf = jansConfigurationService.find();
 
-        if (conf.getDynamicConf().getProtectCommandsWithAccessToken() != null && !conf.getDynamicConf().getProtectCommandsWithAccessToken()) {
+        if (conf.getProtectCommandsWithAccessToken() != null && !conf.getProtectCommandsWithAccessToken()) {
             logger.debug("Skip protection because protect_commands_with_access_token: false in configuration file.");
             return;
         }

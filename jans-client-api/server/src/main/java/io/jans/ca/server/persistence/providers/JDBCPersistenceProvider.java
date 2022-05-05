@@ -5,10 +5,9 @@ import com.google.common.base.Strings;
 import io.jans.ca.common.Jackson2;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.jans.ca.server.persistence.configuration.JDBCConfiguration;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -21,13 +20,13 @@ public class JDBCPersistenceProvider implements SqlPersistenceProvider {
     Logger logger;
 
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
     private BasicDataSource dataSource = null;
 
     @Override
     public void onCreate() {
         try {
-            JDBCConfiguration jdbcConfiguration = asJDBCConfiguration(configurationService.findConf().getDynamicConf());
+            JDBCConfiguration jdbcConfiguration = asJDBCConfiguration(jansConfigurationService.find());
             validate(jdbcConfiguration);
 
             dataSource = new BasicDataSource();

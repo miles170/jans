@@ -9,12 +9,10 @@ import io.jans.ca.common.ErrorResponseCode;
 import io.jans.ca.common.params.HasRpIdParams;
 import io.jans.ca.common.params.IParams;
 import io.jans.ca.server.HttpException;
-import io.jans.ca.server.configuration.model.ApiConf;
+import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.jans.ca.server.configuration.model.Rp;
-import io.jans.ca.server.service.RpSyncService;
 import io.jans.ca.server.service.ServiceProvider;
 import io.jans.ca.server.service.ValidationService;
-import io.jans.ca.server.service.auth.ConfigurationService;
 import io.jans.ca.server.utils.Convertor;
 
 /**
@@ -65,8 +63,8 @@ public abstract class BaseOperation<T extends IParams> implements IOperation<T> 
 
 
     public AuthCryptoProvider getCryptoProvider() throws Exception {
-        ApiConf conf = serviceProvider.getConfigurationService().findConf();
-        return new AuthCryptoProvider(conf.getDynamicConf().getCryptProviderKeyStorePath(), conf.getDynamicConf().getCryptProviderKeyStorePassword(), conf.getDynamicConf().getCryptProviderDnName());
+        ApiAppConfiguration conf = serviceProvider.getConfigurationService().find();
+        return new AuthCryptoProvider(conf.getCryptProviderKeyStorePath(), conf.getCryptProviderKeyStorePassword(), conf.getCryptProviderDnName());
     }
 
     public Rp getRp() {

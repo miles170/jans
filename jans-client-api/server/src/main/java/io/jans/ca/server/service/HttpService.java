@@ -7,7 +7,7 @@ import com.google.common.base.Strings;
 import io.jans.ca.common.CoreUtils;
 import io.jans.ca.common.proxy.ProxyConfiguration;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import org.apache.http.client.HttpClient;
 import org.jboss.resteasy.client.jaxrs.ClientHttpEngine;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
@@ -27,10 +27,10 @@ public class HttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpService.class);
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
 
     private ApiAppConfiguration getConfiguration() {
-        return configurationService.findConf().getDynamicConf();
+        return jansConfigurationService.find();
     }
 
     public HttpClient getHttpClient() {

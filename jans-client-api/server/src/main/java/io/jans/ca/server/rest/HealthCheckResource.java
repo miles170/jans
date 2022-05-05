@@ -2,7 +2,7 @@ package io.jans.ca.server.rest;
 
 import io.jans.ca.server.Utils;
 import io.jans.ca.server.configuration.model.ApiConf;
-import io.jans.ca.server.service.auth.ConfigurationService;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
 import io.jans.ca.server.utils.ErrorResponse;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ public class HealthCheckResource {
     @Inject
     Logger logger;
     @Inject
-    ConfigurationService configurationService;
+    JansConfigurationService jansConfigurationService;
 
     private static final String LOG_STATUS = "log_status";
     private static final String CONFIG_STATUS = "config_status";
@@ -61,6 +61,6 @@ public class HealthCheckResource {
     }
 
     private ApiConf checkDatabaseConnection() {
-        return configurationService.findConf();
+        return jansConfigurationService.findConf();
     }
 }

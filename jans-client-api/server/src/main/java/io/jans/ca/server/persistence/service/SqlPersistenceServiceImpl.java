@@ -7,7 +7,6 @@ import io.jans.ca.common.Jackson2;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.persistence.providers.SqlPersistenceProvider;
 import io.jans.ca.server.service.MigrationService;
-import io.jans.ca.server.service.auth.ConfigurationService;
 import org.h2.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +23,9 @@ public class SqlPersistenceServiceImpl implements PersistenceService {
     private static final Logger LOG = LoggerFactory.getLogger(SqlPersistenceServiceImpl.class);
 
     private SqlPersistenceProvider provider;
-    private ConfigurationService configurationService;
 
-    public SqlPersistenceServiceImpl(SqlPersistenceProvider provider, ConfigurationService configurationService) {
+    public SqlPersistenceServiceImpl(SqlPersistenceProvider provider) {
         this.provider = provider;
-        this.configurationService = configurationService;
     }
 
     public void create() {
