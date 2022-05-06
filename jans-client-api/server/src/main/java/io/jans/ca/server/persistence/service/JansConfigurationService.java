@@ -52,7 +52,7 @@ public class JansConfigurationService implements PersistenceService {
     Logger logger;
     
     private StatsData statsData;
-    private String baseDn;
+    private static final String baseDn = "o=jans";
 
     private ApiAppConfiguration configuration;
 
@@ -99,7 +99,7 @@ public class JansConfigurationService implements PersistenceService {
         logger.debug("Creating JansPersistence for Api Client...");
         try {
             this.configuration = find();
-            this.baseDn = configurationFactory.getConfigurationDn(CONFIGURATION_ENTRY_DN);
+//            this.baseDn = configurationFactory.getConfigurationDn(CONFIGURATION_ENTRY_DN);
             prepareBranch();
         } catch (Exception e) {
             throw new IllegalStateException("Error JansPersistence for Api Client", e);
@@ -120,8 +120,8 @@ public class JansConfigurationService implements PersistenceService {
             addBranch(String.format("%s,%s", ou("configuration"), this.baseDn), "configuration");
         }
         //create `ou=client-api,ou=configuration,o=jans` if not present
-        if (!containsBranch(String.format("%s,%s,%s", ou("client-api"), ou("configuration"), this.baseDn))) {
-            addBranch(String.format("%s,%s,%s", ou("client-api"), ou("configuration"), this.baseDn), "client-api");
+        if (!containsBranch(String.format("%s,%s,%s", ou("jans-client-api"), ou("configuration"), this.baseDn))) {
+            addBranch(String.format("%s,%s,%s", ou("jans-client-api"), ou("configuration"), this.baseDn), "jans-client-api");
         }
         //create `ou=client-api,o=jans` if not present
         if (!containsBranch(getClientApiDn())) {
@@ -131,7 +131,7 @@ public class JansConfigurationService implements PersistenceService {
         if (!containsBranch(String.format("%s,%s", getRpOu(), getClientApiDn()))) {
             addBranch(String.format("%s,%s", getRpOu(), getClientApiDn()), "rp");
         }
-        //create `ou=expiredObjects,ou=rp,o=jans` if not present
+        //create `ou=expiredObjects,ou=client-api,o=jans` if not present
         if (!containsBranch(String.format("%s,%s", getExpiredObjOu(), getClientApiDn()))) {
             addBranch(String.format("%s,%s", getExpiredObjOu(), getClientApiDn()), "expiredObjects");
         }

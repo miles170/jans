@@ -80,9 +80,9 @@ public class HttpService {
     }
 
     private void validate(ProxyConfiguration proxyConfiguration) {
-
         if (Strings.isNullOrEmpty(proxyConfiguration.getHost())) {
-            throw new RuntimeException("Invalid proxy server `hostname` provided (empty or null). jans_client_api will connect to OP_HOST without proxy configuration.");
+            LOG.info("Invalid proxy server `hostname` provided (empty or null). jans_client_api will connect to OP_HOST without proxy configuration.");
+//            throw new RuntimeException("Invalid proxy server `hostname` provided (empty or null). jans_client_api will connect to OP_HOST without proxy configuration.");
         }
     }
 
