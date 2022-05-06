@@ -12,6 +12,7 @@ import io.jans.ca.common.params.RpGetRptParams;
 import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.server.HttpException;
 
+import io.jans.ca.server.service.ServiceProvider;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
@@ -35,9 +36,9 @@ public class RpGetRptOperation extends BaseOperation<RpGetRptParams> {
     private static final Logger LOG = LoggerFactory.getLogger(RpGetRptOperation.class);
     private UmaTokenService umaTokenService;
 
-    public RpGetRptOperation(Command command, UmaTokenService umaTokenService) {
-        super(command, RpGetRptParams.class);
-        this.umaTokenService = umaTokenService;
+    public RpGetRptOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, RpGetRptParams.class);
+        this.umaTokenService = serviceProvider.getUmaTokenService();
     }
 
     @Override

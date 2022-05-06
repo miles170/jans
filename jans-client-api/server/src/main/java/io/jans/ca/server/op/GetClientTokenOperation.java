@@ -17,6 +17,7 @@ import io.jans.ca.server.HttpException;
 import io.jans.ca.server.Utils;
 import io.jans.ca.server.service.DiscoveryService;
 import io.jans.ca.server.service.HttpService;
+import io.jans.ca.server.service.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,9 +44,9 @@ public class GetClientTokenOperation extends BaseOperation<GetClientTokenParams>
      *
      * @param command command
      */
-    public GetClientTokenOperation(Command command, DiscoveryService discoveryService) {
-        super(command, GetClientTokenParams.class);
-        this.discoveryService = discoveryService;
+    public GetClientTokenOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, GetClientTokenParams.class);
+        this.discoveryService = serviceProvider.getDiscoveryService();
         this.httpService = discoveryService.getHttpService();
         this.opClientFactory = discoveryService.getOpClientFactory();
     }

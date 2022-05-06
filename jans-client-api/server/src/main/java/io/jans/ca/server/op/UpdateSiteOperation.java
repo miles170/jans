@@ -22,6 +22,7 @@ import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.mapper.RegisterRequestMapper;
 import io.jans.ca.server.service.RpService;
 import io.jans.ca.server.persistence.service.JansConfigurationService;
+import io.jans.ca.server.service.ServiceProvider;
 import jakarta.ws.rs.HttpMethod;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -52,9 +53,9 @@ public class UpdateSiteOperation extends BaseOperation<UpdateSiteParams> {
      *
      * @param command command
      */
-    public UpdateSiteOperation(Command command, RpService rpService) {
-        super(command, UpdateSiteParams.class);
-        this.rpService = rpService;
+    public UpdateSiteOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, UpdateSiteParams.class);
+        this.rpService = serviceProvider.getRpService();
         this.jansConfigurationService = rpService.getConfigurationService();
     }
 

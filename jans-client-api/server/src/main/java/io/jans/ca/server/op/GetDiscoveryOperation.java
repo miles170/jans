@@ -8,6 +8,7 @@ import io.jans.ca.common.response.GetDiscoveryResponse;
 import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.server.HttpException;
 import io.jans.ca.server.service.DiscoveryService;
+import io.jans.ca.server.service.ServiceProvider;
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +31,9 @@ public class GetDiscoveryOperation extends BaseOperation<GetDiscoveryParams> {
      *
      * @param command command
      */
-    public GetDiscoveryOperation(Command command, DiscoveryService discoveryService) {
-        super(command, GetDiscoveryParams.class);
-        this.discoveryService = discoveryService;
+    public GetDiscoveryOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, GetDiscoveryParams.class);
+        this.discoveryService = serviceProvider.getDiscoveryService();
     }
 
     public IOpResponse execute(GetDiscoveryParams params) {

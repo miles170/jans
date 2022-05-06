@@ -14,6 +14,7 @@ import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.common.response.POJOResponse;
 import io.jans.ca.server.HttpException;
 import io.jans.ca.server.service.DiscoveryService;
+import io.jans.ca.server.service.ServiceProvider;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -27,9 +28,9 @@ public class GetJwksOperation extends BaseOperation<GetJwksParams> {
 
     private DiscoveryService discoveryService;
 
-    public GetJwksOperation(Command command, DiscoveryService discoveryService) {
-        super(command, GetJwksParams.class);
-        this.discoveryService = discoveryService;
+    public GetJwksOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, GetJwksParams.class);
+        this.discoveryService = serviceProvider.getDiscoveryService();
     }
 
     @Override

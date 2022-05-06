@@ -14,6 +14,7 @@ import io.jans.ca.server.HttpException;
 import io.jans.ca.server.Utils;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.service.DiscoveryService;
+import io.jans.ca.server.service.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +29,9 @@ public class GetAccessTokenByRefreshTokenOperation extends BaseOperation<GetAcce
     private static final Logger LOG = LoggerFactory.getLogger(GetAccessTokenByRefreshTokenOperation.class);
     private DiscoveryService discoveryService;
 
-    public GetAccessTokenByRefreshTokenOperation(Command command, DiscoveryService discoveryService) {
-        super(command, GetAccessTokenByRefreshTokenParams.class);
-        this.discoveryService = discoveryService;
+    public GetAccessTokenByRefreshTokenOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, GetAccessTokenByRefreshTokenParams.class);
+        this.discoveryService = serviceProvider.getDiscoveryService();
     }
 
     @Override

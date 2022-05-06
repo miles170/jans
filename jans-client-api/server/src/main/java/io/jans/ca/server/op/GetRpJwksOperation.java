@@ -6,14 +6,15 @@ import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.common.response.POJOResponse;
 import io.jans.ca.server.HttpException;
 import io.jans.ca.server.service.KeyGeneratorService;
+import io.jans.ca.server.service.ServiceProvider;
 
 public class GetRpJwksOperation extends BaseOperation<GetJwksParams> {
 
     private KeyGeneratorService keyGeneratorService;
 
-    public GetRpJwksOperation(Command command, KeyGeneratorService keyGeneratorService) {
-        super(command, GetJwksParams.class);
-        this.keyGeneratorService = keyGeneratorService;
+    public GetRpJwksOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, GetJwksParams.class);
+        this.keyGeneratorService = serviceProvider.getKeyGeneratorService();
     }
 
     @Override

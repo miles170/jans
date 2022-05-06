@@ -1,6 +1,7 @@
 package io.jans.ca.server.service;
 
 import io.jans.ca.server.persistence.service.JansConfigurationService;
+import jakarta.inject.Inject;
 
 public class ServiceProvider {
 
@@ -11,6 +12,13 @@ public class ServiceProvider {
     private DiscoveryService discoveryService;
     private IntrospectionService introspectionService;
     private RpService rpService;
+    private StateService stateService;
+    private UmaTokenService umaTokenService;
+
+    private KeyGeneratorService keyGeneratorService;
+    private PublicOpKeyService publicOpKeyService;
+
+
 
     public ValidationService getValidationService() {
         return validationService;
@@ -66,5 +74,45 @@ public class ServiceProvider {
 
     public void setIntrospectionService(IntrospectionService introspectionService) {
         this.introspectionService = introspectionService;
+    }
+
+    public JansConfigurationService getJansConfigurationService() {
+        return jansConfigurationService;
+    }
+
+    public void setJansConfigurationService(JansConfigurationService jansConfigurationService) {
+        this.jansConfigurationService = jansConfigurationService;
+    }
+
+    public StateService getStateService() {
+        return stateService;
+    }
+
+    public void setStateService(StateService stateService) {
+        this.stateService = stateService;
+    }
+
+    public UmaTokenService getUmaTokenService() {
+        return umaTokenService;
+    }
+
+    public void setUmaTokenService(UmaTokenService umaTokenService) {
+        this.umaTokenService = umaTokenService;
+    }
+
+    public KeyGeneratorService getKeyGeneratorService() {
+        return keyGeneratorService;
+    }
+
+    public void setKeyGeneratorService(KeyGeneratorService keyGeneratorService) {
+        this.keyGeneratorService = keyGeneratorService;
+    }
+
+    public PublicOpKeyService getPublicOpKeyService() {
+        return publicOpKeyService;
+    }
+
+    public void setPublicOpKeyService(PublicOpKeyService publicOpKeyService) {
+        this.publicOpKeyService = publicOpKeyService;
     }
 }

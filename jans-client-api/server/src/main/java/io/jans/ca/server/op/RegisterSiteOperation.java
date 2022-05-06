@@ -27,6 +27,7 @@ import io.jans.ca.server.mapper.RegisterRequestMapper;
 import io.jans.ca.server.service.DiscoveryService;
 import io.jans.ca.server.service.RpService;
 import io.jans.ca.server.persistence.service.JansConfigurationService;
+import io.jans.ca.server.service.ServiceProvider;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -57,10 +58,10 @@ public class RegisterSiteOperation extends BaseOperation<RegisterSiteParams> {
      *
      * @param command command
      */
-    public RegisterSiteOperation(Command command, RpService rpService, DiscoveryService discoveryService) {
-        super(command, RegisterSiteParams.class);
-        this.discoveryService = discoveryService;
-        this.rpService = rpService;
+    public RegisterSiteOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, RegisterSiteParams.class);
+        this.discoveryService = serviceProvider.getDiscoveryService();
+        this.rpService = serviceProvider.getRpService();
         this.jansConfigurationService = rpService.getConfigurationService();
     }
 

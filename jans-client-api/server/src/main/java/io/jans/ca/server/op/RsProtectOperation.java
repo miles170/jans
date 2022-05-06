@@ -53,9 +53,9 @@ public class RsProtectOperation extends BaseOperation<RsProtectParams> {
     private DiscoveryService discoveryService;
     private HttpService httpService;
 
-    public RsProtectOperation(Command p_command, UmaTokenService umaTokenService) {
-        super(p_command, RsProtectParams.class);
-        this.umaTokenService = umaTokenService;
+    public RsProtectOperation(Command p_command, io.jans.ca.server.service.ServiceProvider serviceProvider) {
+        super(p_command, serviceProvider, RsProtectParams.class);
+        this.umaTokenService = serviceProvider.getUmaTokenService();
         this.opClientFactory = umaTokenService.getOpClientFactory();
         this.rpService = umaTokenService.getRpService();
         this.discoveryService = umaTokenService.getDiscoveryService();

@@ -41,9 +41,9 @@ public class RsCheckAccessOperation extends BaseOperation<RsCheckAccessParams> {
     private IntrospectionService introspectionService;
     private OpClientFactoryImpl opClientFactory;
 
-    public RsCheckAccessOperation(Command command, UmaTokenService umaTokenService) {
-        super(command, RsCheckAccessParams.class);
-        this.umaTokenService = umaTokenService;
+    public RsCheckAccessOperation(Command command, io.jans.ca.server.service.ServiceProvider serviceProvider) {
+        super(command, serviceProvider, RsCheckAccessParams.class);
+        this.umaTokenService = serviceProvider.getUmaTokenService();
         this.introspectionService = umaTokenService.getIntrospectionService();
         this.opClientFactory = umaTokenService.getOpClientFactory();
     }

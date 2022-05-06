@@ -44,12 +44,12 @@ public class GetTokensByCodeOperation extends BaseOperation<GetTokensByCodeParam
     private OpClientFactoryImpl opClientFactory;
     private HttpService httpService;
 
-    public GetTokensByCodeOperation(Command command, DiscoveryService discoveryService, StateService stateService, RpService rpService, KeyGeneratorService keyGeneratorService, PublicOpKeyService publicOpKeyService) {
-        super(command, GetTokensByCodeParams.class);
-        this.discoveryService = discoveryService;
-        this.stateService = stateService;
-        this.rpService = rpService;
-        this.keyGeneratorService = keyGeneratorService;
+    public GetTokensByCodeOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, GetTokensByCodeParams.class);
+        this.discoveryService = serviceProvider.getDiscoveryService();
+        this.stateService = serviceProvider.getStateService();
+        this.rpService = serviceProvider.getRpService();
+        this.keyGeneratorService = serviceProvider.getKeyGeneratorService();
         this.httpService = discoveryService.getHttpService();
         this.opClientFactory = discoveryService.getOpClientFactory();
         this.jansConfigurationService = stateService.getConfigurationService();

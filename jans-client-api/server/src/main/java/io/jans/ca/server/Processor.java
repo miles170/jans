@@ -84,6 +84,10 @@ public class Processor {
         serviceProvider.setValidationService(validationService);
         serviceProvider.setHttpService(discoveryService.getHttpService());
         serviceProvider.setRpSyncService(rpSyncService);
+        serviceProvider.setStateService(stateService);
+        serviceProvider.setUmaTokenService(umaTokenService);
+        serviceProvider.setKeyGeneratorService(keyGeneratorService);
+        serviceProvider.setPublicOpKeyService(publicOpKeyService);
         return serviceProvider;
     }
 
@@ -92,39 +96,39 @@ public class Processor {
         if (command != null && command.getCommandType() != null) {
             switch (command.getCommandType()) {
                 case REGISTER_SITE:
-                    return new RegisterSiteOperation(command, rpService, discoveryService);
+                    return new RegisterSiteOperation(command, getServiceProvider());
                 case UPDATE_SITE:
-                    return new UpdateSiteOperation(command, rpService);
+                    return new UpdateSiteOperation(command, getServiceProvider());
                 case REMOVE_SITE:
                     return new RemoveSiteOperation(command, getServiceProvider());
                 case GET_CLIENT_TOKEN:
-                    return new GetClientTokenOperation(command, discoveryService);
+                    return new GetClientTokenOperation(command, getServiceProvider());
                 case GET_ACCESS_TOKEN_BY_REFRESH_TOKEN:
-                    return new GetAccessTokenByRefreshTokenOperation(command, discoveryService);
+                    return new GetAccessTokenByRefreshTokenOperation(command, getServiceProvider());
                 case INTROSPECT_ACCESS_TOKEN:
                     return new IntrospectAccessTokenOperation(command, getServiceProvider());
                 case GET_USER_INFO:
                     return new GetUserInfoOperation(command, getServiceProvider());
                 case GET_JWKS:
-                    return new GetJwksOperation(command, discoveryService);
+                    return new GetJwksOperation(command, getServiceProvider());
                 case GET_DISCOVERY:
-                    return new GetDiscoveryOperation(command, discoveryService);
+                    return new GetDiscoveryOperation(command, getServiceProvider());
                 case GET_AUTHORIZATION_URL:
-                    return new GetAuthorizationUrlOperation(command, discoveryService, stateService, jansConfigurationService);
+                    return new GetAuthorizationUrlOperation(command, getServiceProvider());
                 case GET_TOKENS_BY_CODE:
-                    return new GetTokensByCodeOperation(command, discoveryService, stateService, rpService, keyGeneratorService, publicOpKeyService);
+                    return new GetTokensByCodeOperation(command, getServiceProvider());
                 case RS_PROTECT:
-                    return new RsProtectOperation(command, umaTokenService);
+                    return new RsProtectOperation(command, getServiceProvider());
                 case RS_CHECK_ACCESS:
-                    return new RsCheckAccessOperation(command, umaTokenService);
+                    return new RsCheckAccessOperation(command, getServiceProvider());
                 case INTROSPECT_RPT:
                     return new IntrospectRptOperation(command, getServiceProvider());
                 case RP_GET_RPT:
-                    return new RpGetRptOperation(command, umaTokenService);
+                    return new RpGetRptOperation(command, getServiceProvider());
                 case RP_GET_CLAIMS_GATHERING_URL:
-                    return new RpGetGetClaimsGatheringUrlOperation(command, discoveryService, stateService);
+                    return new RpGetGetClaimsGatheringUrlOperation(command, getServiceProvider());
                 case GET_RP_JWKS:
-                    return new GetRpJwksOperation(command, keyGeneratorService);
+                    return new GetRpJwksOperation(command, getServiceProvider());
             }
             logger.error("Command is not supported. Command: {}", command);
         } else {

@@ -12,6 +12,7 @@ import io.jans.ca.server.HttpException;
 import io.jans.ca.server.Utils;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.service.DiscoveryService;
+import io.jans.ca.server.service.ServiceProvider;
 import io.jans.ca.server.service.StateService;
 import org.apache.commons.lang.StringUtils;
 
@@ -30,10 +31,10 @@ public class RpGetGetClaimsGatheringUrlOperation extends BaseOperation<RpGetClai
     private DiscoveryService discoveryService;
     private StateService stateService;
 
-    public RpGetGetClaimsGatheringUrlOperation(Command command, DiscoveryService discoveryService, StateService stateService) {
-        super(command, RpGetClaimsGatheringUrlParams.class);
-        this.discoveryService = discoveryService;
-        this.stateService = stateService;
+    public RpGetGetClaimsGatheringUrlOperation(Command command, ServiceProvider serviceProvider) {
+        super(command, serviceProvider, RpGetClaimsGatheringUrlParams.class);
+        this.discoveryService = serviceProvider.getDiscoveryService();
+        this.stateService = serviceProvider.getStateService();
     }
 
     @Override
