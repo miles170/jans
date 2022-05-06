@@ -53,7 +53,7 @@ public class GetTokensByCodeOperation extends BaseOperation<GetTokensByCodeParam
         this.httpService = discoveryService.getHttpService();
         this.opClientFactory = discoveryService.getOpClientFactory();
         this.jansConfigurationService = stateService.getConfigurationService();
-        this.publicOpKeyService = publicOpKeyService;
+        this.publicOpKeyService = serviceProvider.getPublicOpKeyService();
     }
 
     @Override
