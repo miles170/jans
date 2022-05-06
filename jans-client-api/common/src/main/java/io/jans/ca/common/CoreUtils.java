@@ -244,7 +244,7 @@ public class CoreUtils {
     }
 
     public static HttpClient createClientFallback(ProxyConfiguration proxyConfiguration) {
-        if (!Strings.isNullOrEmpty(proxyConfiguration.getHost())) {
+        if (proxyConfiguration != null && !Strings.isNullOrEmpty(proxyConfiguration.getHost())) {
             HttpHost proxyhost = null;
             ProxyConfiguration proxyConfigObj = proxyConfiguration;
 
