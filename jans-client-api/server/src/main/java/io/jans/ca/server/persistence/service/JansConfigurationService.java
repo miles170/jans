@@ -39,7 +39,7 @@ import static io.jans.ca.server.configuration.ConfigurationFactory.CONFIGURATION
  * @author Yuriy Zabrovarnyy
  */
 @ApplicationScoped
-public class JansConfigurationService implements PersistenceService {
+public class  JansConfigurationService implements PersistenceService {
 
     @Inject
     @Named(ApplicationFactory.PERSISTENCE_ENTRY_MANAGER_NAME)
@@ -322,11 +322,11 @@ public class JansConfigurationService implements PersistenceService {
     }
 
     public String getDnForRp(String rpId) {
-        return String.format("oxId=%s,%s,%s", new Object[]{rpId, getRpOu(), getClientApiDn()});
+        return String.format("jansId=%s,%s,%s", new Object[]{rpId, getRpOu(), getClientApiDn()});
     }
 
     public String getDnForExpiredObj(String rpId) {
-        return String.format("oxId=%s,%s,%s", new Object[]{rpId, getExpiredObjOu(), getClientApiDn()});
+        return String.format("rpId=%s,%s,%s", new Object[]{rpId, getExpiredObjOu(), getClientApiDn()});
     }
 
     public String ou(String ouName) {
