@@ -24,7 +24,7 @@ public class HealthCheckTest extends BaseTest {
         showTitle("testHealthCheck");
 
         String targetUrl = url.toString() + testPathHealthCheck;
-
+        System.out.println("-----------TARGET URL------------------------" + targetUrl);
         String resp = Tester.newClient(targetUrl).healthCheck();
 
         assertNotNull(resp);

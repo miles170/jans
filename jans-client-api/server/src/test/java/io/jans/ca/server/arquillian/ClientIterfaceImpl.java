@@ -34,9 +34,9 @@ public class ClientIterfaceImpl implements ClientInterface {
         Response response = builder.get();
         String entity = response.readEntity(String.class);
 
-        showResponse("requestJwks", response, entity);
+        showResponse("healthCheck", response, entity);
         assertEquals(response.getStatus(), 200, "Unexpected response code.");
-        return null;
+        return entity;
     }
 
     @Override

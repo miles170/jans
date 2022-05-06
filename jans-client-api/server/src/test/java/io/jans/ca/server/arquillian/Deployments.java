@@ -21,7 +21,6 @@ public class Deployments {
 
     public static WebArchive createDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "jans-client-api-server.war")
-                // Servlets
                 .addAsWebInfResource("jetty-env.xml").addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .setWebXML("web.xml");
         try {

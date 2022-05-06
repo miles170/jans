@@ -42,6 +42,7 @@
         <arquillian.rest.version>1.0.0.Alpha4</arquillian.rest.version>
         <arquillian.drone.version>2.0.0.Final</arquillian.drone.version>
         <arquillian.graphene.version>2.1.0.CR1</arquillian.graphene.version>
+        <arquillian.test.version>1.6.0.Final</arquillian.test.version>
         <shrinkwrap.version>2.1.0</shrinkwrap.version>
         <selenium.version>3.141.59</selenium.version>
         <argLine>-Xms1024m -Xmx2048m -XX:+DisableExplicitGC</argLine>
@@ -338,6 +339,11 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-util</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
                 <version>4.1</version>
@@ -385,9 +391,28 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.jboss.arquillian.test</groupId>
+                <artifactId>arquillian-test-impl-base</artifactId>
+                <version>1.6.0.Final</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.eu.ingwar.tools</groupId>
                 <artifactId>arquillian-suite-extension</artifactId>
                 <version>1.2.0</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-jetty-embedded-11</artifactId>
+                <version>1.0.0.CR4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>4.0.1</version>
                 <scope>test</scope>
             </dependency>
 
@@ -486,6 +511,7 @@
                     <artifactId>jetty-maven-plugin</artifactId>
                     <version>${jetty.version}</version>
                 </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>

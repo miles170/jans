@@ -6,20 +6,13 @@
 
 package io.jans.ca.server.arquillian;
 
-import com.google.common.base.Preconditions;
-import io.jans.ca.common.response.RegisterSiteResponse;
-import io.jans.ca.server.SetupClientTest;
-import io.jans.ca.server.Tester;
 import io.jans.util.StringHelper;
 import io.jans.util.properties.FileConfiguration;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.Response;
 import org.apache.commons.io.IOUtils;
 import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OverProtocol;
 import org.jboss.arquillian.testng.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 
 /**
  * Base class for all seam test which require external configuration
@@ -54,7 +44,7 @@ public abstract class ConfigurableTest extends Arquillian {
 
 
     @Deployment
-    @OverProtocol("Servlet 3.0")
+//    @OverProtocol("Servlet 3.0")
     public static Archive<?> createDeployment() {
         return Deployments.createDeployment();
     }
