@@ -3,6 +3,7 @@
  */
 package io.jans.ca.server.service;
 
+import com.google.common.base.Strings;
 import io.jans.as.client.OpenIdConfigurationClient;
 import io.jans.as.client.OpenIdConfigurationResponse;
 import io.jans.as.model.uma.UmaMetadata;
@@ -65,7 +66,7 @@ public class DiscoveryService {
     }
 
     public OpenIdConfigurationResponse getConnectDiscoveryResponse(String opConfigurationEndpoint, String opHost, String opDiscoveryPath) {
-        return Util.isNullOrEmpty(opConfigurationEndpoint) ? getConnectDiscoveryResponse(getConnectDiscoveryUrl(opHost, opDiscoveryPath))
+        return Strings.isNullOrEmpty(opConfigurationEndpoint) ? getConnectDiscoveryResponse(getConnectDiscoveryUrl(opHost, opDiscoveryPath))
                 : getConnectDiscoveryResponse(opConfigurationEndpoint);
     }
 
@@ -109,7 +110,7 @@ public class DiscoveryService {
     }
 
     public UmaMetadata getUmaDiscovery(String opConfigurationEndpoint, String opHost, String opDiscoveryPath) {
-        return Util.isNullOrEmpty(opConfigurationEndpoint) ? getUmaDiscovery(getConnectDiscoveryUrl(opHost, opDiscoveryPath))
+        return Strings.isNullOrEmpty(opConfigurationEndpoint) ? getUmaDiscovery(getConnectDiscoveryUrl(opHost, opDiscoveryPath))
                 : getUmaDiscovery(opConfigurationEndpoint);
     }
 

@@ -8,18 +8,17 @@ import io.jans.ca.common.CoreUtils;
 import io.jans.ca.common.proxy.ProxyConfiguration;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
 import io.jans.ca.server.persistence.service.JansConfigurationService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ClientHttpEngine;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Yuriy Zabrovarnyy
@@ -37,23 +36,16 @@ public class HttpService {
 
     public HttpClient getHttpClient() {
         ApiAppConfiguration configuration = getConfiguration();
-
-        final ProxyConfiguration proxyConfig = configuration.getProxyConfiguration();
-        if (!isValidProxyConfiguration(proxyConfig)) {
-            return HttpClientBuilder.create().build();
-        }
-
-        //With valid proxyConfiguration
+        final Optional<ProxyConfiguration> proxyConfig = asProxyConfiguration(configuration);
+        final String[] tlsVersions = listToArray(configuration.getTlsVersion());
+        final String[] tlsSecureCiphers = listToArray(configuration.getTlsSecureCipher());
         try {
-            final String[] tlsVersions = listToArray(configuration.getTlsVersion());
-            final String[] tlsSecureCiphers = listToArray(configuration.getTlsSecureCipher());
+            validate(proxyConfig);
             final Boolean trustAllCerts = configuration.getTrustAllCerts();
-
             if (trustAllCerts != null && trustAllCerts) {
                 LOG.trace("Created TRUST_ALL client.");
                 return CoreUtils.createHttpClientTrustAll(proxyConfig, tlsVersions, tlsSecureCiphers);
             }
-
             final String trustStorePath = configuration.getKeyStorePath();
 
             if (Strings.isNullOrEmpty(trustStorePath)) {
@@ -88,16 +80,27 @@ public class HttpService {
         return CoreUtils.createClientFallback(proxyConfig);
     }
 
-    private boolean isValidProxyConfiguration(ProxyConfiguration proxyConfiguration) {
-        if (proxyConfiguration == null) {
-            LOG.info("Invalid configuration `proxyConfiguration` provided null. jans_client_api will connect to OP_HOST without proxy configuration.");
-            return false;
+    private static Optional<ProxyConfiguration> asProxyConfiguration(ApiAppConfiguration configuration) {
+        try {
+            ProxyConfiguration node = configuration.getProxyConfiguration();
+            if (node != null) {
+                return Optional.ofNullable(node);
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to parse ProxyConfiguration.", e);
         }
-        if (Strings.isNullOrEmpty(proxyConfiguration.getHost())) {
-            LOG.info("Invalid proxy server `hostname` provided (empty or null). jans_client_api will connect to OP_HOST without proxy configuration.");
-            return false;
+        return Optional.empty();
+    }
+
+    private void validate(Optional<ProxyConfiguration> proxyConfiguration) {
+
+        if (!proxyConfiguration.isPresent()) {
+            return;
         }
-        return true;
+
+        if (Strings.isNullOrEmpty(proxyConfiguration.get().getHost())) {
+            LOG.warn("Invalid proxy server `hostname` provided (empty or null). jans_client_api will connect to OP_HOST without proxy configuration.");
+        }
     }
 
     public ClientHttpEngine getClientEngine() {
