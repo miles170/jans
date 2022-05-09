@@ -17,7 +17,6 @@ import io.jans.ca.server.configuration.model.ApiConf;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.persistence.modal.OrganizationBranch;
 import io.jans.ca.server.persistence.modal.RpObject;
-import io.jans.ca.server.persistence.service.PersistenceService;
 import io.jans.ca.server.service.MigrationService;
 import io.jans.configapi.model.status.StatsData;
 import io.jans.orm.PersistenceEntryManager;
@@ -25,7 +24,6 @@ import io.jans.orm.exception.EntryPersistenceException;
 import io.jans.orm.model.base.SimpleBranch;
 import io.jans.orm.search.filter.Filter;
 import io.jans.util.StringHelper;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -39,7 +37,7 @@ import static io.jans.ca.server.configuration.ConfigurationFactory.CONFIGURATION
  * @author Yuriy Zabrovarnyy
  */
 @ApplicationScoped
-public class  JansConfigurationService implements PersistenceService {
+public class JansConfigurationService implements PersistenceService {
 
     @Inject
     @Named(ApplicationFactory.PERSISTENCE_ENTRY_MANAGER_NAME)
@@ -50,7 +48,7 @@ public class  JansConfigurationService implements PersistenceService {
 
     @Inject
     Logger logger;
-    
+
     private StatsData statsData;
     private static final String baseDn = "o=jans";
 
@@ -71,8 +69,7 @@ public class  JansConfigurationService implements PersistenceService {
     }
 
     public ApiAppConfiguration find() {
-        final ApiConf conf = findConf();
-        return conf.getDynamicConf();
+        return configurationFactory.getAppConfiguration();
     }
 
     public GluuConfiguration findGluuConfiguration() {
@@ -99,7 +96,6 @@ public class  JansConfigurationService implements PersistenceService {
         logger.debug("Creating JansPersistence for Api Client...");
         try {
             this.configuration = find();
-//            this.baseDn = configurationFactory.getConfigurationDn(CONFIGURATION_ENTRY_DN);
             prepareBranch();
         } catch (Exception e) {
             throw new IllegalStateException("Error JansPersistence for Api Client", e);

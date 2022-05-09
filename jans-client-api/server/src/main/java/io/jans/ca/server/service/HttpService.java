@@ -7,6 +7,7 @@ import com.google.common.base.Strings;
 import io.jans.ca.common.CoreUtils;
 import io.jans.ca.common.proxy.ProxyConfiguration;
 import io.jans.ca.server.configuration.ApiAppConfiguration;
+import io.jans.ca.server.configuration.ConfigurationFactory;
 import io.jans.ca.server.persistence.service.JansConfigurationService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -28,14 +29,10 @@ public class HttpService {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpService.class);
     @Inject
-    JansConfigurationService jansConfigurationService;
-
-    private ApiAppConfiguration getConfiguration() {
-        return jansConfigurationService.find();
-    }
+    ConfigurationFactory configurationFactory;
 
     public HttpClient getHttpClient() {
-        ApiAppConfiguration configuration = getConfiguration();
+        ApiAppConfiguration configuration = configurationFactory.getAppConfiguration();
         final Optional<ProxyConfiguration> proxyConfig = asProxyConfiguration(configuration);
         final String[] tlsVersions = listToArray(configuration.getTlsVersion());
         final String[] tlsSecureCiphers = listToArray(configuration.getTlsSecureCipher());

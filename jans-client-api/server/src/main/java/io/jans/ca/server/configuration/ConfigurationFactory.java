@@ -12,6 +12,8 @@ import io.jans.as.model.config.StaticConfiguration;
 import io.jans.as.model.configuration.Configuration;
 import io.jans.as.model.util.SecurityProviderUtility;
 import io.jans.ca.server.configuration.model.ApiConf;
+import io.jans.ca.server.persistence.service.JansConfigurationService;
+import io.jans.ca.server.service.*;
 import io.jans.exception.ConfigurationException;
 import io.jans.orm.PersistenceEntryManager;
 import io.jans.orm.exception.BasePersistenceException;
@@ -85,6 +87,33 @@ public class ConfigurationFactory {
     @Inject
     private Instance<Configuration> configurationInstance;
 
+    @Inject
+    ValidationService validationService;
+
+    @Inject
+    JansConfigurationService jansConfigurationService;
+
+    @Inject
+    RpSyncService rpSyncService;
+
+    @Inject
+    KeyGeneratorService keyGeneratorService;
+
+    @Inject
+    DiscoveryService discoveryService;
+
+    @Inject
+    RpService rpService;
+
+    @Inject
+    StateService stateService;
+
+    @Inject
+    UmaTokenService umaTokenService;
+
+    @Inject
+    PublicOpKeyService publicOpKeyService;
+
     public final static String PERSISTENCE_CONFIGUARION_RELOAD_EVENT_TYPE = "persistenceConfigurationReloadEvent";
     public final static String BASE_CONFIGUARION_RELOAD_EVENT_TYPE = "baseConfigurationReloadEvent";
     private final static int DEFAULT_INTERVAL = 30; // 30 seconds
@@ -112,6 +141,23 @@ public class ConfigurationFactory {
     private String cryptoConfigurationSalt;
     private long loadedRevision = -1;
     private boolean loadedFromLdap = true;
+
+    @Produces
+    @ApplicationScoped
+    private ServiceProvider getServiceProvider() {
+        ServiceProvider serviceProvider = new ServiceProvider();
+        serviceProvider.setRpService(rpService);
+        serviceProvider.setConfigurationService(jansConfigurationService);
+        serviceProvider.setDiscoveryService(discoveryService);
+        serviceProvider.setValidationService(validationService);
+        serviceProvider.setHttpService(discoveryService.getHttpService());
+        serviceProvider.setRpSyncService(rpSyncService);
+        serviceProvider.setStateService(stateService);
+        serviceProvider.setUmaTokenService(umaTokenService);
+        serviceProvider.setKeyGeneratorService(keyGeneratorService);
+        serviceProvider.setPublicOpKeyService(publicOpKeyService);
+        return serviceProvider;
+    }
 
     @Produces
     @ApplicationScoped

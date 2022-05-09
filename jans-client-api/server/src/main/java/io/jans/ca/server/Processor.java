@@ -8,9 +8,8 @@ import io.jans.ca.common.ErrorResponseCode;
 import io.jans.ca.common.params.IParams;
 import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.server.op.*;
-import io.jans.ca.server.rest.ClearTestsResource;
-import io.jans.ca.server.service.*;
-import io.jans.ca.server.persistence.service.JansConfigurationService;
+import io.jans.ca.server.service.ServiceProvider;
+import io.jans.ca.server.service.ValidationService;
 import io.jans.ca.server.utils.Convertor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,21 +29,7 @@ public class Processor {
     @Inject
     ValidationService validationService;
     @Inject
-    JansConfigurationService jansConfigurationService;
-    @Inject
-    RpSyncService rpSyncService;
-    @Inject
-    KeyGeneratorService keyGeneratorService;
-    @Inject
-    DiscoveryService discoveryService;
-    @Inject
-    RpService rpService;
-    @Inject
-    StateService stateService;
-    @Inject
-    UmaTokenService umaTokenService;
-    @Inject
-    PublicOpKeyService publicOpKeyService;
+    ServiceProvider serviceProvider;
 
 
     public IOpResponse process(Command command) {
@@ -77,63 +62,48 @@ public class Processor {
         throw HttpException.internalError();
     }
 
-    private ServiceProvider getServiceProvider() {
-        ServiceProvider serviceProvider = new ServiceProvider();
-        serviceProvider.setRpService(rpService);
-        serviceProvider.setConfigurationService(jansConfigurationService);
-        serviceProvider.setDiscoveryService(discoveryService);
-        serviceProvider.setValidationService(validationService);
-        serviceProvider.setHttpService(discoveryService.getHttpService());
-        serviceProvider.setRpSyncService(rpSyncService);
-        serviceProvider.setStateService(stateService);
-        serviceProvider.setUmaTokenService(umaTokenService);
-        serviceProvider.setKeyGeneratorService(keyGeneratorService);
-        serviceProvider.setPublicOpKeyService(publicOpKeyService);
-        return serviceProvider;
-    }
-
     private IOperation<? extends IParams> create(Command command) {
 
         if (command != null && command.getCommandType() != null) {
             switch (command.getCommandType()) {
                 case REGISTER_SITE:
-                    return new RegisterSiteOperation(command, getServiceProvider());
+                    return new RegisterSiteOperation(command, serviceProvider);
                 case UPDATE_SITE:
-                    return new UpdateSiteOperation(command, getServiceProvider());
+                    return new UpdateSiteOperation(command, serviceProvider);
                 case REMOVE_SITE:
-                    return new RemoveSiteOperation(command, getServiceProvider());
+                    return new RemoveSiteOperation(command, serviceProvider);
                 case GET_CLIENT_TOKEN:
-                    return new GetClientTokenOperation(command, getServiceProvider());
+                    return new GetClientTokenOperation(command, serviceProvider);
                 case GET_ACCESS_TOKEN_BY_REFRESH_TOKEN:
-                    return new GetAccessTokenByRefreshTokenOperation(command, getServiceProvider());
+                    return new GetAccessTokenByRefreshTokenOperation(command, serviceProvider);
                 case INTROSPECT_ACCESS_TOKEN:
-                    return new IntrospectAccessTokenOperation(command, getServiceProvider());
+                    return new IntrospectAccessTokenOperation(command, serviceProvider);
                 case GET_USER_INFO:
-                    return new GetUserInfoOperation(command, getServiceProvider());
+                    return new GetUserInfoOperation(command, serviceProvider);
                 case GET_JWKS:
-                    return new GetJwksOperation(command, getServiceProvider());
+                    return new GetJwksOperation(command, serviceProvider);
                 case GET_DISCOVERY:
-                    return new GetDiscoveryOperation(command, getServiceProvider());
+                    return new GetDiscoveryOperation(command, serviceProvider);
                 case GET_AUTHORIZATION_URL:
-                    return new GetAuthorizationUrlOperation(command, getServiceProvider());
+                    return new GetAuthorizationUrlOperation(command, serviceProvider);
                 case GET_TOKENS_BY_CODE:
-                    return new GetTokensByCodeOperation(command, getServiceProvider());
+                    return new GetTokensByCodeOperation(command, serviceProvider);
                 case RS_PROTECT:
-                    return new RsProtectOperation(command, getServiceProvider());
+                    return new RsProtectOperation(command, serviceProvider);
                 case RS_CHECK_ACCESS:
-                    return new RsCheckAccessOperation(command, getServiceProvider());
+                    return new RsCheckAccessOperation(command, serviceProvider);
                 case INTROSPECT_RPT:
-                    return new IntrospectRptOperation(command, getServiceProvider());
+                    return new IntrospectRptOperation(command, serviceProvider);
                 case RP_GET_RPT:
-                    return new RpGetRptOperation(command, getServiceProvider());
+                    return new RpGetRptOperation(command, serviceProvider);
                 case RP_GET_CLAIMS_GATHERING_URL:
-                    return new RpGetGetClaimsGatheringUrlOperation(command, getServiceProvider());
+                    return new RpGetGetClaimsGatheringUrlOperation(command, serviceProvider);
                 case GET_RP:
-                    return new GetRpOperation(command, getServiceProvider());
+                    return new GetRpOperation(command, serviceProvider);
                 case GET_RP_JWKS:
-                    return new GetRpJwksOperation(command, getServiceProvider());
+                    return new GetRpJwksOperation(command, serviceProvider);
                 case CLEAR_TESTS:
-                    return new TestClearRpOperation(command, getServiceProvider());
+                    return new TestClearRpOperation(command, serviceProvider);
             }
             logger.error("Command is not supported. Command: {}", command);
         } else {
