@@ -128,6 +128,8 @@ public class Processor {
                     return new RpGetRptOperation(command, getServiceProvider());
                 case RP_GET_CLAIMS_GATHERING_URL:
                     return new RpGetGetClaimsGatheringUrlOperation(command, getServiceProvider());
+                case GET_RP:
+                    return new GetRpOperation(command, getServiceProvider());
                 case GET_RP_JWKS:
                     return new GetRpJwksOperation(command, getServiceProvider());
                 case CLEAR_TESTS:

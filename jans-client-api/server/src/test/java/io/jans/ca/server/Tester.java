@@ -49,14 +49,14 @@ public class Tester {
         return AUTHORIZATION;
     }
 
-    public static String getAuthorization(RegisterSiteResponse site) {
+    public static String getAuthorization(String url, RegisterSiteResponse site) {
         final GetClientTokenParams params = new GetClientTokenParams();
         params.setScope(Lists.newArrayList("openid", "jans_client_api"));
         params.setOpHost(site.getOpHost());
         params.setClientId(site.getClientId());
         params.setClientSecret(site.getClientSecret());
 
-        GetClientTokenResponse resp = Tester.newClient(HOST).getClientToken(params);
+        GetClientTokenResponse resp = Tester.newClient(url).getClientToken(params);
         assertNotNull(resp);
         assertTrue(!Strings.isNullOrEmpty(resp.getAccessToken()));
 

@@ -4,7 +4,6 @@ import io.jans.ca.common.Jackson2;
 import io.jans.ca.server.Tester;
 import io.jans.ca.server.arquillian.BaseTest;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class HealthCheckTest extends BaseTest {
     @Test
     public void testHealthCheck() throws IOException {
         showTitle("testHealthCheck");
-        String resp = Tester.newClient(getTestJansClientApiTagetURL(url)).healthCheck();
+        String resp = Tester.newClient(getApiTagetURL(url)).healthCheck();
 
         assertNotNull(resp);
         Map<String, String> map = Jackson2.createRpMapper().readValue(resp, Map.class);

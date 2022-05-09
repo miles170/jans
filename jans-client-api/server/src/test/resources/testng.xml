@@ -58,15 +58,33 @@
         </classes>
     </test>
 
-<!--    <test name="Register site" enabled="true">-->
-<!--        <classes>-->
-<!--            <class name="io.jans.ca.server.tests.RegisterSiteTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="Register site" enabled="true">
+        <classes>
+            <class name="io.jans.ca.server.tests.RegisterSiteTest"/>
+        </classes>
+    </test>
 
-<!--    <test name="Update site" enabled="true">-->
+    <test name="Update site" enabled="true">
+        <classes>
+            <class name="io.jans.ca.server.tests.UpdateSiteTest"/>
+        </classes>
+    </test>
+
+    <test name="Remove site" enabled="true">
+        <classes>
+            <class name="io.jans.ca.server.tests.RemoveSiteTest"/>
+        </classes>
+    </test>
+
+    <test name="Get Client Token" enabled="true">
+        <classes>
+            <class name="io.jans.ca.server.tests.GetClientTokenTest"/>
+        </classes>
+    </test>
+
+<!--    <test name="Get Tokens by Code" enabled="true">-->
 <!--        <classes>-->
-<!--            <class name="io.jans.ca.server.tests.UpdateSiteTest"/>-->
+<!--            <class name="io.jans.ca.server.tests.GetTokensByCodeTest"/>-->
 <!--        </classes>-->
 <!--    </test>-->
 

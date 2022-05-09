@@ -26,7 +26,7 @@ public class ApiApplication extends Application {
         classes.add(UMA2ReourceServerResource.class);
         classes.add(UMA2RelyingPartyResource.class);
 
-        classes.add(RpJwksResource.class);
+        classes.add(RpResource.class);
 
         return classes;
     }

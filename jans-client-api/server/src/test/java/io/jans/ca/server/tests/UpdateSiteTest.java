@@ -33,19 +33,10 @@ public class UpdateSiteTest  extends BaseTest {
     private static URI url;
 
     @Parameters({"host", "opHost", "redirectUrls"})
-    @BeforeClass
-    public static void beforeClass(String host, String opHost, String redirectUrls) {
-        SetUpTest.beforeSuite(url.toString(), host, opHost, redirectUrls);
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        SetUpTest.afterSuite();
-    }
-
-    @Parameters({"host", "opHost"})
     @Test
-    public void update(String host, String opHost) throws IOException {
+    public void update(String host, String opHost, String redirectUrls) throws IOException {
+
+        SetUpTest.beforeSuite(getApiTagetURL(url), host, opHost, redirectUrls);
 
         String authorizationRedirectUri = "https://client.example.com/cb";
         String anotherRedirectUri = "https://client.example.com/another";
@@ -61,12 +52,12 @@ public class UpdateSiteTest  extends BaseTest {
         registerParams.setResponseTypes(Lists.newArrayList("code"));
         registerParams.setAcrValues(Lists.newArrayList("acrBefore"));
 
-        RegisterSiteResponse registerResponse = Tester.newClient(host).registerSite(registerParams);
+        RegisterSiteResponse registerResponse = getClientInterface(url).registerSite(registerParams);
         assertNotNull(registerResponse);
         assertNotNull(registerResponse.getRpId());
         String rpId = registerResponse.getRpId();
 
-        Rp fetchedRp = fetchRp(host, registerResponse);
+        Rp fetchedRp = fetchRp(getApiTagetURL(url), registerResponse);
 
         assertEquals(authorizationRedirectUri, fetchedRp.getRedirectUri());
         assertEquals(Lists.newArrayList("acrBefore"), fetchedRp.getAcrValues());
@@ -77,17 +68,17 @@ public class UpdateSiteTest  extends BaseTest {
         updateParams.setScope(Lists.newArrayList("profile"));
         updateParams.setAcrValues(Lists.newArrayList("acrAfter"));
 
-        UpdateSiteResponse updateResponse = Tester.newClient(host).updateSite(Tester.getAuthorization(registerResponse), null, updateParams);
+        UpdateSiteResponse updateResponse = getClientInterface(url).updateSite(Tester.getAuthorization(getApiTagetURL(url),registerResponse), null, updateParams);
         assertNotNull(updateResponse);
 
-        fetchedRp = fetchRp(host, registerResponse);
+        fetchedRp = fetchRp(getApiTagetURL(url), registerResponse);
 
         assertEquals(anotherRedirectUri, fetchedRp.getRedirectUri());
         assertEquals(Lists.newArrayList("acrAfter"), fetchedRp.getAcrValues());
     }
 
     private static Rp fetchRp(String host, RegisterSiteResponse site) throws IOException {
-        final String rpAsJson = Tester.newClient(host).getRp(Tester.getAuthorization(site), null, new GetRpParams(site.getRpId()));
+        final String rpAsJson = Tester.newClient(host).getRp(Tester.getAuthorization(getApiTagetURL(url), site), null, new GetRpParams(site.getRpId()));
         GetRpResponse resp = Jackson2.createJsonMapper().readValue(rpAsJson, GetRpResponse.class);
         return Jackson2.createJsonMapper().readValue(resp.getNode().toString(), Rp.class);
     }

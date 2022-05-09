@@ -27,6 +27,7 @@ public class TestApiApplication extends Application {
         classes.add(UMA2ReourceServerResource.class);
         classes.add(UMA2RelyingPartyResource.class);
 
+        classes.add(RpResource.class);
         classes.add(ClearTestsResource.class);
 
         return classes;

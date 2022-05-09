@@ -6,8 +6,9 @@
 
 package io.jans.ca.server.arquillian;
 
+import io.jans.ca.client.ClientInterface;
+import io.jans.ca.server.Tester;
 import jakarta.ws.rs.core.Response;
-import org.apache.commons.lang.StringUtils;
 import org.testng.Assert;
 
 import java.net.URI;
@@ -65,8 +66,13 @@ public abstract class BaseTest extends ConfigurableTest {
         System.out.println("Status message: " + response.getStatus());
     }
 
-    public static String getTestJansClientApiTagetURL(URI uriArquillianTestServer) {
+    public static String getApiTagetURL(URI uriArquillianTestServer) {
         return uriArquillianTestServer.toString();
+    }
+
+    public static ClientInterface getClientInterface(URI uriArquillianTestServer) {
+        String urlEndPoint = getApiTagetURL(uriArquillianTestServer);
+        return Tester.newClient(urlEndPoint);
     }
 
 }

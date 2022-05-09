@@ -68,4 +68,6 @@ public interface ClientInterface {
     GetIssuerResponse getIssuer(GetIssuerParams params);
 
     GetRequestObjectUriResponse getRequestObjectUri(String authorization, String authorizationRpId, GetRequestObjectUriParams params);
+
+    String getApitargetURL();
 }

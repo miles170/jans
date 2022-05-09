@@ -28,20 +28,15 @@ import static org.testng.AssertJUnit.assertTrue;
 
 public class RegisterSiteTest extends BaseTest {
 
-    private RegisterSiteResponse site = null;
+    private static RegisterSiteResponse site = null;
     @ArquillianResource
     private URI url;
-
-    private ClientInterface getRegisterSiteEndPointClient() {
-        String urlEndPoint = getTestJansClientApiTagetURL(url) + PathTestEndPoint.REGISTER_SITE;
-        return Tester.newClient(urlEndPoint);
-    }
 
     @Parameters({"host", "opHost", "redirectUrls", "logoutUrl", "postLogoutRedirectUrls"})
     @Test
     public void register(String host, String opHost, String redirectUrls, String logoutUrl, String postLogoutRedirectUrls) {
         showTitle("register site");
-        RegisterSiteResponse resp = registerSite(getRegisterSiteEndPointClient(), opHost, redirectUrls, postLogoutRedirectUrls, logoutUrl, false);
+        RegisterSiteResponse resp = registerSite(getClientInterface(url), opHost, redirectUrls, postLogoutRedirectUrls, logoutUrl, false);
         assertNotNull(resp);
 
         TestUtils.notEmpty(resp.getRpId());
@@ -110,7 +105,7 @@ public class RegisterSiteTest extends BaseTest {
         customAttributes.put("k2", "v2");
         params.setCustomAttributes(customAttributes);
 
-        RegisterSiteResponse resp = getRegisterSiteEndPointClient().registerSite(params);
+        RegisterSiteResponse resp = getClientInterface(url).registerSite(params);
         assertNotNull(resp);
         assertNotNull(resp.getRpId());
     }
@@ -172,7 +167,7 @@ public class RegisterSiteTest extends BaseTest {
         customAttributes.put("key2", "v2");
         params.setCustomAttributes(customAttributes);
 
-        UpdateSiteResponse resp = getRegisterSiteEndPointClient().updateSite(Tester.getAuthorization(site), null, params);
+        UpdateSiteResponse resp = getClientInterface(url).updateSite(Tester.getAuthorization(getApiTagetURL(url), site), null, params);
         assertNotNull(resp);
     }
 
