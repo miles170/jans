@@ -1,7 +1,9 @@
-package io.jans.ca.server;
+package io.jans.ca.server.tests;
 
 import com.google.common.collect.Lists;
+import io.jans.ca.server.Utils;
 import io.jans.util.security.StringEncrypter;
+import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 import java.io.UnsupportedEncodingException;
@@ -21,7 +23,7 @@ public class UtilsTest {
     @Test
     public void joinAndEncode() throws UnsupportedEncodingException {
         final ArrayList<String> list = Lists.newArrayList("id_token", "token");
-        assertEquals("id_token%20token", Utils.joinAndUrlEncode(list));
+        AssertJUnit.assertEquals("id_token%20token", Utils.joinAndUrlEncode(list));
     }
 
     @Test(enabled = false)

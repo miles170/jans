@@ -1,36 +1,68 @@
 package io.jans.ca.server.arquillian;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.jans.as.model.uma.UmaConstants;
 import io.jans.ca.client.ClientInterface;
 import io.jans.ca.client.GetTokensByCodeResponse2;
 import io.jans.ca.client.RsProtectParams2;
+import io.jans.ca.common.Jackson2;
 import io.jans.ca.common.introspection.CorrectRptIntrospectionResponse;
 import io.jans.ca.common.params.*;
 import io.jans.ca.common.response.*;
+import io.jans.ca.server.TestUtils;
+import io.jans.ca.server.tests.PathTestEndPoint;
+import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 public class ClientIterfaceImpl implements ClientInterface {
 
-    protected String targetUrl = "";
+    protected String targeHostUrl = "";
 
-    public static ClientIterfaceImpl getInstanceClient(String targetUrl) {
+    public static ClientIterfaceImpl getInstanceClient(String targeHostUrl) {
         ClientIterfaceImpl result = new ClientIterfaceImpl();
-        result.targetUrl = targetUrl;
+        result.targeHostUrl = targeHostUrl;
         return result;
+    }
+
+    private WebTarget webTarget(String pathEndPoint) {
+        return ResteasyClientBuilder.newClient().target(targeHostUrl + pathEndPoint);
+    }
+
+    private Invocation.Builder requestBuilder(String pathEndPoint) {
+        return webTarget(pathEndPoint).request();
+    }
+
+    private Entity<?> toPostParam(Object param) {
+        String json = null;
+        try {
+            json = Jackson2.asJson(param);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+        return Entity.json(json);
+    }
+
+    private String readResponse(String endPoint, Response response) {
+        String entity = response.readEntity(String.class);
+        showResponse(endPoint, response, entity);
+        assertEquals(response.getStatus(), 200, "Unexpected response code.");
+        return entity;
     }
 
     @Override
     public String healthCheck() {
-        WebTarget webTarget = ResteasyClientBuilder.newClient().target(targetUrl);
-        Invocation.Builder builder = webTarget.request();
+        Invocation.Builder builder = requestBuilder(PathTestEndPoint.HEALT_CHECK);
         Response response = builder.get();
         String entity = response.readEntity(String.class);
 
@@ -51,6 +83,18 @@ public class ClientIterfaceImpl implements ClientInterface {
 
     @Override
     public GetClientTokenResponse getClientToken(GetClientTokenParams params) {
+        WebTarget webTarget = webTarget(PathTestEndPoint.GET_CLIENT_TOKEN);
+        Invocation.Builder builder = webTarget.request();
+        builder.header("Accept", UmaConstants.JSON_MEDIA_TYPE);
+        builder.header("Content-Type", UmaConstants.JSON_MEDIA_TYPE);
+        Response response = builder.post(toPostParam(params));
+        String json = readResponse(webTarget.getUri().toString(), response);
+        try {
+            return Jackson2.createJsonMapper().readValue(json, GetClientTokenResponse.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
         return null;
     }
 
@@ -66,6 +110,18 @@ public class ClientIterfaceImpl implements ClientInterface {
 
     @Override
     public RegisterSiteResponse registerSite(RegisterSiteParams params) {
+        WebTarget webTarget = ResteasyClientBuilder.newClient().target(targeHostUrl + PathTestEndPoint.REGISTER_SITE);
+        Invocation.Builder builder = webTarget.request();
+        builder.header("Accept", UmaConstants.JSON_MEDIA_TYPE);
+        builder.header("Content-Type", UmaConstants.JSON_MEDIA_TYPE);
+        Response response = builder.post(toPostParam(params));
+        String json = readResponse(webTarget.getUri().toString(), response);
+        try {
+            return Jackson2.createJsonMapper().readValue(json, RegisterSiteResponse.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
         return null;
     }
 

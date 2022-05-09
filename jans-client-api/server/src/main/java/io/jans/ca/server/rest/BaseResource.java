@@ -86,7 +86,7 @@ public class BaseResource {
         }
         //show error if ip_address of a remote caller is not set in `bind_ip_addresses`
         if (bindIpAddresses == null || bindIpAddresses.isEmpty()) {
-            logger.error("The caller is not allowed to make request to jans_client_api. To allow add ip_address of caller in `bind_ip_addresses` array of `client-api-server.yml`.");
+            logger.error("The caller is not allowed to make request to jans_client_api. To allow add ip_address of caller in `bind_ip_addresses` array of configuration.");
             throw new HttpException(ErrorResponseCode.RP_ACCESS_DENIED);
         }
         //allow all ip_address
@@ -97,7 +97,7 @@ public class BaseResource {
         if (bindIpAddresses.contains(callerIpAddress)) {
             return;
         }
-        logger.error("The caller is not allowed to make request to jans_client_api. To allow add ip_address of caller in `bind_ip_addresses` array of `client-api-server.yml`.");
+        logger.error("The caller is not allowed to make request to jans_client_api. To allow add ip_address of caller in `bind_ip_addresses` array of configuration.");
         throw new HttpException(ErrorResponseCode.RP_ACCESS_DENIED);
     }
 

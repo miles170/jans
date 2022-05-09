@@ -357,7 +357,7 @@
 
         <filters>
             <filter>profiles/${cfg}/config-build.properties</filter>
-            <filter>profiles/${cfg}/config-oxd-test-data.properties</filter>
+            <filter>profiles/${cfg}/config-build-test.properties</filter>
         </filters>
 
         <resources>
@@ -471,7 +471,8 @@
                             </resources>
                             <filters>
                                 <filter>${basedir}/profiles/${cfg}/config-oxd.properties</filter>
-                                <filter>${basedir}/profiles/${cfg}/config-oxd-test-sql.properties</filter>
+                                <filter>${basedir}/profiles/${cfg}/config-oxd-sql.properties</filter>
+                                <filter>${basedir}/profiles/${cfg}/config-oxd-ldap.properties</filter>
                             </filters>
                         </configuration>
                     </execution>

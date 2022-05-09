@@ -1,10 +1,11 @@
-package io.jans.ca.server;
+package io.jans.ca.server.tests;
 
 import com.google.common.collect.Lists;
 import io.jans.as.model.common.GrantType;
 import io.jans.ca.client.ClientInterface;
 import io.jans.ca.common.params.RegisterSiteParams;
 import io.jans.ca.common.response.RegisterSiteResponse;
+import io.jans.ca.server.Tester;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 

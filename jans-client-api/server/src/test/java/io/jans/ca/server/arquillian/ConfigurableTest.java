@@ -8,11 +8,15 @@ package io.jans.ca.server.arquillian;
 
 import io.jans.util.StringHelper;
 import io.jans.util.properties.FileConfiguration;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.io.IOUtils;
 import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OverProtocol;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testng.Arquillian;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +26,14 @@ import org.testng.annotations.BeforeSuite;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
 /**
  * Base class for all seam test which require external configuration
@@ -41,7 +49,6 @@ public abstract class ConfigurableTest extends Arquillian {
     public boolean initialized = false;
 
     private static final Logger LOG = LoggerFactory.getLogger(ConfigurableTest.class);
-
 
     @Deployment
 //    @OverProtocol("Servlet 3.0")
@@ -86,34 +93,9 @@ public abstract class ConfigurableTest extends Arquillian {
         // Override test parameters
         context.getSuite().getXmlSuite().setParameters(parameters);
 
-        //Clear RP
-//        removeExistingRps("/clear-tests");
-//        LOG.debug("Existing RPs are removed.");
-
-//        RegisterSiteResponse setupClient = SetupClientTest.setupClient(Tester.newClient(parameters.get("host")), parameters.get("opHost"), parameters.get("redirectUrls"));
-//        Tester.setSetupClient(setupClient, parameters.get("host"), parameters.get("opHost"));
-//        LOG.debug("SETUP_CLIENT is set in Tester.");
-
-//        Preconditions.checkNotNull(Tester.getAuthorization());
-//        LOG.debug("Tester's authorization is set.");
-
         LOG.debug("Finished beforeSuite!");
-
         initialized = true;
     }
-
-//    private void removeExistingRps(String clearTestPath) {
-//        LOG.info(String.valueOf(url));
-//        Invocation.Builder request = ResteasyClientBuilder.newClient().target(url.toString() + clearTestPath).request();
-//
-//        Response response = request.get();
-//        String entity = response.readEntity(String.class);
-//
-//        ClientIterfaceImpl.showResponse("removeExistingRps", response, entity);
-//
-//        assertEquals(response.getStatus(), 200, "Unexpected response code. " + entity);
-//        assertNotNull(entity, "Unexpected result: " + entity);
-//    }
 
     /**
      * Data Provider, that returns correct arrays, which should be used, when JEE testing platform Arquillian is used.

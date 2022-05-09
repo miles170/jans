@@ -8,6 +8,7 @@ import io.jans.ca.common.ErrorResponseCode;
 import io.jans.ca.common.params.IParams;
 import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.server.op.*;
+import io.jans.ca.server.rest.ClearTestsResource;
 import io.jans.ca.server.service.*;
 import io.jans.ca.server.persistence.service.JansConfigurationService;
 import io.jans.ca.server.utils.Convertor;
@@ -129,6 +130,8 @@ public class Processor {
                     return new RpGetGetClaimsGatheringUrlOperation(command, getServiceProvider());
                 case GET_RP_JWKS:
                     return new GetRpJwksOperation(command, getServiceProvider());
+                case CLEAR_TESTS:
+                    return new TestClearRpOperation(command, getServiceProvider());
             }
             logger.error("Command is not supported. Command: {}", command);
         } else {

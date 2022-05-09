@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
 import org.testng.Assert;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,15 @@ public abstract class BaseTest extends ConfigurableTest {
 
         System.out.println("#######################################################");
         System.out.println(title);
+        System.out.println("#######################################################");
+    }
+
+    public static void showTitle(String title, String targetHostApi) {
+        title = "TEST: " + title;
+
+        System.out.println("#######################################################");
+        System.out.println(title);
+        System.out.println("Target host Client Api: " + targetHostApi);
         System.out.println("#######################################################");
     }
 
@@ -54,4 +64,9 @@ public abstract class BaseTest extends ConfigurableTest {
         System.out.println(" ");
         System.out.println("Status message: " + response.getStatus());
     }
+
+    public static String getTestJansClientApiTagetURL(URI uriArquillianTestServer) {
+        return uriArquillianTestServer.toString();
+    }
+
 }

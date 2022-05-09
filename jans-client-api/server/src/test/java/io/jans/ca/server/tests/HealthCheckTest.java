@@ -1,6 +1,7 @@
-package io.jans.ca.server;
+package io.jans.ca.server.tests;
 
 import io.jans.ca.common.Jackson2;
+import io.jans.ca.server.Tester;
 import io.jans.ca.server.arquillian.BaseTest;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.testng.annotations.Parameters;
@@ -18,14 +19,10 @@ public class HealthCheckTest extends BaseTest {
     @ArquillianResource
     private URI url;
 
-    @Parameters({"testPathHealthCheck"})
     @Test
-    public void testHealthCheck(String testPathHealthCheck) throws IOException {
+    public void testHealthCheck() throws IOException {
         showTitle("testHealthCheck");
-
-        String targetUrl = url.toString() + testPathHealthCheck;
-        System.out.println("-----------TARGET URL------------------------" + targetUrl);
-        String resp = Tester.newClient(targetUrl).healthCheck();
+        String resp = Tester.newClient(getTestJansClientApiTagetURL(url)).healthCheck();
 
         assertNotNull(resp);
         Map<String, String> map = Jackson2.createRpMapper().readValue(resp, Map.class);
@@ -33,6 +30,5 @@ public class HealthCheckTest extends BaseTest {
         assertEquals(map.get("application"), "oxd");
         assertEquals(map.get("status"), "running");
         assertEquals(map.get("version"), System.getProperty("projectVersion"));
-
     }
 }

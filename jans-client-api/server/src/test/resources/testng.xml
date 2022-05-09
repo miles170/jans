@@ -1,21 +1,22 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="jansClientApiServer" parallel="false">
+<suite name="jansClientApiServer" parallel="false" preserve-order="true">
 
-    <parameter name="serverUri" value="https://${test.server.name}"/>
+    <parameter name="serverUri" value="https://${test.jans.auth.server.name}"/>
     <parameter name="host" value="http://localhost"/>
     <parameter name="port" value="8099"/>
-    <parameter name="opHost" value="https://${test.server.name}"/>
+    <parameter name="opHost" value="https://${test.jans.auth.server.name}"/>
     <parameter name="authServer" value="https://jenkins-build.jans.io"/>
     <parameter name="opDiscoveryPath" value=""/>
     <parameter name="emailWebfingerInput" value="${swd.resource}"/>
-    <parameter name="urlWebfingerInput" value="https://${test.server.name}/admin"/>
-    <parameter name="hostnameWebfingerInput" value="${test.server.name}"/>
-    <parameter name="opConfigurationEndpoint" value="https://${test.server.name}/.well-known/openid-configuration"/>
+    <parameter name="urlWebfingerInput" value="https://${test.jans.auth.server.name}/admin"/>
+    <parameter name="hostnameWebfingerInput" value="${test.jans.auth.server.name}"/>
+    <parameter name="opConfigurationEndpoint" value="https://${test.jans.auth.server.name}/.well-known/openid-configuration"/>
     <parameter name="redirectUrls" value="https://client.example.com/cb/home1 https://client.example.com/cb/home2"/>
     <parameter name="paramRedirectUrl" value="https://client.example.com/cb/home2"/>
     <parameter name="postLogoutRedirectUrl" value="https://client.example.com/cb/logout"/>
-    <parameter name="postLogoutRedirectUrls" value="https://client.example.com/cb/logout/page1 https://client.example.com/cb/logout/page2"/>
+    <parameter name="postLogoutRedirectUrls"
+               value="https://client.example.com/cb/logout/page1 https://client.example.com/cb/logout/page2"/>
     <parameter name="logoutUrl" value="https://client.example.com/logout"/>
     <parameter name="state" value="custom_state_for_testing"/>
     <parameter name="userId" value="${auth.user.uid}"/>
@@ -45,10 +46,28 @@
 
 
     <!-- Connect -->
-    <test name="HealthCheckTest" enabled="true">
+    <test name="ClearAndPrepareTest" enabled="true">
         <classes>
-            <class name="io.jans.ca.server.HealthCheckTest"></class>
+            <class name="io.jans.ca.server.tests.ClearAndPrepareTest"></class>
         </classes>
     </test>
+
+    <test name="HealthCheckTest" enabled="true">
+        <classes>
+            <class name="io.jans.ca.server.tests.HealthCheckTest"></class>
+        </classes>
+    </test>
+
+<!--    <test name="Register site" enabled="true">-->
+<!--        <classes>-->
+<!--            <class name="io.jans.ca.server.tests.RegisterSiteTest"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+
+<!--    <test name="Update site" enabled="true">-->
+<!--        <classes>-->
+<!--            <class name="io.jans.ca.server.tests.UpdateSiteTest"/>-->
+<!--        </classes>-->
+<!--    </test>-->
 
 </suite>

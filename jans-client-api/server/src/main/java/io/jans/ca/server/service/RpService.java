@@ -151,4 +151,8 @@ public class RpService {
     public JansConfigurationService getConfigurationService() {
         return jansConfigurationService;
     }
+
+    public PersistenceServiceImpl getPersistenceService() {
+        return persistenceService;
+    }
 }

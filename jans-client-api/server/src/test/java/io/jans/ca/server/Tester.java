@@ -27,11 +27,11 @@ public class Tester {
     private static String HOST;
     private static String OP_HOST;
 
-    public static ClientInterface newClient(String targetUrl) {
-        return ClientIterfaceImpl.getInstanceClient(targetUrl);
+    public static ClientInterface newClient(String targeHosttUrl) {
+        return ClientIterfaceImpl.getInstanceClient(targeHosttUrl);
     }
 
-    public static String getAuthorization() {
+    public static String getAuthorization(String url) {
         Preconditions.checkNotNull(SETUP_CLIENT);
         if (Strings.isNullOrEmpty(AUTHORIZATION)) {
             final GetClientTokenParams params = new GetClientTokenParams();
@@ -40,7 +40,7 @@ public class Tester {
             params.setClientId(Tester.getSetupClient().getClientId());
             params.setClientSecret(Tester.getSetupClient().getClientSecret());
 
-            GetClientTokenResponse resp = Tester.newClient(HOST).getClientToken(params);
+            GetClientTokenResponse resp = Tester.newClient(url).getClientToken(params);
             assertNotNull(resp);
             assertTrue(!Strings.isNullOrEmpty(resp.getAccessToken()));
 
