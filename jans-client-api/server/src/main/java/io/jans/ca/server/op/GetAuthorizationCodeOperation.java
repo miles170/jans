@@ -14,6 +14,7 @@ import io.jans.ca.common.response.IOpResponse;
 import io.jans.ca.server.configuration.model.Rp;
 import io.jans.ca.server.service.DiscoveryService;
 import io.jans.ca.server.service.HttpService;
+import io.jans.ca.server.service.ServiceProvider;
 import io.jans.ca.server.service.StateService;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
@@ -41,10 +42,10 @@ public class GetAuthorizationCodeOperation extends BaseOperation<GetAuthorizatio
      *
      * @param p_command command
      */
-    public GetAuthorizationCodeOperation(Command p_command, DiscoveryService discoveryService, StateService stateService) {
+    public GetAuthorizationCodeOperation(Command p_command, ServiceProvider serviceProvider) {
         super(p_command, GetAuthorizationCodeParams.class);
-        this.discoveryService = discoveryService;
-        this.stateService = stateService;
+        this.discoveryService = serviceProvider.getDiscoveryService();
+        this.stateService = serviceProvider.getStateService();
         this.opClientFactory = discoveryService.getOpClientFactory();
         this.httpService = discoveryService.getHttpService();
 

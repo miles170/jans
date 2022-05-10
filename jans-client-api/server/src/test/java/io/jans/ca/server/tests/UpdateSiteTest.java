@@ -27,7 +27,7 @@ import static org.testng.AssertJUnit.assertNotNull;
 /**
  * @author Yuriy Zabrovarnyy
  */
-public class UpdateSiteTest  extends BaseTest {
+public class UpdateSiteTest extends BaseTest {
 
     @ArquillianResource
     private static URI url;
@@ -68,7 +68,7 @@ public class UpdateSiteTest  extends BaseTest {
         updateParams.setScope(Lists.newArrayList("profile"));
         updateParams.setAcrValues(Lists.newArrayList("acrAfter"));
 
-        UpdateSiteResponse updateResponse = getClientInterface(url).updateSite(Tester.getAuthorization(getApiTagetURL(url),registerResponse), null, updateParams);
+        UpdateSiteResponse updateResponse = getClientInterface(url).updateSite(Tester.getAuthorization(getApiTagetURL(url), registerResponse), null, updateParams);
         assertNotNull(updateResponse);
 
         fetchedRp = fetchRp(getApiTagetURL(url), registerResponse);
@@ -77,8 +77,8 @@ public class UpdateSiteTest  extends BaseTest {
         assertEquals(Lists.newArrayList("acrAfter"), fetchedRp.getAcrValues());
     }
 
-    private static Rp fetchRp(String host, RegisterSiteResponse site) throws IOException {
-        final String rpAsJson = Tester.newClient(host).getRp(Tester.getAuthorization(getApiTagetURL(url), site), null, new GetRpParams(site.getRpId()));
+    public static Rp fetchRp(String apiTargetUrl, RegisterSiteResponse site) throws IOException {
+        final String rpAsJson = Tester.newClient(apiTargetUrl).getRp(Tester.getAuthorization(apiTargetUrl, site), null, new GetRpParams(site.getRpId()));
         GetRpResponse resp = Jackson2.createJsonMapper().readValue(rpAsJson, GetRpResponse.class);
         return Jackson2.createJsonMapper().readValue(resp.getNode().toString(), Rp.class);
     }

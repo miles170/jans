@@ -191,16 +191,58 @@ public class ClientIterfaceImpl implements ClientInterface {
 
     @Override
     public GetAuthorizationUrlResponse getAuthorizationUrl(String authorization, String authorizationRpId, GetAuthorizationUrlParams params) {
+        WebTarget webTarget = webTarget(PathTestEndPoint.GET_AUTHORIZATION_URL);
+        Invocation.Builder builder = webTarget.request();
+        builder.header("Accept", UmaConstants.JSON_MEDIA_TYPE);
+        builder.header("Content-Type", UmaConstants.JSON_MEDIA_TYPE);
+        builder.header("Authorization", authorization);
+        builder.header("AuthorizationRpId", authorizationRpId);
+        Response response = builder.post(toPostParam(params));
+        String json = readResponse(webTarget.getUri().toString(), response);
+        try {
+            return Jackson2.createJsonMapper().readValue(json, GetAuthorizationUrlResponse.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
         return null;
     }
 
     @Override
     public GetAuthorizationCodeResponse getAuthorizationCode(String authorization, String authorizationRpId, GetAuthorizationCodeParams params) {
+        WebTarget webTarget = webTarget(PathTestEndPoint.GET_AUTHORIZATION_CODE);
+        Invocation.Builder builder = webTarget.request();
+        builder.header("Accept", UmaConstants.JSON_MEDIA_TYPE);
+        builder.header("Content-Type", UmaConstants.JSON_MEDIA_TYPE);
+        builder.header("Authorization", authorization);
+        builder.header("AuthorizationRpId", authorizationRpId);
+        Response response = builder.post(toPostParam(params));
+        String json = readResponse(webTarget.getUri().toString(), response);
+        try {
+            return Jackson2.createJsonMapper().readValue(json, GetAuthorizationCodeResponse.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
         return null;
     }
 
     @Override
     public GetTokensByCodeResponse2 getTokenByCode(String authorization, String authorizationRpId, GetTokensByCodeParams params) {
+        WebTarget webTarget = webTarget(PathTestEndPoint.GET_TOKENS_BY_CODE);
+        Invocation.Builder builder = webTarget.request();
+        builder.header("Accept", UmaConstants.JSON_MEDIA_TYPE);
+        builder.header("Content-Type", UmaConstants.JSON_MEDIA_TYPE);
+        builder.header("Authorization", authorization);
+        builder.header("AuthorizationRpId", authorizationRpId);
+        Response response = builder.post(toPostParam(params));
+        String json = readResponse(webTarget.getUri().toString(), response);
+        try {
+            return Jackson2.createJsonMapper().readValue(json, GetTokensByCodeResponse2.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
         return null;
     }
 

@@ -18,6 +18,15 @@ public class OpenIdConnectResource extends BaseResource {
     }
 
     @POST
+    @Path("/get-authorization-code")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String getAuthorizationCode(@HeaderParam("Authorization") String authorization, @HeaderParam("AuthorizationRpId") String AuthorizationRpId, String params) {
+        logger.info("Api Resource: /get-authorization-code  Params: {}", params);
+        return process(CommandType.GET_AUTHORIZATION_CODE, params, GetAuthorizationCodeParams.class, authorization, AuthorizationRpId);
+    }
+
+    @POST
     @Path("/get-tokens-by-code")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)

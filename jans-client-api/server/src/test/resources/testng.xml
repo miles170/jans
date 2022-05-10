@@ -11,7 +11,8 @@
     <parameter name="emailWebfingerInput" value="${swd.resource}"/>
     <parameter name="urlWebfingerInput" value="https://${test.jans.auth.server.name}/admin"/>
     <parameter name="hostnameWebfingerInput" value="${test.jans.auth.server.name}"/>
-    <parameter name="opConfigurationEndpoint" value="https://${test.jans.auth.server.name}/.well-known/openid-configuration"/>
+    <parameter name="opConfigurationEndpoint"
+               value="https://${test.jans.auth.server.name}/.well-known/openid-configuration"/>
     <parameter name="redirectUrls" value="https://client.example.com/cb/home1 https://client.example.com/cb/home2"/>
     <parameter name="paramRedirectUrl" value="https://client.example.com/cb/home2"/>
     <parameter name="postLogoutRedirectUrl" value="https://client.example.com/cb/logout"/>
@@ -82,9 +83,33 @@
         </classes>
     </test>
 
-<!--    <test name="Get Tokens by Code" enabled="true">-->
+    <!--    <test name="Get Tokens by Code" enabled="true">-->
+    <!--        <classes>-->
+    <!--            <class name="io.jans.ca.server.tests.GetTokensByCodeTest"/>-->
+    <!--        </classes>-->
+    <!--    </test>-->
+
+<!--    <test name="Introspect Access Token" enabled="true">-->
 <!--        <classes>-->
-<!--            <class name="io.jans.ca.server.tests.GetTokensByCodeTest"/>-->
+<!--            <class name="io.jans.ca.server.tests.IntrospectAccessTokenTest"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+
+<!--    <test name="Get User Info" enabled="true">-->
+<!--        <classes>-->
+<!--            <class name="io.jans.ca.server.tests.GetUserInfoTest"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+
+<!--    <test name="Get JWKS" enabled="true">-->
+<!--        <classes>-->
+<!--            <class name="io.jans.ca.server.tests.GetJwksTest"/>-->
+<!--        </classes>-->
+<!--    </test>-->
+
+<!--    <test name="Get OP Discovery" enabled="true">-->
+<!--        <classes>-->
+<!--            <class name="io.jans.ca.server.tests.GetDiscoveryTest"/>-->
 <!--        </classes>-->
 <!--    </test>-->
 

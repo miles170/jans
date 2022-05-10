@@ -88,6 +88,8 @@ public class Processor {
                     return new GetAuthorizationUrlOperation(command, serviceProvider);
                 case GET_TOKENS_BY_CODE:
                     return new GetTokensByCodeOperation(command, serviceProvider);
+                case GET_LOGOUT_URI:
+                    return new GetLogoutUrlOperation(command, serviceProvider);
                 case RS_PROTECT:
                     return new RsProtectOperation(command, serviceProvider);
                 case RS_CHECK_ACCESS:
@@ -102,6 +104,8 @@ public class Processor {
                     return new GetRpOperation(command, serviceProvider);
                 case GET_RP_JWKS:
                     return new GetRpJwksOperation(command, serviceProvider);
+                case GET_AUTHORIZATION_CODE:
+                    return new GetAuthorizationCodeOperation(command, serviceProvider);
                 case CLEAR_TESTS:
                     return new TestClearRpOperation(command, serviceProvider);
             }
