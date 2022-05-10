@@ -14,12 +14,10 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ApiAppConfiguration implements Configuration {
 
-    private List<CorsConfigurationFilter> corsConfigurationFilters;
     private String loggingLevel;
     private String loggingLayout;
     private String externalLoggerConfiguration;
     private Boolean disableJdkLogger = true;
-    private int maxCount;
 
     //Jans Client Api properties
     private String registerClientAppType = "web";
@@ -69,23 +67,6 @@ public class ApiAppConfiguration implements Configuration {
     private int iatExpirationInHours = 1;
     private Boolean encodeClientIdInAuthorizationUrl = false;
 
-    public List<CorsConfigurationFilter> getCorsConfigurationFilters() {
-        if (corsConfigurationFilters == null) {
-            corsConfigurationFilters = new ArrayList<>();
-        }
-
-        return corsConfigurationFilters;
-    }
-
-    public void setCorsConfigurationFilters(List<CorsConfigurationFilter> corsConfigurationFilters) {
-        if (corsConfigurationFilters == null) {
-            this.corsConfigurationFilters = new ArrayList<>();
-        } else {
-            this.corsConfigurationFilters = new ArrayList<>();
-            this.corsConfigurationFilters.addAll(corsConfigurationFilters);
-        }
-    }
-
     public String getLoggingLevel() {
         return loggingLevel;
     }
@@ -117,15 +98,6 @@ public class ApiAppConfiguration implements Configuration {
     public void setDisableJdkLogger(Boolean disableJdkLogger) {
         this.disableJdkLogger = disableJdkLogger;
     }
-
-    public int getMaxCount() {
-        return this.maxCount;
-    }
-
-    public void setMaxCount(int maxCount) {
-        this.maxCount = maxCount;
-    }
-
 
     public String getRegisterClientAppType() {
         return registerClientAppType;
@@ -498,12 +470,10 @@ public class ApiAppConfiguration implements Configuration {
     @Override
     public String toString() {
         return "ApiAppConfiguration{" +
-                "corsConfigurationFilters=" + corsConfigurationFilters +
                 ", loggingLevel='" + loggingLevel + '\'' +
                 ", loggingLayout='" + loggingLayout + '\'' +
                 ", externalLoggerConfiguration='" + externalLoggerConfiguration + '\'' +
                 ", disableJdkLogger=" + disableJdkLogger +
-                ", maxCount=" + maxCount +
                 ", registerClientAppType='" + registerClientAppType + '\'' +
                 ", registerClientResponesType='" + registerClientResponesType + '\'' +
                 ", useClientAuthenticationForPat=" + useClientAuthenticationForPat +

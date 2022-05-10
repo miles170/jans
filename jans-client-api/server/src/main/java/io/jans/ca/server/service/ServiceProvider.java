@@ -18,6 +18,8 @@ public class ServiceProvider {
     private KeyGeneratorService keyGeneratorService;
     private PublicOpKeyService publicOpKeyService;
 
+    private RequestObjectService requestObjectService;
+
 
 
     public ValidationService getValidationService() {
@@ -114,5 +116,13 @@ public class ServiceProvider {
 
     public void setPublicOpKeyService(PublicOpKeyService publicOpKeyService) {
         this.publicOpKeyService = publicOpKeyService;
+    }
+
+    public RequestObjectService getRequestObjectService() {
+        return requestObjectService;
+    }
+
+    public void setRequestObjectService(RequestObjectService requestObjectService) {
+        this.requestObjectService = requestObjectService;
     }
 }

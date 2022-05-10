@@ -4,8 +4,10 @@
 
 jans-client-api is a middleware service which can be used by web application developers to facilitate user authentication and authorization with an external [OAuth 2.0](https://tools.ietf.org/html/rfc6749) identity provider. It includes the server which is a simple REST application designed to work over the web (via https), making it possible for many apps across many servers to leverage a central jans-client-api service for [OAuth 2.0](https://tools.ietf.org/html/rfc6749) security.
 
-## Installation
-
+## Packaging and running the application
+### Prerequisites
+- A working installation of jans-auth-server
+- Jetty 11.X is required to run the application
 ### Source Install
 
 If you're a Java geek, you can build the jans-client-api server using [Maven](https://maven.apache.org). The code is available in [Github](https://github.com/JanssenProject/jans-client-api).

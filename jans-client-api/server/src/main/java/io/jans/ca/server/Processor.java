@@ -106,6 +106,12 @@ public class Processor {
                     return new GetRpJwksOperation(command, serviceProvider);
                 case GET_AUTHORIZATION_CODE:
                     return new GetAuthorizationCodeOperation(command, serviceProvider);
+                case AUTHORIZATION_CODE_FLOW:
+                    return new AuthorizationCodeFlowOperation(command, serviceProvider);
+                case GET_REQUEST_OBJECT_JWT:
+                    return new GetRequestObjectOperation(command, serviceProvider);
+                case RS_MODIFY:
+                    return new RsModifyOperation(command, serviceProvider);
                 case CLEAR_TESTS:
                     return new TestClearRpOperation(command, serviceProvider);
             }

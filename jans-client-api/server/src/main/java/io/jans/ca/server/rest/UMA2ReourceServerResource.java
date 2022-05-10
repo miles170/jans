@@ -35,4 +35,12 @@ public class UMA2ReourceServerResource extends BaseResource {
         return process(CommandType.INTROSPECT_RPT, params, IntrospectRptParams.class, authorization, AuthorizationRpId);
     }
 
+    @POST
+    @Path("/uma-rs-modify")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String umaRsModify(@HeaderParam("Authorization") String authorization, @HeaderParam("AuthorizationRpId") String AuthorizationRpId, String params) {
+        logger.info("Api Resource: /uma-rs-modify  Params: {}", params);
+        return process(CommandType.RS_MODIFY, params, RsModifyParams.class, authorization, AuthorizationRpId);
+    }
 }
