@@ -80,7 +80,7 @@ public class UserResource extends BaseResource {
     }
 
     @GET
-    @ProtectedApi(scopes = { ApiAccessConstants.USER_WRITE_ACCESS })
+    @ProtectedApi(scopes = { ApiAccessConstants.USER_READ_ACCESS })
     @Path(ApiConstants.INUM_PATH)
     public Response getUserByInum(@PathParam(ApiConstants.INUM) @NotNull String inum)
             throws EncryptionException, IllegalAccessException, InvocationTargetException {

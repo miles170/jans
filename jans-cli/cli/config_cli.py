@@ -42,6 +42,9 @@ except ModuleNotFoundError:
 tabulate_endpoints = {
     'jca.get-config-scripts': ['scriptType', 'name', 'enabled', 'inum'],
     'jca.get-user': ['inum', 'userId', 'mail','sn', 'givenName', 'jansStatus'],
+    'jca.get-attributes': ['inum', 'name', 'displayName', 'status', 'dataType', 'claimName'],
+    'jca.get-oauth-openid-clients': ['inum', 'displayName', 'clientName', 'applicationType'],
+    'jca.get-oauth-scopes': ['dn', 'id', 'scopeType']
 }
 
 my_op_mode = 'scim' if 'scim' in os.path.basename(sys.argv[0]) else 'jca'
@@ -962,7 +965,7 @@ class JCA_CLI:
             if not param_name in parameters:
                 text_ = param['name']
                 help_text = param.get('description') or param.get('summary')
-                enforce = True if end_point_param and end_point_param['name'] == param['name'] else False
+                enforce = True if param['schema']['type'] == 'integer' or (end_point_param and end_point_param['name'] == param['name']) else False
 
                 parameters[param_name] = self.get_input(
                     text=text_.strip('.'),
@@ -970,7 +973,8 @@ class JCA_CLI:
                     default=param['schema'].get('default'),
                     enforce=enforce,
                     help_text=help_text,
-                    example=param.get('example')
+                    example=param.get('example'),
+                    values=param['schema'].get('enum', [])
                 )
 
         return parameters
@@ -1509,8 +1513,10 @@ class JCA_CLI:
             for item in schema['properties']:
                 if not 'type' in schema['properties'][item]:
                     schema['properties'][item]['type'] = 'string'
+            schema['__schema_name__'] = 'PatchOperation'
         else:
             schema = self.cfg_yml['components']['schemas']['PatchRequest'].copy()
+            schema['__schema_name__'] = 'PatchRequest'
             model = getattr(swagger_client.models, 'PatchRequest')
 
         url_param_val = None
