@@ -23,7 +23,7 @@ RUN python3 -m ensurepip \
 # jans-linux-setup sync
 # =====================
 
-ENV JANS_LINUX_SETUP_VERSION=fc9544c861f30eb7370f635b07d9810ae33a7dba
+ENV JANS_LINUX_SETUP_VERSION=5ad9c627e32490f9a0c0e70c6840b8a289aaaaec
 ARG JANS_SETUP_DIR=jans-linux-setup/jans_setup
 
 # note that as we're pulling from a monorepo (with multiple project in it)
@@ -64,10 +64,6 @@ RUN cd /tmp/jans \
 
 # Download jans-config-api-swagger for role_scope_mapping
 RUN wget -q https://github.com/JanssenProject/jans/raw/${JANS_LINUX_SETUP_VERSION}/jans-config-api/docs/jans-config-api-swagger.yaml -P /app/static
-
-# TODO: casa should be moved from this image
-ENV GLUU_CASA_VERSION=a8251496ff2ade9dd8101873b45f4c490ae9c64e
-RUN wget -q https://github.com/GluuFederation/flex/raw/${GLUU_CASA_VERSION}/casa/extras/Casa.py -O /app/static/extension/person_authentication/Casa.py
 
 # cleanup
 RUN rm -rf /tmp/jans
@@ -157,7 +153,6 @@ ENV CN_CACHE_TYPE=NATIVE_PERSISTENCE \
     CN_REDIS_SENTINEL_GROUP="" \
     CN_MEMCACHED_URL=localhost:11211 \
     CN_WAIT_SLEEP_DURATION=10 \
-    CN_CASA_ENABLED=false \
     CN_SCIM_ENABLED=false \
     CN_PERSISTENCE_SKIP_INITIALIZED=false \
     CN_DOCUMENT_STORE_TYPE=LOCAL \
@@ -182,7 +177,7 @@ LABEL name="janssenproject/persistence-loader" \
     summary="Janssen Authorization Server Persistence loader" \
     description="Generate initial data for persistence layer"
 
-RUN mkdir -p /app/tmp /app/custom_ldif /etc/certs /etc/jans/conf
+RUN mkdir -p /app/custom_ldif /etc/certs /etc/jans/conf
 
 COPY scripts /app/scripts
 # this overrides existing templates
@@ -192,15 +187,10 @@ RUN chmod +x /app/scripts/entrypoint.sh
 # create non-root user
 RUN adduser -s /bin/sh -D -G root -u 1000 1000
 
- # adjust ownership
-RUN chown -R 1000:1000 /tmp \
-    && chown -R 1000:1000 /app/tmp/ \
-    && chown -R 1000:1000 /app/custom_ldif/ \
-    && chgrp -R 0 /tmp && chmod -R g=u /tmp \
-    && chgrp -R 0 /app/tmp && chmod -R g=u /app/tmp \
-    && chgrp -R 0 /app/custom_ldif && chmod -R g=u /app/custom_ldif \
-    && chgrp -R 0 /etc/certs && chmod -R g=u /etc/certs \
-    && chgrp -R 0 /etc/jans && chmod -R g=u /etc/jans
+# adjust ownership and permission
+RUN chmod -R g=u /app/custom_ldif \
+    && chmod -R g=u /etc/certs \
+    && chmod -R g=u /etc/jans
 
 USER 1000
 

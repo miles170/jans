@@ -76,7 +76,6 @@ def get_base_ctx(manager):
     redis_ssl_truststore = os.environ.get("CN_REDIS_SSL_TRUSTSTORE", "")
     redis_sentinel_group = os.environ.get("CN_REDIS_SENTINEL_GROUP", "")
     memcached_url = os.environ.get('CN_MEMCACHED_URL', 'localhost:11211')
-    casa_enabled = os.environ.get("CN_CASA_ENABLED", False)
     scim_enabled = os.environ.get("CN_SCIM_ENABLED", False)
 
     ctx = {
@@ -131,7 +130,6 @@ def get_base_ctx(manager):
         "admin_inum": manager.config.get("admin_inum"),
         "scim_client_id": manager.config.get("scim_client_id"),
         "scim_client_encoded_pw": manager.secret.get("scim_client_encoded_pw"),
-        "casa_enable_script": str(as_boolean(casa_enabled)).lower(),
         "jca_client_id": manager.config.get("jca_client_id"),
         "jca_client_encoded_pw": manager.secret.get("jca_client_encoded_pw"),
     }
@@ -150,51 +148,6 @@ def get_base_ctx(manager):
 
     # static kid
     ctx["staticKid"] = os.environ.get("CN_OB_STATIC_KID", "")
-
-    # WARNING:
-    # - deprecate configs and secrets for admin_ui and token_server_admin_ui
-    # - move the configs and secrets creation to configurator
-    # - remove them on future release
-
-    # admin-ui plugins
-    ctx["admin_ui_client_id"] = manager.config.get("admin_ui_client_id")
-    if not ctx["admin_ui_client_id"]:
-        ctx["admin_ui_client_id"] = f"1901.{uuid4()}"
-        manager.config.set("admin_ui_client_id", ctx["admin_ui_client_id"])
-
-    ctx["admin_ui_client_pw"] = manager.secret.get("admin_ui_client_pw")
-    if not ctx["admin_ui_client_pw"]:
-        ctx["admin_ui_client_pw"] = get_random_chars()
-        manager.secret.set("admin_ui_client_pw", ctx["admin_ui_client_pw"])
-
-    ctx["admin_ui_client_encoded_pw"] = manager.secret.get("admin_ui_client_encoded_pw")
-    if not ctx["admin_ui_client_encoded_pw"]:
-        ctx["admin_ui_client_encoded_pw"] = encode_text(ctx["admin_ui_client_pw"], manager.secret.get("encoded_salt")).decode()
-        manager.secret.set(
-            "admin_ui_client_encoded_pw",
-            ctx["admin_ui_client_encoded_pw"],
-        )
-
-    # token server client
-    ctx["token_server_admin_ui_client_id"] = manager.config.get("token_server_admin_ui_client_id")
-    if not ctx["token_server_admin_ui_client_id"]:
-        ctx["token_server_admin_ui_client_id"] = f"1901.{uuid4()}"
-        manager.config.set("token_server_admin_ui_client_id", ctx["token_server_admin_ui_client_id"])
-
-    ctx["token_server_admin_ui_client_pw"] = manager.secret.get("token_server_admin_ui_client_pw")
-    if not ctx["token_server_admin_ui_client_pw"]:
-        ctx["token_server_admin_ui_client_pw"] = get_random_chars()
-        manager.secret.set("token_server_admin_ui_client_pw", ctx["token_server_admin_ui_client_pw"])
-
-    ctx["token_server_admin_ui_client_encoded_pw"] = manager.secret.get("token_server_admin_ui_client_encoded_pw")
-    if not ctx["token_server_admin_ui_client_encoded_pw"]:
-        ctx["token_server_admin_ui_client_encoded_pw"] = encode_text(
-            ctx["token_server_admin_ui_client_pw"], manager.secret.get("encoded_salt"),
-        ).decode()
-        manager.secret.set(
-            "token_server_admin_ui_client_encoded_pw",
-            ctx["token_server_admin_ui_client_encoded_pw"],
-        )
 
     # finalize ctx
     return ctx
@@ -329,28 +282,6 @@ def merge_config_api_ctx(ctx):
     return ctx
 
 
-def merge_casa_ctx(manager, ctx):
-    # Casa client
-    ctx["casa_client_id"] = manager.config.get("casa_client_id")
-    if not ctx["casa_client_id"]:
-        ctx["casa_client_id"] = f"1902.{uuid4()}"
-        manager.config.set("casa_client_id", ctx["casa_client_id"])
-
-    ctx["casa_client_pw"] = manager.secret.get("casa_client_pw")
-    if not ctx["casa_client_pw"]:
-        ctx["casa_client_pw"] = get_random_chars()
-        manager.secret.set("casa_client_pw", ctx["casa_client_pw"])
-
-    ctx["casa_client_encoded_pw"] = manager.secret.get("casa_client_encoded_pw")
-    if not ctx["casa_client_encoded_pw"]:
-        ctx["casa_client_encoded_pw"] = encode_text(
-            ctx["casa_client_pw"], manager.secret.get("encoded_salt"),
-        ).decode()
-        manager.secret.set("casa_client_encoded_pw", ctx["casa_client_encoded_pw"])
-
-    return ctx
-
-
 def merge_jans_cli_ctx(manager, ctx):
     # WARNING:
     # - deprecated configs and secrets for role_based
@@ -378,8 +309,6 @@ def merge_jans_cli_ctx(manager, ctx):
 
 
 def prepare_template_ctx(manager):
-    opt_scopes = json.loads(manager.config.get("optional_scopes", "[]"))
-
     ctx = get_base_ctx(manager)
     ctx = merge_extension_ctx(ctx)
     ctx = merge_auth_ctx(ctx)
@@ -387,9 +316,6 @@ def prepare_template_ctx(manager):
     ctx = merge_fido2_ctx(ctx)
     ctx = merge_scim_ctx(ctx)
     ctx = merge_jans_cli_ctx(manager, ctx)
-
-    if "casa" in opt_scopes:
-        ctx = merge_casa_ctx(manager, ctx)
     return ctx
 
 
@@ -423,7 +349,6 @@ def get_ldif_mappings(optional_scopes=None):
 
         files += [
             "jans-config-api/config.ldif",
-            "jans-config-api/admin-ui-clients.ldif",
             "jans-auth/configuration.ldif",
             "jans-auth/role-scope-mappings.ldif",
             "jans-cli/client.ldif",
@@ -441,12 +366,6 @@ def get_ldif_mappings(optional_scopes=None):
                 "jans-fido2/fido2.ldif",
             ]
 
-        if "casa" in optional_scopes:
-            files += [
-                "gluu-casa/configuration.ldif",
-                "gluu-casa/clients.ldif",
-                "gluu-casa/scripts.ldif",
-            ]
         return files
 
     def user_files():
