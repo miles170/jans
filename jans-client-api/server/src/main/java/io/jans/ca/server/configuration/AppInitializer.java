@@ -8,6 +8,7 @@ package io.jans.ca.server.configuration;
 
 import io.jans.as.common.service.common.ApplicationFactory;
 import io.jans.as.model.util.SecurityProviderUtility;
+import io.jans.ca.server.Utils;
 import io.jans.ca.server.service.logger.LoggerService;
 import io.jans.model.custom.script.CustomScriptType;
 import io.jans.orm.PersistenceEntryManager;
@@ -34,6 +35,7 @@ import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.ServletContext;
+
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -79,6 +81,11 @@ public class AppInitializer {
     public void onStart(@Observes @Initialized(ApplicationScoped.class) Object init) {
 
         logger.info("=============  STARTING CLIENT API APPLICATION  ========================");
+        if (System.getProperty("jans.base") == null) {
+            String jansBase = Utils.readCompileProterty("compile.jans.base");
+            ;
+            System.setProperty("jans.base", jansBase);
+        }
         logger.info("init:{}", init);
 
         SecurityProviderUtility.installBCProvider();

@@ -19,6 +19,8 @@
         <javaee.api>8.0.1</javaee.api>
         <h2.version>2.1.210</h2.version>
         <jersey-test-framework-provider>3.0.2</jersey-test-framework-provider>
+        <compile.jans.base>/etc/jans</compile.jans.base>
+        <compile.log.base></compile.log.base>
     </properties>
 
     <dependencies>
@@ -302,13 +304,13 @@
             <version>3.8.0</version>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>io.jans</groupId>-->
-<!--            <artifactId>jans-client-api</artifactId>-->
-<!--            <version>${project.version}</version>-->
-<!--            <type>test-jar</type>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>io.jans</groupId>-->
+        <!--            <artifactId>jans-client-api</artifactId>-->
+        <!--            <version>${project.version}</version>-->
+        <!--            <type>test-jar</type>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>jakarta.websocket</groupId>
@@ -541,6 +543,14 @@
                     </archive>
 
                     <webResources>
+
+                        <resource>
+                            <directory>src/main/resources</directory>
+                            <filtering>true</filtering>
+                            <includes>
+                                <include>compile.properties</include>
+                            </includes>
+                        </resource>
                         <resource>
                             <directory>src/main/webapp</directory>
                             <filtering>true</filtering>

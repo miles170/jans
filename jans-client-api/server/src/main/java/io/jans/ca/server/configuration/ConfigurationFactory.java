@@ -11,6 +11,7 @@ import io.jans.as.model.config.Constants;
 import io.jans.as.model.config.StaticConfiguration;
 import io.jans.as.model.configuration.Configuration;
 import io.jans.as.model.util.SecurityProviderUtility;
+import io.jans.ca.server.Utils;
 import io.jans.ca.server.configuration.model.ApiConf;
 import io.jans.ca.server.persistence.service.JansConfigurationService;
 import io.jans.ca.server.service.*;
@@ -39,7 +40,9 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 
-import java.io.File;
+import java.io.*;
+import java.net.URL;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -57,12 +60,16 @@ public class ConfigurationFactory {
             BASE_DIR = System.getProperty("jans.base");
         } else if ((System.getProperty("catalina.base") != null) && (System.getProperty("catalina.base.ignore") == null)) {
             BASE_DIR = System.getProperty("catalina.base");
+        } else if ((System.getProperty("catalina.base") != null) && (System.getProperty("catalina.base.ignore") == null)) {
+            BASE_DIR = System.getProperty("catalina.base");
         } else if (System.getProperty("catalina.home") != null) {
             BASE_DIR = System.getProperty("catalina.home");
         } else if (System.getProperty("jboss.home.dir") != null) {
             BASE_DIR = System.getProperty("jboss.home.dir");
         } else {
-            BASE_DIR = null;
+            String jansBase = Utils.readCompileProterty("compile.jans.base");;
+            BASE_DIR = jansBase;
+            System.setProperty("jans.base", jansBase);
         }
     }
 
@@ -186,6 +193,7 @@ public class ConfigurationFactory {
         log.info("Initializing ConfigurationFactory ...");
         this.isActive = new AtomicBoolean(true);
         try {
+            log.info("---------PATH to file configuration: {}", APP_PROPERTIES_FILE);
             this.persistenceConfiguration = persistanceFactoryService.loadPersistenceConfiguration(APP_PROPERTIES_FILE);
             loadBaseConfiguration();
 
