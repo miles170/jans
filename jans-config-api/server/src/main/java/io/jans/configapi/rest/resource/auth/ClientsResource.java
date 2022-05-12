@@ -11,12 +11,9 @@ import static io.jans.as.model.util.Util.escapeLog;
 import io.jans.as.common.model.registration.Client;
 import io.jans.as.common.service.common.EncryptionService;
 import io.jans.as.common.service.common.InumService;
-<<<<<<< HEAD
 import io.jans.configapi.core.interceptor.RequestInterceptor;
-=======
 import io.jans.as.persistence.model.Scope;
 import io.jans.configapi.core.rest.ProtectedApi;
->>>>>>> ea929c0637c40ee75f3adbd5377c5e08aebbe087
 import io.jans.configapi.core.model.SearchRequest;
 import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.service.auth.ClientService;

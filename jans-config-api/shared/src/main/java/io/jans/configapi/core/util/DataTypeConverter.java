@@ -7,12 +7,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.slf4j.Logger;
 
 @ApplicationScoped
+@Priority(1)
+@Named("dataTypeConverter")
 public class DataTypeConverter {
 
     @Inject
@@ -35,26 +39,17 @@ public class DataTypeConverter {
 
     public Date decodeTime(String baseDn, String strDate) {
         log.error("Decode date value - baseDn:{}, strDate:{} ", baseDn, strDate);
-        Date formatedDate = null;
-        if (StringHelper.isEmpty(baseDn) || StringHelper.isEmpty(strDate)) {
-            return formatedDate;
-        }
         return persistenceEntryManager.decodeTime(baseDn, strDate);
     }
-
+    
     public String encodeTime(String baseDn, Date date) {
         log.error("Encode Date value - baseDn:{}, date:{} ", baseDn, date);
-        String strDate = null;
-        if (StringHelper.isEmpty(baseDn) || date == null) {
-            return strDate;
-        }
         return persistenceEntryManager.encodeTime(baseDn, date);
     }
 
     public Boolean decodeBoolean(String strBoolean, boolean defaultValue) {
         log.error("Decode boolean value - strBoolean:{} ", strBoolean);
         return StringHelper.toBoolean(strBoolean, defaultValue);
-        // return boolValue = Boolean.parseBoolean(booleanStr);
     }
 
     public String encodeBoolean(boolean booleanValue) {

@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @ApplicationScoped
 public class DataProcessingUtil {
@@ -39,15 +43,14 @@ public class DataProcessingUtil {
     @Inject
     ConfigurationFactory configurationFactory;
     
-   
     public DataTypeConversionMapping getDataTypeConversionMapping() {
         return this.configurationFactory.getApiAppConfiguration().getDataTypeConversionMap();
     }
 
    
-    public <T> T encodeObjDataType(T obj) throws ClassNotFoundException, IllegalAccessException, InstantiationException, IllegalArgumentException,
-    InvocationTargetException {
-        log.error("Encode DataType for obj:{} using dataTypeConversionMap:{} ", obj,  getDataTypeConversionMapping());
+    public <T> T encodeObjDataType(T obj) throws ClassNotFoundException, IllegalAccessException,
+    InstantiationException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+        log.error("Encode DataType for obj:{} with  name:{} using dataTypeConversionMap:{} ", obj, obj.getClass().getName(), getDataTypeConversionMapping());
         if (obj == null) {
             return (T) obj;
         }
@@ -79,6 +82,8 @@ public class DataProcessingUtil {
         return DataUtil.getJsonString(obj);
     }
     
-
+    public static JsonNode asJsonNode(String objAsString) throws JsonProcessingException {
+        return DataUtil.asJsonNode(objAsString);
+    }    
 
 }

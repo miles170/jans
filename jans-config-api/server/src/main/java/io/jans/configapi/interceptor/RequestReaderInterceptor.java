@@ -8,17 +8,17 @@ package io.jans.configapi.interceptor;
 
 //import io.jans.as.common.model.common.User;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jans.configapi.core.interceptor.RequestInterceptor;
-
+import io.jans.orm.PersistenceEntryManager;
 import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.core.util.DataUtil;
 import io.jans.configapi.security.service.AuthorizationService;
 import io.jans.configapi.util.ApiConstants;
 import io.jans.configapi.util.DataProcessingUtil;
-
+import io.jans.orm.PersistenceEntryManager;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,10 +45,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import java.util.Date;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -83,13 +82,17 @@ public class RequestReaderInterceptor {
 
     @Inject
     private DataProcessingUtil dataProcessingUtil;
+    
+
+    @Inject
+    PersistenceEntryManager persistenceEntryManager;
 
     @SuppressWarnings({ "all" })
     @AroundInvoke
     public Object aroundReadFrom(InvocationContext context) throws Exception {
         System.out.println("\n\n\n RequestReaderInterceptor: entry - log=" + log + " logger=" + logger
                 + " ,  request:{} " + request + "  info:{} " + info + ". resourceInfo=" + resourceInfo
-                + " , context:{} " + context + " , dataProcessingUtil = " + dataProcessingUtil);
+                + " , context:{} " + context + " , dataProcessingUtil = " + dataProcessingUtil+" , persistenceEntryManager"+persistenceEntryManager+" \n\n\n");
         try {
             logger.error(
                     "======================= RequestReaderInterceptor Performing DataType Conversion ============================");
@@ -108,11 +111,7 @@ public class RequestReaderInterceptor {
                         context.getMethod());
                 return context.proceed();
             }
-
-           // Object createdObject = context.getTarget();
-            //logger.error("====== createdObject:{] , createdObject.getClass():{}", createdObject,
-             //       createdObject.getClass());
-                processRequest(context);
+            processRequest(context);
 
         } catch (Exception ex) {
             throw new WebApplicationException(ex);
@@ -147,49 +146,88 @@ public class RequestReaderInterceptor {
                 String propertyName = parameters[i].getName();
                 logger.error("propertyName:{}, clazz:{} , clazz.isPrimitive():{} ", propertyName, clazz,
                         clazz.isPrimitive());
-                
+
                 Object obj = ctxParameters[i];
                 String jsonStr = null;
                 if (!clazz.isPrimitive()) {
-                   
+
                     jsonStr = getJsonString(obj);
                     logger.error("RequestReaderInterceptor final - obj -  jsonStr:{} ", jsonStr);
-                    
-                    
 
-                    performDataConversion(castObject(obj,clazz));
+                    //validateJson(String jsonStr)
+                    validateJson(jsonStr);
                     
+                    performDataConversion(castObject(obj, clazz));
+
                     logger.error("RequestReaderInterceptor final - obj -  obj:{} ", obj);
 
                 }
             }
         }
     }
-    
+
     private <T> T performDataConversion(T obj) {
         try {
             obj = dataProcessingUtil.encodeObjDataType(obj);
-            logger.error("RequestReaderInterceptor -  Data  after encoding -  obj:{} , obj.getClass():{}", obj, obj.getClass());            
+            logger.error("RequestReaderInterceptor -  Data  after encoding -  obj:{} , obj.getClass():{}", obj,
+                    obj.getClass());
         } catch (Exception ex) {
             logger.error("Exception while data conversion ", ex.getMessage());
         }
         return obj;
     }
-    
+
     private <T> String getJsonString(T obj) {
         String jsonStr = null;
         try {
             jsonStr = dataProcessingUtil.getJsonString(obj);
-            logger.error("RequestReaderInterceptor -  Object string -  jsonStr:{}", jsonStr);            
+            logger.error("RequestReaderInterceptor -  Object string -  jsonStr:{}", jsonStr);
         } catch (Exception ex) {
             logger.error("Exception while data conversion ", ex.getMessage());
         }
         return jsonStr;
     }
-    
+
     private <T> T castObject(Object obj, Class<T> clazz) {
         T t = (T) clazz.cast(obj);
         return t;
     }
     
+    private void validateJson(String jsonStr) throws JsonProcessingException {
+        logger.error("\n\n\n validateJson() -  jsonStr:{} ", jsonStr);
+        JSONObject jsonObj = new JSONObject(jsonStr);
+        logger.error("\n\n\n validateJson() -  jsonObj:{} ", jsonObj);
+        
+        Map<String, Object> jsonObjMap = jsonObj.toMap();
+        logger.error("\n\n\n validateJson() -  jsonObjMap:{} ", jsonObjMap);
+        
+        for (Map.Entry<String, Object> entry : jsonObjMap.entrySet()) {
+            logger.error("validateJson() - entry.getKey():{}, entry.getValue():{}", entry.getKey(), entry.getValue());
+            
+            if ( entry.getValue() instanceof Date) {
+                logger.error("validateJson() - entry.getKey():{} is instanceof Date entry.getValue():{}", entry.getKey(), entry.getValue());
+                
+                //encodeDate
+                logger.error("\n\n\n validateJson() - Encoding date \n\n\n\n");
+                jsonObjMap.put(entry.getKey(), "31-12-2080");      
+            }
+            
+            if (entry.getKey().equalsIgnoreCase("createdAt")) {
+                logger.error("validateJson() - entry.getKey():{} is instanceof Date entry.getValue():{}", entry.getKey(), entry.getValue());
+                
+                //encodeDate
+                logger.error("\n\n\n validateJson() - Encoding date \n\n\n\n");
+                logger.error("\n\n\n  decodeTime(null, (String) entry.getValue():{} ",  decodeTime(null, (Long) entry.getValue()));
+                jsonObjMap.put(entry.getKey(), "31-12-2080");      
+            }
+        }
+        
+        
+    }
+    
+    public Date decodeTime(String baseDn, Long strDate) {
+        log.error("Decode date value - baseDn:{}, strDate:{} ", baseDn, strDate);
+        return persistenceEntryManager.decodeTime(baseDn, strDate.toString());
+    }
+
 }
