@@ -45,6 +45,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Date;
@@ -63,7 +65,7 @@ import jakarta.interceptor.InvocationContext;
 public class RequestReaderInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestReaderInterceptor.class);
-    private static final String[] IGNORE_METHODS = { "GET", "DELETE", "OPTIONS", "PATCH" };
+    private static final String[] IGNORE_METHODS = { "@jakarta.ws.rs.GET()", "@jakarta.ws.rs.DELETE()", "@jakarta.ws.rs.OPTIONS()", "@jakarta.ws.rs.PATCH()" };
 
     @Inject
     private Logger log;
@@ -102,8 +104,21 @@ public class RequestReaderInterceptor {
                     "======ReaderInterceptorContext - context.getClass():{}, context.getConstructor(), context.getContextData():{},  context.getMethod():{},  context.getParameters():{}, context.getTarget():{}, context.getInputStream():{} ",
                     context.getClass(), context.getConstructor(), context.getContextData(), context.getMethod(),
                     context.getParameters(), context.getTarget());
+            
+            //method
+            logger.error(
+                    "======ReaderInterceptorContext - context.getMethod().getAnnotatedExceptionTypes().toString() :{}, context.getMethod().getAnnotatedParameterTypes().toString() :{}, context.getMethod().getAnnotatedReceiverType().toString() :{}, context.getMethod().getAnnotation(jakarta.ws.rs.GET.class):{}, context.getMethod().getAnnotations().toString() :{}., context.getMethod().getAnnotationsByType(jakarta.ws.rs.GET.class):{} ",
+                    context.getMethod().getAnnotatedExceptionTypes().toString(), context.getMethod().getAnnotatedParameterTypes().toString(), context.getMethod().getAnnotatedReceiverType().toString(), context.getMethod().getAnnotation(jakarta.ws.rs.GET.class),
+                    context.getMethod().getAnnotations().toString(), context.getMethod().getAnnotationsByType(jakarta.ws.rs.GET.class));
+            
 
-            boolean contains = Arrays.stream(IGNORE_METHODS).anyMatch(context.getMethod()::equals);
+            if(context.getMethod().getAnnotations()!=null && context.getMethod().getAnnotations().length>0) {
+                logger.error("======ReaderInterceptorContext - context.getMethod().getAnnotations().length:{} ",context.getMethod().getAnnotations().length); 
+                for(int i=0; i<context.getMethod().getAnnotations().length;i++) {
+                    logger.error("======ReaderInterceptorContext - context.getMethod().getAnnotations()["+i+"]:{} ",context.getMethod().getAnnotations()[i]);
+                }                
+            }
+            boolean contains = isIgnoreMethod(context);
             logger.error("====== context.getMethod():{} present in ignoreList contains:{}", context.getMethod(),
                     contains);
             if (contains) {
@@ -111,12 +126,31 @@ public class RequestReaderInterceptor {
                         context.getMethod());
                 return context.proceed();
             }
+           
             processRequest(context);
 
         } catch (Exception ex) {
             throw new WebApplicationException(ex);
         }
         return context.proceed();
+    }
+    
+    private boolean isIgnoreMethod(InvocationContext context) {
+        logger.error("Checking if method to be ignored");
+        if(context.getMethod().getAnnotations()==null || context.getMethod().getAnnotations().length<=0) {
+            return false;            
+        }
+        
+       
+        
+        for(int i=0; i<context.getMethod().getAnnotations().length;i++) {
+            logger.error("======ReaderInterceptorContext - context.getMethod().getAnnotations()["+i+"]:{} ",context.getMethod().getAnnotations()[i]);
+            if(Arrays.stream(IGNORE_METHODS).anyMatch(context.getMethod().getAnnotations()[i]::equals)) {
+                logger.error("======ReaderInterceptorContext - context.getMethod() matched and hence will be ignored!!!!");
+                return true;                         
+            }
+        }
+        return false;
     }
 
     private void processRequest(InvocationContext context)
@@ -154,7 +188,7 @@ public class RequestReaderInterceptor {
                     jsonStr = getJsonString(obj);
                     logger.error("RequestReaderInterceptor final - obj -  jsonStr:{} ", jsonStr);
 
-                    //validateJson(String jsonStr)
+                    //validate Json
                     validateJson(jsonStr);
                     
                     performDataConversion(castObject(obj, clazz));
@@ -217,8 +251,8 @@ public class RequestReaderInterceptor {
                 
                 //encodeDate
                 logger.error("\n\n\n validateJson() - Encoding date \n\n\n\n");
-                logger.error("\n\n\n  decodeTime(null, (String) entry.getValue():{} ",  decodeTime(null, (Long) entry.getValue()));
-                jsonObjMap.put(entry.getKey(), "31-12-2080");      
+                //logger.error("\n\n\n  decodeTime(null, (String) entry.getValue():{} ",  decodeTime(null, (Long) entry.getValue()));
+                //jsonObjMap.put(entry.getKey(), "31-12-2080");      
             }
         }
         

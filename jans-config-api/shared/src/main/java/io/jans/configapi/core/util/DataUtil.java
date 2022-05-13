@@ -172,7 +172,7 @@ public class DataUtil {
         logger.error("fields:{} ", fields);
 
         for (Field field : fields) {
-            logger.error("field:{} ", field);
+            logger.error("field:{} , field.getAnnotatedType():{}, field.getAnnotations():{} , field.getType().getAnnotations():{}, field.getType().getCanonicalName():{} , field.getType().getClass():{} , field.getType().getClasses():{} , field.getType().getComponentType():{}", field, field.getAnnotatedType(), field.getAnnotations(), field.getType().getAnnotations(), field.getType().getCanonicalName(), field.getType().getClass(), field.getType().getClasses(), field.getType().getComponentType());
             propertyTypeMap.put(field.getName(), field.getType().getSimpleName());
         }
         logger.error("Final propertyTypeMap{} ", propertyTypeMap);
