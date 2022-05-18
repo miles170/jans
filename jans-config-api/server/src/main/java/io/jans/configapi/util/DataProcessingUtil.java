@@ -5,8 +5,15 @@ import io.jans.configapi.configuration.ConfigurationFactory;
 import io.jans.configapi.core.util.DataUtil;
 import io.jans.configapi.core.util.Jackson;
 import io.jans.configapi.core.util.DataTypeConversionMapping;
+import io.jans.orm.PersistenceEntryManager;
+import io.jans.orm.annotation.AttributeName;
+import io.jans.orm.annotation.AttributesList;
+import io.jans.orm.annotation.JsonObject;
+import io.jans.orm.annotation.LanguageTag;
 import io.jans.orm.exception.MappingException;
+import io.jans.orm.model.AttributeData;
 import io.jans.orm.reflect.property.Getter;
+import io.jans.orm.reflect.property.PropertyAnnotation;
 import io.jans.orm.reflect.property.Setter;
 import io.jans.orm.reflect.util.ReflectHelper;
 import io.jans.util.StringHelper;
@@ -16,15 +23,18 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -43,6 +53,9 @@ public class DataProcessingUtil {
     @Inject
     ConfigurationFactory configurationFactory;
     
+    @Inject
+    private transient PersistenceEntryManager persistenceEntryManager;
+    
     public DataTypeConversionMapping getDataTypeConversionMapping() {
         return this.configurationFactory.getApiAppConfiguration().getDataTypeConversionMap();
     }
@@ -54,9 +67,19 @@ public class DataProcessingUtil {
         if (obj == null) {
             return (T) obj;
         }
-
-        obj = DataUtil.encodeObjDataType(obj, getDataTypeConversionMapping());
         
+
+
+        List<PropertyAnnotation> propertiesAnnotations = persistenceEntryManager.getEntryPropertyAnnotations(obj.getClass());
+        log.error("Data propertiesAnnotations:{}", propertiesAnnotations);
+        
+        List<AttributeData> attributes = persistenceEntryManager.getAttributesListForPersist(obj, propertiesAnnotations);
+        log.error("Data attributes:{}", attributes);
+        
+        String[] objectClasses = persistenceEntryManager.getObjectClasses(obj, obj.getClass());
+        log.error("Data objectClasses:{}", objectClasses);
+        
+        obj = DataUtil.encodeObjDataType(obj, getDataTypeConversionMapping());        
         log.error("Data after encoding - obj:{}", obj);
 
         return obj;

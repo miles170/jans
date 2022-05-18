@@ -32,6 +32,7 @@ import io.jans.orm.model.PagedResult;
 import io.jans.orm.model.SearchScope;
 import io.jans.orm.model.SortOrder;
 import io.jans.orm.operation.PersistenceOperationService;
+import io.jans.orm.reflect.property.PropertyAnnotation;
 import io.jans.orm.search.filter.Filter;
 
 /**
@@ -136,6 +137,11 @@ public interface PersistenceEntryManager extends EntityManager {
     void setPersistenceExtension(PersistenceExtension persistenceExtension);
 
     boolean destroy();
+    
+    //helper methods
+   // <T> List<PropertyAnnotation> getEntryPropertyAnnotations(Class<T> entryClass);
+   // List<AttributeData> getAttributesListForPersist(Object entry,
+     //       List<PropertyAnnotation> propertiesAnnotations);
 
     default void clear() {
         throw new UnsupportedOperationException("Method not implemented.");
