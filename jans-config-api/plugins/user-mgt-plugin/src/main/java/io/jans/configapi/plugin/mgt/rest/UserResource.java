@@ -5,6 +5,7 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import static io.jans.as.model.util.Util.escapeLog;
 import io.jans.as.common.model.common.User;
 import io.jans.as.common.service.common.EncryptionService;
+import io.jans.configapi.core.interceptor.RequestInterceptor;
 import io.jans.configapi.core.rest.BaseResource;
 import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.plugin.mgt.model.user.CustomUser;
@@ -36,6 +37,7 @@ import org.slf4j.Logger;
 @Path(Constants.CONFIG_USER)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RequestInterceptor
 @ApplicationScoped
 public class UserResource extends BaseResource {
 

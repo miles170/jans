@@ -81,5 +81,11 @@ public class User extends SimpleUser {
     public String getStatus() {
         return getAttribute("jansStatus");
     }
+    
+    @Override
+    public String toString() {
+        return String.format("userId="+getUserId());
+    }
+
 
 }

@@ -11,9 +11,11 @@ import static io.jans.as.model.util.Util.escapeLog;
 import io.jans.as.common.model.registration.Client;
 import io.jans.as.common.service.common.EncryptionService;
 import io.jans.as.common.service.common.InumService;
+import io.jans.configapi.core.interceptor.RequestInterceptor;
 import io.jans.as.persistence.model.Scope;
 import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.core.model.SearchRequest;
+import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.service.auth.ClientService;
 import io.jans.configapi.service.auth.ConfigurationService;
 import io.jans.configapi.service.auth.ScopeService;
@@ -45,6 +47,7 @@ import java.util.UUID;
  *
  */
 
+@RequestInterceptor
 @Path(ApiConstants.OPENID + ApiConstants.CLIENTS)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
