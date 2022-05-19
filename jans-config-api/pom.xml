@@ -19,7 +19,7 @@
 		</project.reporting.outputEncoding>
 		<surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
 
-		<jans.version>${project.version}</jans.version>
+		<jans.version>1.0.0-SNAPSHOT</jans.version>
 
 		<jackson.version>2.13.2</jackson.version>
 		<jetty.version>11.0.8</jetty.version>
@@ -214,7 +214,7 @@
 			<dependency>
 				<groupId>io.jans</groupId>
 				<artifactId>uma-rs-core</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>${jans.version}</version>
 			</dependency>			
       		
 			<!-- Security -->
