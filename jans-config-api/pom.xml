@@ -116,12 +116,12 @@
 			<dependency>
 				<groupId>io.jans</groupId>
 				<artifactId>jans-config-api-common</artifactId>
-				<version>${project.version}</version>
+				<version>${jans.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.jans</groupId>
 				<artifactId>jans-config-api-server</artifactId>
-				<version>${project.version}</version>
+				<version>${jans.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.jans</groupId>
