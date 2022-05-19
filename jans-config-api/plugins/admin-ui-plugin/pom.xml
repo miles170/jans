@@ -7,10 +7,19 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.jans.jans-config-api.plugins</groupId>
     <artifactId>admin-ui-plugin</artifactId>
 
     <repositories>
+        <repository>
+            <id>jans</id>
+            <name>Janssen project repository</name>
+            <url>https://maven.jans.io/maven</url>
+        </repository>
+        <repository>
+            <id>gluu</id>
+            <name>Gluu project repository</name>
+            <url>https://maven.gluu.org/maven</url>
+        </repository>
         <repository>
             <id>jdk-java</id>
             <url>https://licensespring-maven.s3.eu-central-1.amazonaws.com/</url>
