@@ -30,13 +30,8 @@
         <!-- config api -->
         <dependency>
             <groupId>io.jans</groupId>
-            <artifactId>uma-rs-core</artifactId>
-            <version>${jans.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jans</groupId>
             <artifactId>jans-config-api-server</artifactId>
-            <scope>compile</scope>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
