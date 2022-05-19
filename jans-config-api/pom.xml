@@ -214,7 +214,7 @@
 			<dependency>
 				<groupId>io.jans</groupId>
 				<artifactId>uma-rs-core</artifactId>
-				<version>${jans.version}</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>			
       		
 			<!-- Security -->
