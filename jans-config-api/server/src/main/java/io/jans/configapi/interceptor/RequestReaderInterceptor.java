@@ -111,13 +111,7 @@ public class RequestReaderInterceptor {
                     context.getMethod().getAnnotatedExceptionTypes().toString(), context.getMethod().getAnnotatedParameterTypes().toString(), context.getMethod().getAnnotatedReceiverType().toString(), context.getMethod().getAnnotation(jakarta.ws.rs.GET.class),
                     context.getMethod().getAnnotations().toString(), context.getMethod().getAnnotationsByType(jakarta.ws.rs.GET.class));
             
-
-            if(context.getMethod().getAnnotations()!=null && context.getMethod().getAnnotations().length>0) {
-                logger.error("======ReaderInterceptorContext - context.getMethod().getAnnotations().length:{} ",context.getMethod().getAnnotations().length); 
-                for(int i=0; i<context.getMethod().getAnnotations().length;i++) {
-                    logger.error("======ReaderInterceptorContext - context.getMethod().getAnnotations()["+i+"]:{} ",context.getMethod().getAnnotations()[i]);
-                }                
-            }
+            
             boolean contains = isIgnoreMethod(context);
             logger.error("====== context.getMethod():{} present in ignoreList contains:{}", context.getMethod(),
                     contains);
@@ -141,11 +135,12 @@ public class RequestReaderInterceptor {
             return false;            
         }
         
-       
-        
         for(int i=0; i<context.getMethod().getAnnotations().length;i++) {
             logger.error("======ReaderInterceptorContext - context.getMethod().getAnnotations()["+i+"]:{} ",context.getMethod().getAnnotations()[i]);
-            if(Arrays.stream(IGNORE_METHODS).anyMatch(context.getMethod().getAnnotations()[i]::equals)) {
+            
+            logger.error("======ReaderInterceptorContext - anyMatch:{} ",Arrays.stream(IGNORE_METHODS).anyMatch(context.getMethod().getAnnotations()[i].toString()::equals));
+            
+            if(context.getMethod().getAnnotations()[i]!=null && Arrays.stream(IGNORE_METHODS).anyMatch(context.getMethod().getAnnotations()[i].toString()::equals)) {
                 logger.error("======ReaderInterceptorContext - context.getMethod() matched and hence will be ignored!!!!");
                 return true;                         
             }
@@ -189,7 +184,7 @@ public class RequestReaderInterceptor {
                     logger.error("RequestReaderInterceptor final - obj -  jsonStr:{} ", jsonStr);
 
                     //validate Json
-                    validateJson(jsonStr);
+                    //validateJson(jsonStr);
                     
                     performDataConversion(castObject(obj, clazz));
 

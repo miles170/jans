@@ -139,9 +139,9 @@ public interface PersistenceEntryManager extends EntityManager {
     boolean destroy();
     
     //helper methods
-   // <T> List<PropertyAnnotation> getEntryPropertyAnnotations(Class<T> entryClass);
-   // List<AttributeData> getAttributesListForPersist(Object entry,
-     //       List<PropertyAnnotation> propertiesAnnotations);
+    <T> List<PropertyAnnotation> getEntryPropertyAnnotations(Class<T> entryClass);
+    List<AttributeData> getAttributesListForPersist(Object entry,
+     List<PropertyAnnotation> propertiesAnnotations);
 
     default void clear() {
         throw new UnsupportedOperationException("Method not implemented.");

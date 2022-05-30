@@ -1505,7 +1505,7 @@ public abstract class BaseEntryManager implements PersistenceEntryManager {
 		}
 	}
 
-	protected List<AttributeData> getAttributesListForPersist(Object entry,
+	public List<AttributeData> getAttributesListForPersist(Object entry,
 			List<PropertyAnnotation> propertiesAnnotations) {
 		// Prepare list of properties to persist
 		List<AttributeData> attributes = new ArrayList<AttributeData>();
@@ -1683,7 +1683,7 @@ public abstract class BaseEntryManager implements PersistenceEntryManager {
 		return listAttributes;
 	}
 
-	protected <T> List<PropertyAnnotation> getEntryPropertyAnnotations(Class<T> entryClass) {
+	public <T> List<PropertyAnnotation> getEntryPropertyAnnotations(Class<T> entryClass) {
         final List<PropertyAnnotation> annotations = getEntryClassAnnotations(entryClass, "property_", LDAP_ENTRY_PROPERTY_ANNOTATIONS);
 //        KeyShortcuter.initIfNeeded(entryClass, annotations);
         return annotations;
