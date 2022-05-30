@@ -150,6 +150,7 @@ public class OpenIdConfiguration extends HttpServlet {
      */
     @SuppressWarnings("deprecation")
     protected void processRequest(HttpServletRequest servletRequest, HttpServletResponse httpResponse) throws IOException {
+        log.info("[TEST] OpenId configuration");
         if (!(externalAuthenticationService.isLoaded() && externalDynamicScopeService.isLoaded())) {
             httpResponse.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             log.error("Jans Auth still starting up!");

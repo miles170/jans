@@ -47,6 +47,9 @@ public abstract class BaseResponseWithErrors<T extends IErrorType> extends BaseR
     }
 
     public Map<String, List<String>> getClaimMap() {
+        if (claimMap == null) {
+            claimMap = new HashMap<>();
+        }
         return claimMap;
     }
 

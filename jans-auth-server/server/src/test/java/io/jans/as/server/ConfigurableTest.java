@@ -12,9 +12,8 @@ import io.jans.util.properties.FileConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OverProtocol;
 import org.jboss.arquillian.testng.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.testng.ITestContext;
 import org.testng.Reporter;
 import org.testng.annotations.BeforeSuite;
@@ -33,22 +32,24 @@ import java.util.Properties;
  * @author Sergey Manoylo
  * @version December 29, 2021
  */
-@ArquillianSuiteDeployment
+//@ArquillianSuiteDeployment
 public abstract class ConfigurableTest extends Arquillian {
 
     public static FileConfiguration testData;
     public boolean initialized = false;
 
-    @Deployment
-    public static Archive<?> createDeployment() {
+    @Deployment(testable = false)
+    public static WebArchive createDeployment() {
         return Deployments.createDeployment();
     }
 
     @BeforeSuite
     public void initTestSuite(ITestContext context) throws IOException {
+        System.out.println("INITIALIZINGGGGGGG");
         if (initialized) {
             return;
         }
+        System.out.println("INITIALIZINGGGGGGG");
 
         Reporter.log("Invoked init test suite method", true);
 

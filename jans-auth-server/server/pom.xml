@@ -605,7 +605,7 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.testng</groupId>
 			<artifactId>arquillian-testng-container</artifactId>
-			<version>1.6.0.Final</version>
+			<version>1.7.0.Alpha10</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -629,25 +629,25 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-test-impl-base</artifactId>
-			<version>1.6.0.Final</version>
+			<version>1.7.0.Alpha10</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-spi</artifactId>
-			<version>1.6.0.Final</version>
+			<version>1.7.0.Alpha10</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-test-spi</artifactId>
-			<version>1.6.0.Final</version>
+			<version>1.7.0.Alpha10</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.testenricher</groupId>
-			<artifactId>arquillian-testenricher-cdi</artifactId>
-			<version>1.6.0.Final</version>
+			<artifactId>arquillian-testenricher-cdi-jakarta</artifactId>
+			<version>1.7.0.Alpha10</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -745,7 +745,7 @@
 				<dependency>
 					<groupId>org.jboss.arquillian.container</groupId>
 					<artifactId>arquillian-jetty-embedded-11</artifactId>
-					<version>1.0.0.CR4</version>
+					<version>1.0.0.Final</version>
 					<scope>test</scope>
 				</dependency>
 				<dependency>
@@ -768,6 +768,84 @@
 					<artifactId>jetty-plus</artifactId>
 					<scope>test</scope>
 				</dependency>
+<!--				<dependency>-->
+<!--					<groupId>org.eclipse.jetty</groupId>-->
+<!--					<artifactId>apache-jsp</artifactId>-->
+<!--					<scope>test</scope>-->
+<!--				</dependency>-->
+
+				<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>jetty-cdi</artifactId>
+					<scope>test</scope>
+					<!-- to remove when 11.0.10 released -->
+					<!-- see https://github.com/eclipse/jetty.project/pull/7991 -->
+					<version>${jetty.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>jetty-servlet</artifactId>
+					<version>${jetty.version}</version>
+					<scope>test</scope>
+				</dependency>
+<!--				<dependency>-->
+<!--					<groupId>org.eclipse.jetty</groupId>-->
+<!--					<artifactId>jetty-servlets</artifactId>-->
+<!--					<version>${jetty.version}</version>-->
+<!--					<scope>test</scope>-->
+<!--				</dependency>-->
+				<dependency>
+					<groupId>org.eclipse.jetty.websocket</groupId>
+					<artifactId>websocket-jakarta-server</artifactId>
+					<version>${jetty.version}</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>apache-jsp</artifactId>
+					<version>${jetty.version}</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+					<version>1.7.36</version>
+					<scope>test</scope>
+				</dependency>
+
+				<dependency>
+					<groupId>jakarta.platform</groupId>
+					<artifactId>jakarta.jakartaee-api</artifactId>
+					<version>${jakartaee-api.version}</version>
+					<scope>provided</scope>
+				</dependency>
+
+<!--				<dependency>-->
+<!--					<groupId>org.jboss.resteasy</groupId>-->
+<!--					<artifactId>resteasy-jaxrs</artifactId>-->
+<!--					<version>3.15.3.Final</version>-->
+<!--					<scope>test</scope>-->
+<!--				</dependency>-->
+<!--				<dependency>-->
+<!--					<groupId>org.jboss.resteasy</groupId>-->
+<!--					<artifactId>resteasy-cdi</artifactId>-->
+<!--					<version>3.15.3.Final</version>-->
+<!--					<scope>test</scope>-->
+<!--				</dependency>-->
+<!--				<dependency>-->
+<!--					<groupId>org.jboss.resteasy</groupId>-->
+<!--					<artifactId>resteasy-client</artifactId>-->
+<!--					<version>3.15.3.Final</version>-->
+<!--					<scope>test</scope>-->
+<!--				</dependency>-->
+<!--				<dependency>-->
+<!--					<groupId>org.jboss.resteasy</groupId>-->
+<!--					<artifactId>resteasy-servlet-initializer</artifactId>-->
+<!--					<version>3.15.3.Final</version>-->
+<!--					<scope>test</scope>-->
+<!--				</dependency>-->
+
+				<!--Other depenedencies-->
                 <dependency>
                     <groupId>com.nimbusds</groupId>
                     <artifactId>nimbus-jose-jwt</artifactId>

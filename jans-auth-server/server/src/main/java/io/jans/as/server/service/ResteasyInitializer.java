@@ -21,18 +21,12 @@ import io.jans.as.server.revoke.RevokeSessionRestWebService;
 import io.jans.as.server.session.ws.rs.CheckSessionStatusRestWebServiceImpl;
 import io.jans.as.server.session.ws.rs.EndSessionRestWebServiceImpl;
 import io.jans.as.server.token.ws.rs.TokenRestWebServiceImpl;
-import io.jans.as.server.uma.ws.rs.UmaGatheringWS;
-import io.jans.as.server.uma.ws.rs.UmaMetadataWS;
-import io.jans.as.server.uma.ws.rs.UmaPermissionRegistrationWS;
-import io.jans.as.server.uma.ws.rs.UmaResourceRegistrationWS;
-import io.jans.as.server.uma.ws.rs.UmaRptIntrospectionWS;
-import io.jans.as.server.uma.ws.rs.UmaScopeIconWS;
-import io.jans.as.server.uma.ws.rs.UmaScopeWS;
+import io.jans.as.server.uma.ws.rs.*;
 import io.jans.as.server.userinfo.ws.rs.UserInfoRestWebServiceImpl;
 import io.jans.as.server.ws.rs.stat.StatWS;
-
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,6 +41,7 @@ public class ResteasyInitializer extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
+        System.out.println("[TEST]:::::: 3");
         HashSet<Class<?>> classes = new HashSet<Class<?>>();
         classes.add(JansConfigurationWS.class);
 

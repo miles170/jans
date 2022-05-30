@@ -144,8 +144,7 @@
 			<AppenderRef ref="JANS_AUTH_AUDIT_LOG_FILE" />
 		</Logger>
 
-		<Root level="info">
-			<AppenderRef ref="FILE" />
+		<Root level="debug">
 			<AppenderRef ref="STDOUT" />
 		</Root>
 	</Loggers>

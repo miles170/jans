@@ -6,6 +6,8 @@
 
 package io.jans.as.server.util;
 
+import io.jans.as.server.service.ResteasyInitializer;
+import org.jboss.arquillian.container.jetty.embedded_11.JettyEmbeddedConfiguration;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -20,14 +22,17 @@ import java.io.File;
 public class Deployments {
 
     public static WebArchive createDeployment() {
+//        File pomFile = Maven.resolver().loadPomFromFile("pom.xml").resolve("org.jboss.resteasy:resteasy-servlet-initializer")
+//                .withoutTransitivity().asSingleFile();
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "jans-auth.war")
                 // adding the configuration class silences the logged exception
                 // when building the configuration on the server-side, but
                 // shouldn't be necessary
-                // .addClass(JettyEmbeddedConfiguration.class)
+                 .addClass(JettyEmbeddedConfiguration.class)
+//                .addAsLibraries(pomFile)
                 // Resteasy services
-                // .addClass(ResteasyInitializer.class)
-                // .addPackage(GluuConfigurationWS.class.getPackage())
+                 .addClass(ResteasyInitializer.class)
+//                 .addPackage(GluuConfigurationWS.class.getPackage())
                 // Servlets
                 .addAsWebInfResource("jetty-env.xml").addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .setWebXML("web.xml");

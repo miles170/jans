@@ -5,11 +5,28 @@
 
 	<display-name>Jans Auth Test Server</display-name>
 
+	<!-- Jetty -->
+	<context-param>
+		<param-name>org.eclipse.jetty.servlet.Default.dirAllowed</param-name>
+		<param-value>false</param-value>
+	</context-param>
+
 	<!-- Weld -->
 	<listener>
 		<listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
 	</listener>
-    
+
+	<listener>
+		<listener-class>
+			org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap
+		</listener-class>
+	</listener>
+
+	<listener>
+		<listener-class>org.jboss.weld.environment.servlet.BeanManagerResourceBindingListener</listener-class>
+	</listener>
+
+
 	<!-- Authentication filter -->
 	<filter>
 		<filter-name>Authentication Filter</filter-name>
@@ -32,7 +49,37 @@
 		<param-name>javax.faces.DEFAULT_SUFFIX</param-name>
 		<param-value>.xhtml</param-value>
 	</context-param>
+	<context-param>
+		<param-name>javax.faces.FACELETS_RESOURCE_RESOLVER</param-name>
+		<param-value>io.jans.service.ExternalResourceHandler</param-value>
+	</context-param>
+	<!-- Change to -1 when you don't want the compiler should check for changes -->
+	<context-param>
+		<param-name>javax.faces.FACELETS_REFRESH_PERIOD</param-name>
+		<param-value>${javax.faces.FACELETS_REFRESH_PERIOD}</param-value>
+	</context-param>
+	<context-param>
+		<param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+		<param-value>client</param-value>
+	</context-param>
 
+	<!-- RichFaces -->
+	<context-param>
+		<param-name>org.richfaces.SKIN</param-name>
+		<param-value>glassX</param-value>
+	</context-param>
+
+	<!-- Suppress spurious stylesheets -->
+	<context-param>
+		<param-name>org.richfaces.CONTROL_SKINNING</param-name>
+		<param-value>disable</param-value>
+	</context-param>
+	<context-param>
+		<param-name>org.richfaces.CONTROL_SKINNING_CLASSES</param-name>
+		<param-value>disable</param-value>
+	</context-param>
+
+	<!-- JSF -->
 	<listener>
 		<listener-class>com.sun.faces.config.ConfigureListener</listener-class>
 	</listener>
@@ -78,9 +125,17 @@
 		<param-value>/restv1</param-value>
 	</context-param>
 
+	<!--	<servlet>-->
+	<!--		<servlet-name>Resteasy</servlet-name>-->
+	<!--		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher</servlet-class>-->
+	<!--		<init-param>-->
+	<!--			<param-name>javax.ws.rs.Application</param-name>-->
+	<!--			<param-value>io.jans.as.server.service.TestResteasyInitializer</param-value>-->
+	<!--		</init-param>-->
+	<!--	</servlet>-->
 	<servlet>
 		<servlet-name>Resteasy</servlet-name>
-		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher</servlet-class>
+		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
 		<init-param>
 			<param-name>javax.ws.rs.Application</param-name>
 			<param-value>io.jans.as.server.service.TestResteasyInitializer</param-value>
