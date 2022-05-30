@@ -3,6 +3,8 @@ package io.jans.agama.engine.misc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.jans.agama.model.EngineConfig;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.io.IOException;
@@ -37,6 +39,13 @@ public class FlowUtils {
     @Inject
     private ObjectMapper mapper;
     
+    @Inject
+    private EngineConfig engineConfig;
+
+    public boolean serviceEnabled() {
+        return engineConfig.isEnabled();
+    }
+
     /**
      * It is assumed that values in the map are String arrays with at least one element
      * @param map
@@ -80,5 +89,5 @@ public class FlowUtils {
         return p.getProperty("encodeSalt");
         
     }
-        
+    
 }
