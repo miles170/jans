@@ -1,34 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <web-app version="3.1"
-	xmlns="http://xmlns.jcp.org/xml/ns/javaee/"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+         xmlns="http://xmlns.jcp.org/xml/ns/javaee/"
+>
+    <display-name>jans-eleven</display-name>
 
-	<display-name>oxBroker Server</display-name>
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
 
-	<welcome-file-list>
-		<welcome-file>index.jsp</welcome-file>
-	</welcome-file-list>
+    <!-- Weld -->
+    <listener>
+        <listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
+    </listener>
 
-	<!-- Weld -->
-	<listener>
-		<listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
-	</listener>
+    <security-constraint>
+        <display-name>Restrict raw JSP Documents</display-name>
+        <web-resource-collection>
+            <web-resource-name>JSP</web-resource-name>
+            <url-pattern>*.jsp</url-pattern>
+        </web-resource-collection>
+        <auth-constraint/>
+    </security-constraint>
 
-	<security-constraint>
-		<display-name>Restrict raw JSP Documents</display-name>
-		<web-resource-collection>
-			<web-resource-name>JSP</web-resource-name>
-			<url-pattern>*.jsp</url-pattern>
-		</web-resource-collection>
-		<auth-constraint />
-	</security-constraint>
+    <!-- Authentication filter -->
+    <filter>
+        <filter-name>jans-eleven Test Mode Filter</filter-name>
+        <filter-class>io.jans.eleven.service.TestModeTokenFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>jans-eleven Test Mode Filter</filter-name>
+        <url-pattern>/restv/generateKey</url-pattern>
+        <url-pattern>/restv/sign</url-pattern>
+        <url-pattern>/restv/verifySignature</url-pattern>
+        <url-pattern>/restv/deleteKey</url-pattern>
+    </filter-mapping>
 
-	<resource-env-ref>
-		<description>Object factory for the CDI Bean Manager</description>
-		<resource-env-ref-name>BeanManager</resource-env-ref-name>
-		<resource-env-ref-type>jakarta.enterprise.inject.spi.BeanManager</resource-env-ref-type>
-	</resource-env-ref>
+    <resource-env-ref>
+        <description>Object factory for the CDI Bean Manager</description>
+        <resource-env-ref-name>BeanManager</resource-env-ref-name>
+        <resource-env-ref-type>jakarta.enterprise.inject.spi.BeanManager</resource-env-ref-type>
+    </resource-env-ref>
 
 </web-app>

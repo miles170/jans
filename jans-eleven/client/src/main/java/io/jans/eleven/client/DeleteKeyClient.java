@@ -6,21 +6,19 @@
 
 package io.jans.eleven.client;
 
-import static io.jans.eleven.model.DeleteKeyRequestParam.KEY_ID;
-
+import com.google.common.base.Strings;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation.Builder;
 import jakarta.ws.rs.client.WebTarget;
-
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 
-import com.google.common.base.Strings;
+import static io.jans.eleven.model.DeleteKeyRequestParam.KEY_ID;
 
 /**
  * @author Javier Rojas Blum
- * @version March 20, 2017
+ * @version June 9, 2022
  */
 public class DeleteKeyClient extends BaseClient<DeleteKeyRequest, DeleteKeyResponse> {
 
@@ -63,8 +61,8 @@ public class DeleteKeyClient extends BaseClient<DeleteKeyRequest, DeleteKeyRespo
 
     @Override
     public DeleteKeyResponse exec() throws Exception {
-    	ResteasyClient resteasyClient = (ResteasyClient) ClientBuilder.newClient();
-    	WebTarget webTarget = resteasyClient.target(url);
+        ResteasyClient resteasyClient = (ResteasyClient) ClientBuilder.newClient();
+        WebTarget webTarget = resteasyClient.target(url);
 
         Builder clientRequest = webTarget.request();
 
@@ -77,15 +75,15 @@ public class DeleteKeyClient extends BaseClient<DeleteKeyRequest, DeleteKeyRespo
 
         // Call REST Service and handle response
         if (HttpMethod.POST.equals(request.getHttpMethod())) {
-        	clientResponse = clientRequest.buildPost(Entity.entity("{}", getRequest().getMediaType())).invoke();
+            clientResponse = clientRequest.buildPost(Entity.entity(requestForm, getRequest().getMediaType())).invoke();
         } else {
             clientResponse = clientRequest.buildGet().invoke();
         }
 
         try {
-        	setResponse(new DeleteKeyResponse(clientResponse));
+            setResponse(new DeleteKeyResponse(clientResponse));
         } finally {
-        	clientResponse.close();
+            clientResponse.close();
         }
 
         return getResponse();

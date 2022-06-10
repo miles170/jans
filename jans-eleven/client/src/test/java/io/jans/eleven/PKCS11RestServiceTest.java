@@ -286,8 +286,6 @@ public class PKCS11RestServiceTest {
     @Test
     public void testGenerateKeyRS384(String generateKeyEndpoint, String testModeToken) {
         try {
-        	generateKeyEndpoint= "https://jenkins-ldap.jans.io/jans-eleven/restv1/generateKey";
-        	testModeToken = "5be64765-7052-466b-ad1a-bd7dddcfdee4";
             showTitle("testGenerateKeyRS384");
 
             GenerateKeyRequest request = new GenerateKeyRequest();

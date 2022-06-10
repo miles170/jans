@@ -6,67 +6,69 @@
 
 package io.jans.eleven.service;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
+import com.google.common.base.Strings;
+import io.jans.eleven.util.StringUtils;
 import jakarta.inject.Inject;
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.inject.Named;
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.MediaType;
-
-import io.jans.eleven.model.Configuration;
-import io.jans.eleven.util.StringUtils;
 import org.slf4j.Logger;
 
-import com.google.common.base.Strings;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @author Javier Rojas Blum
  * @author Yuriy Movchan
- * @version March 20, 2017
+ * @version June 9, 2022
  */
-@WebFilter(asyncSupported = true, urlPatterns = {
-		"/rest/generateKey", "/rest/sign", "/rest/verifySignature", "/rest/deleteKey"
-		}, displayName = "oxEleven Test Mode Filter"
-)
+@WebFilter(
+        asyncSupported = true,
+        urlPatterns = {
+                "/restv/generateKey",
+                "/restv/sign",
+                "/restv/verifySignature",
+                "/restv/deleteKey"
+        },
+        displayName = "jans-eleven Test Mode Filter")
 public class TestModeTokenFilter implements Filter {
 
-	@Inject
-	private Logger log;
+    @Inject
+    private Logger log;
 
-	@Inject
-	private Configuration configuration;
+    @Inject
+    @Named("configurationFactory")
+    private ConfigurationFactory configurationFactory;
 
-	private static final String oxElevenGenerateKeyEndpoint = "rest/generateKey";
-    private static final String oxElevenSignEndpoint = "rest/sign";
-    private static final String oxElevenVerifySignatureEndpoint = "rest/verifySignature";
-    private static final String oxElevenDeleteKeyEndpoint = "rest/deleteKey";
+    private static final String jansElevenGenerateKeyEndpoint = "restv/generateKey";
+    private static final String jansElevenSignEndpoint = "restv/sign";
+    private static final String jansElevenVerifySignatureEndpoint = "restv/verifySignature";
+    private static final String jansElevenDeleteKeyEndpoint = "restv/deleteKey";
 
-	public void init(FilterConfig filterConfig) throws ServletException {
-	}
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // nothing
+    }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         if (request instanceof HttpServletRequest) {
             HttpServletRequest httpServletRequest = (HttpServletRequest) request;
             String path = httpServletRequest.getRequestURL().toString();
             if (!Strings.isNullOrEmpty(path)) {
-                if (path.endsWith(oxElevenGenerateKeyEndpoint)
-                        || path.endsWith(oxElevenSignEndpoint)
-                        || path.endsWith(oxElevenVerifySignatureEndpoint)
-                        || path.endsWith(oxElevenDeleteKeyEndpoint)) {
+                if (path.endsWith(jansElevenGenerateKeyEndpoint)
+                        || path.endsWith(jansElevenSignEndpoint)
+                        || path.endsWith(jansElevenVerifySignatureEndpoint)
+                        || path.endsWith(jansElevenDeleteKeyEndpoint)) {
                     if (httpServletRequest.getHeader("Authorization") != null) {
                         String header = httpServletRequest.getHeader("Authorization");
                         if (header.startsWith("Bearer ")) {
                             String accessToken = header.substring(7);
-                            String testModeToken = configuration.getTestModeToken();
+                            String testModeToken = configurationFactory.getConfiguration().getTestModeToken();
                             if (!Strings.isNullOrEmpty(accessToken) && !Strings.isNullOrEmpty(testModeToken)
                                     && accessToken.equals(testModeToken)) {
                                 chain.doFilter(request, response);
@@ -107,7 +109,8 @@ public class TestModeTokenFilter implements Filter {
         }
     }
 
-	public void destroy() {
-	}
-
+    @Override
+    public void destroy() {
+        // nothing
+    }
 }

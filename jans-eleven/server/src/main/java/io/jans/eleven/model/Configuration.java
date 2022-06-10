@@ -6,16 +6,14 @@
 
 package io.jans.eleven.model;
 
-import jakarta.enterprise.inject.Vetoed;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author Javier Rojas Blum
  * @author Yuriy Movchan
- * @version March 20, 2017
+ * @version June 9, 2022
  */
-@Vetoed
 public class Configuration {
 
     private Map<String, String> pkcs11Config;
@@ -25,7 +23,7 @@ public class Configuration {
 
     public Map<String, String> getPkcs11Config() {
         if (pkcs11Config == null) {
-            pkcs11Config = new HashMap<String, String>();
+            pkcs11Config = new HashMap<>();
         }
 
         return pkcs11Config;

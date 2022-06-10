@@ -6,11 +6,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>oxEleven</title>
+    <title>jans-eleven</title>
 </head>
 <body>
 <h1>
-    oxEleven
+    jans-eleven
 </h1>
 </body>
 </html>

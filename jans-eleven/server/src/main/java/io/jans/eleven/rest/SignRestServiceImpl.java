@@ -6,42 +6,36 @@
 
 package io.jans.eleven.rest;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.UnrecoverableEntryException;
-
-import jakarta.inject.Inject;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.core.CacheControl;
-import jakarta.ws.rs.core.Response;
-
+import com.google.common.base.Strings;
 import io.jans.eleven.model.SignRequestParam;
 import io.jans.eleven.model.SignResponseParam;
 import io.jans.eleven.model.SignatureAlgorithm;
 import io.jans.eleven.model.SignatureAlgorithmFamily;
-import io.jans.eleven.service.PKCS11Service;
+import io.jans.eleven.service.ConfigurationFactory;
 import io.jans.eleven.util.StringUtils;
-import org.json.JSONException;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.CacheControl;
+import jakarta.ws.rs.core.Response;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import com.google.common.base.Strings;
+import java.security.InvalidKeyException;
 
 /**
  * @author Javier Rojas Blum
- * @version March 20, 2017
+ * @version June 9, 2022
  */
 @Path("/")
 public class SignRestServiceImpl implements SignRestService {
 
-	@Inject
-	private Logger log;
+    @Inject
+    private Logger log;
 
-	@Inject
-	private PKCS11Service pkcs11Service;
+    @Inject
+    @Named("configurationFactory")
+    private ConfigurationFactory configurationFactory;
 
     public Response sign(SignRequestParam signRequestParam) {
         Response.ResponseBuilder builder = Response.ok();
@@ -78,7 +72,7 @@ public class SignRestServiceImpl implements SignRestService {
                         "The request asked for an operation that cannot be supported because the alias parameter is mandatory."
                 ));
             } else {
-                String signature = pkcs11Service.getSignature(signRequestParam.getSigningInput().getBytes(),
+                String signature = configurationFactory.getPkcs11Service().getSignature(signRequestParam.getSigningInput().getBytes(),
                         signRequestParam.getAlias(), signRequestParam.getSharedSecret(), signatureAlgorithm);
 
                 JSONObject jsonObject = new JSONObject();
@@ -92,24 +86,6 @@ public class SignRestServiceImpl implements SignRestService {
                     "invalid_request",
                     "Invalid key, either the alias or signatureAlgorithm parameter is not valid."
             ));
-        } catch (NoSuchAlgorithmException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (KeyStoreException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (IOException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (UnrecoverableEntryException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (SignatureException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (JSONException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
         } catch (Exception e) {
             builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
             log.error(e.getMessage(), e);

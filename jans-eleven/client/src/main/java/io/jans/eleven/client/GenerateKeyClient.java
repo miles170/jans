@@ -6,22 +6,20 @@
 
 package io.jans.eleven.client;
 
-import static io.jans.eleven.model.GenerateKeyRequestParam.EXPIRATION_TIME;
-import static io.jans.eleven.model.GenerateKeyRequestParam.SIGNATURE_ALGORITHM;
-
+import com.google.common.base.Strings;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation.Builder;
 import jakarta.ws.rs.client.WebTarget;
-
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 
-import com.google.common.base.Strings;
+import static io.jans.eleven.model.GenerateKeyRequestParam.EXPIRATION_TIME;
+import static io.jans.eleven.model.GenerateKeyRequestParam.SIGNATURE_ALGORITHM;
 
 /**
  * @author Javier Rojas Blum
- * @version March 20, 2017
+ * @version June 9, 2022
  */
 public class GenerateKeyClient extends BaseClient<GenerateKeyRequest, GenerateKeyResponse> {
 
@@ -64,8 +62,8 @@ public class GenerateKeyClient extends BaseClient<GenerateKeyRequest, GenerateKe
 
     @Override
     public GenerateKeyResponse exec() throws Exception {
-    	ResteasyClient resteasyClient = (ResteasyClient) ClientBuilder.newClient();
-    	WebTarget webTarget = resteasyClient.target(url);
+        ResteasyClient resteasyClient = (ResteasyClient) ClientBuilder.newClient();
+        WebTarget webTarget = resteasyClient.target(url);
 
         Builder clientRequest = webTarget.request();
 
@@ -83,15 +81,15 @@ public class GenerateKeyClient extends BaseClient<GenerateKeyRequest, GenerateKe
 
         // Call REST Service and handle response
         if (HttpMethod.POST.equals(request.getHttpMethod())) {
-            clientResponse = clientRequest.buildPost(Entity.entity("{}", getRequest().getMediaType())).invoke();
+            clientResponse = clientRequest.buildPost(Entity.entity(requestForm, getRequest().getMediaType())).invoke();
         } else {
             clientResponse = clientRequest.buildGet().invoke();
         }
 
         try {
-        	setResponse(new GenerateKeyResponse(clientResponse));
+            setResponse(new GenerateKeyResponse(clientResponse));
         } finally {
-        	clientResponse.close();
+            clientResponse.close();
         }
 
         return getResponse();

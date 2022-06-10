@@ -6,53 +6,40 @@
 
 package io.jans.eleven.rest;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.interfaces.ECPublicKey;
-
-import jakarta.inject.Inject;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.core.CacheControl;
-import jakarta.ws.rs.core.Response;
-
 import io.jans.eleven.model.GenerateKeyResponseParam;
 import io.jans.eleven.model.SignatureAlgorithm;
 import io.jans.eleven.model.SignatureAlgorithmFamily;
-import io.jans.eleven.service.PKCS11Service;
-import io.jans.eleven.util.StringUtils;
-import org.apache.commons.codec.binary.Base64;
-import io.jans.eleven.model.Configuration;
+import io.jans.eleven.service.ConfigurationFactory;
 import io.jans.eleven.util.Base64Util;
+import io.jans.eleven.util.StringUtils;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.CacheControl;
+import jakarta.ws.rs.core.Response;
+import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import sun.security.rsa.RSAPublicKeyImpl;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 
 /**
  * @author Javier Rojas Blum
- * @version March 20, 2017
+ * @version June 9, 2022
  */
 @Path("/")
 public class GenerateKeyRestServiceImpl implements GenerateKeyRestService {
 
-	@Inject
-	private Logger log;
+    @Inject
+    private Logger log;
 
-	@Inject
-	private Configuration configuration;
-
-	@Inject
-	private PKCS11Service pkcs11Service;
+    @Inject
+    @Named("configurationFactory")
+    private ConfigurationFactory configurationFactory;
 
     public Response generateKey(String sigAlg, Long expirationTime) {
         Response.ResponseBuilder builder = Response.ok();
@@ -79,10 +66,10 @@ public class GenerateKeyRestServiceImpl implements GenerateKeyRestService {
                         "The provided signature algorithm parameter is not supported."
                 ));
             } else {
-                String dnName = configuration.getDnName();
-                String alias = pkcs11Service.generateKey(dnName, signatureAlgorithm, expirationTime);
-                PublicKey publicKey = pkcs11Service.getPublicKey(alias);
-                Certificate certificate = pkcs11Service.getCertificate(alias);
+                String dnName = configurationFactory.getConfiguration().getDnName();
+                String alias = configurationFactory.getPkcs11Service().generateKey(dnName, signatureAlgorithm, expirationTime);
+                PublicKey publicKey = configurationFactory.getPkcs11Service().getPublicKey(alias);
+                Certificate certificate = configurationFactory.getPkcs11Service().getCertificate(alias);
 
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put(GenerateKeyResponseParam.KEY_ID, alias);
@@ -91,7 +78,7 @@ public class GenerateKeyRestServiceImpl implements GenerateKeyRestService {
                 jsonObject.put(GenerateKeyResponseParam.ALGORITHM, signatureAlgorithm.getName());
                 jsonObject.put(GenerateKeyResponseParam.EXPIRATION_TIME, expirationTime);
                 if (SignatureAlgorithmFamily.RSA.equals(signatureAlgorithm.getFamily())) {
-                    RSAPublicKeyImpl rsaPublicKey = (RSAPublicKeyImpl) publicKey;
+                    RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
                     jsonObject.put(GenerateKeyResponseParam.MODULUS, Base64Util.base64UrlEncode(rsaPublicKey.getModulus().toByteArray()));
                     jsonObject.put(GenerateKeyResponseParam.EXPONENT, Base64Util.base64UrlEncode(rsaPublicKey.getPublicExponent().toByteArray()));
                 } else if (SignatureAlgorithmFamily.EC.equals(signatureAlgorithm.getFamily())) {
@@ -106,33 +93,6 @@ public class GenerateKeyRestServiceImpl implements GenerateKeyRestService {
 
                 builder.entity(jsonObject.toString());
             }
-        } catch (CertificateException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (NoSuchAlgorithmException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (KeyStoreException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (IOException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (InvalidKeyException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (InvalidAlgorithmParameterException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (NoSuchProviderException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (SignatureException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (JSONException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
         } catch (Exception e) {
             builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
             log.error(e.getMessage(), e);

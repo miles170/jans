@@ -8,7 +8,7 @@ package io.jans.eleven.model;
 
 /**
  * @author Javier Rojas Blum
- * @version May 4, 2016
+ * @version June 9, 2022
  */
 public enum SignatureAlgorithm {
 
@@ -28,21 +28,21 @@ public enum SignatureAlgorithm {
     private final String algorithm;
     private final ECEllipticCurve curve;
 
-    private SignatureAlgorithm(String name, String family, String algorithm, ECEllipticCurve curve) {
+    SignatureAlgorithm(String name, String family, String algorithm, ECEllipticCurve curve) {
         this.name = name;
         this.family = family;
         this.algorithm = algorithm;
         this.curve = curve;
     }
 
-    private SignatureAlgorithm(String name, String family, String algorithm) {
+    SignatureAlgorithm(String name, String family, String algorithm) {
         this.name = name;
         this.family = family;
         this.algorithm = algorithm;
         this.curve = null;
     }
 
-    private SignatureAlgorithm(String name) {
+    SignatureAlgorithm(String name) {
         this.name = name;
         this.family = null;
         this.algorithm = null;

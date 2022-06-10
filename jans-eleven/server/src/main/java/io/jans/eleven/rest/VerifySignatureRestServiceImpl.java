@@ -6,39 +6,39 @@
 
 package io.jans.eleven.rest;
 
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-
+import com.google.common.base.Strings;
+import io.jans.eleven.model.SignatureAlgorithm;
+import io.jans.eleven.model.SignatureAlgorithmFamily;
+import io.jans.eleven.model.VerifySignatureRequestParam;
+import io.jans.eleven.model.VerifySignatureResponseParam;
+import io.jans.eleven.service.ConfigurationFactory;
+import io.jans.eleven.util.StringUtils;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.Response;
-
-import io.jans.eleven.model.SignatureAlgorithm;
-import io.jans.eleven.model.SignatureAlgorithmFamily;
-import io.jans.eleven.model.VerifySignatureResponseParam;
-import io.jans.eleven.service.PKCS11Service;
-import io.jans.eleven.util.StringUtils;
-import io.jans.eleven.model.VerifySignatureRequestParam;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import com.google.common.base.Strings;
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * @author Javier Rojas Blum
- * @version March 20, 2017
+ * @version June 9, 2022
  */
 @Path("/")
 public class VerifySignatureRestServiceImpl implements VerifySignatureRestService {
 
-	@Inject
-	private Logger log;
+    @Inject
+    private Logger log;
 
-	@Inject
-	private PKCS11Service pkcs11Service;
+    @Inject
+    @Named("configurationFactory")
+    private ConfigurationFactory configurationFactory;
 
     public Response verifySignature(VerifySignatureRequestParam verifySignatureRequestParam) {
         Response.ResponseBuilder builder = Response.ok();
@@ -81,7 +81,7 @@ public class VerifySignatureRestServiceImpl implements VerifySignatureRestServic
                         "The request asked for an operation that cannot be supported because the alias parameter is mandatory."
                 ));
             } else {
-                boolean verified = pkcs11Service.verifySignature(
+                boolean verified = configurationFactory.getPkcs11Service().verifySignature(
                         verifySignatureRequestParam.getSigningInput(), verifySignatureRequestParam.getSignature(),
                         verifySignatureRequestParam.getAlias(),
                         verifySignatureRequestParam.getSharedSecret(),

@@ -6,36 +6,34 @@
 
 package io.jans.eleven.rest;
 
-import static io.jans.eleven.model.DeleteKeyResponseParam.DELETED;
-
-import java.security.KeyStoreException;
-import java.security.PublicKey;
-
+import com.google.common.base.Strings;
+import io.jans.eleven.service.ConfigurationFactory;
+import io.jans.eleven.util.StringUtils;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.Response;
-
-import io.jans.eleven.service.PKCS11Service;
-import io.jans.eleven.util.StringUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import com.google.common.base.Strings;
+import java.security.PublicKey;
+
+import static io.jans.eleven.model.DeleteKeyResponseParam.DELETED;
 
 /**
  * @author Javier Rojas Blum
- * @version March 20, 2017
+ * @version June 9, 2022
  */
 @Path("/")
 public class DeleteKeyRestServiceImpl implements DeleteKeyRestService {
 
-	@Inject
-	private Logger log;
-	
-	@Inject
-	private PKCS11Service pkcs11Service;
+    @Inject
+    private Logger log;
+
+    @Inject
+    @Named("configurationFactory")
+    private ConfigurationFactory configurationFactory;
 
     public Response deleteKey(String alias) {
         Response.ResponseBuilder builder = Response.ok();
@@ -48,14 +46,14 @@ public class DeleteKeyRestServiceImpl implements DeleteKeyRestService {
                         "The request asked for an operation that cannot be supported because the alias parameter is mandatory."
                 ));
             } else {
-                PublicKey publicKey = pkcs11Service.getPublicKey(alias);
+                PublicKey publicKey = configurationFactory.getPkcs11Service().getPublicKey(alias);
                 if (publicKey == null) {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put(DELETED, false);
 
                     builder.entity(jsonObject.toString());
                 } else {
-                	pkcs11Service.deleteKey(alias);
+                    configurationFactory.getPkcs11Service().deleteKey(alias);
 
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put(DELETED, true);
@@ -63,12 +61,6 @@ public class DeleteKeyRestServiceImpl implements DeleteKeyRestService {
                     builder.entity(jsonObject.toString());
                 }
             }
-        } catch (KeyStoreException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (JSONException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
         } catch (Exception e) {
             builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
             log.error(e.getMessage(), e);

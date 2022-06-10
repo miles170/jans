@@ -12,8 +12,6 @@ import io.jans.eleven.model.KeyRequestParam;
 import io.jans.eleven.model.SignatureAlgorithm;
 import io.jans.eleven.model.SignatureAlgorithmFamily;
 import io.jans.eleven.util.Base64Util;
-import jakarta.enterprise.inject.Vetoed;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +37,6 @@ import java.util.UUID;
  * @author Yuriy Movchan
  * @version May 18, 2022
  */
-@Vetoed
 public class PKCS11Service implements Serializable {
 
     private static final long serialVersionUID = -2541585376018724618L;
@@ -52,26 +49,55 @@ public class PKCS11Service implements Serializable {
     private KeyStore keyStore;
     private char[] pin;
 
-    public PKCS11Service() {
+    public PKCS11Service(String pin, Map<String, String> pkcs11Config) {
+        log.info("Creating PKCS11Service service");
+
+        try {
+            init(pin, pkcs11Config);
+        } catch (CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
+            e.printStackTrace();
+            log.error("Failed to init PCKS11. Please fix it!!!.", e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("Failed to init PCKS11. Please fix it!!!.", e);
+        }
     }
 
     public void init(String pin, Map<String, String> pkcs11Config) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         this.pin = pin.toCharArray();
-        this.provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
 
-        Provider installedProvider = Security.getProvider(provider.getName());
-        if (installedProvider == null) {
-            Security.addProvider(provider);
+        initConfig();
+        String pkcs11ConfigData = "softhsm.cfg";
+        Provider pkcs11Provider = Security.getProvider("SunPKCS11");
+        pkcs11Provider = pkcs11Provider.configure(pkcs11ConfigData);
+
+        if (-1 == Security.addProvider(pkcs11Provider)) {
+            throw new RuntimeException("could not add security provider");
         } else {
-            provider = installedProvider;
+            System.out.println("provider initialized !!!");
         }
 
-        keyStore = KeyStore.getInstance("PKCS11", provider);
-        keyStore.load(null, this.pin);
+        Security.addProvider(pkcs11Provider);
+        provider = pkcs11Provider;
 
-        installedProvider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
-        if (installedProvider == null) {
-            Security.addProvider(new BouncyCastleProvider());
+        keyStore = KeyStore.getInstance("PKCS11", pkcs11Provider);
+        keyStore.load(null, pin.toCharArray());
+    }
+
+    private static void initConfig() {
+        try {
+            String filePath = "/usr/lib/softhsm/libsofthsm2.so";
+            //To create softhsm.cfg
+            FileWriter fw = new FileWriter("softhsm.cfg");
+            fw.write("name = SoftHSM\n" + "library = " + filePath);
+            //Change the slot ID
+            fw.write("\n slot = 908337478\n" + "attributes(generate, *, *) = {\n");
+            fw.write("\t CKA_TOKEN = true\n}\n" + "attributes(generate, CKO_CERTIFICATE, *) = {\n");
+            fw.write("\t CKA_PRIVATE = false\n}\n" + "attributes(generate, CKO_PUBLIC_KEY, *) = {\n");
+            fw.write("\t CKA_PRIVATE = false\n}\n");
+            fw.close();
+        } catch (IOException e2) {
+            e2.printStackTrace();
         }
     }
 
@@ -98,7 +124,8 @@ public class PKCS11Service implements Serializable {
         if (signatureAlgorithm == null) {
             throw new RuntimeException("The signature algorithm parameter cannot be null");
         } else if (SignatureAlgorithmFamily.RSA.equals(signatureAlgorithm.getFamily())) {
-            keyGen = KeyPairGenerator.getInstance(signatureAlgorithm.getFamily(), provider);
+//            keyGen = KeyPairGenerator.getInstance(signatureAlgorithm.getFamily(), provider);
+            keyGen = KeyPairGenerator.getInstance(signatureAlgorithm.getFamily());
             keyGen.initialize(2048, new SecureRandom());
         } else if (SignatureAlgorithmFamily.EC.equals(signatureAlgorithm.getFamily())) {
             ECGenParameterSpec eccgen = new ECGenParameterSpec(signatureAlgorithm.getCurve().getAlias());
