@@ -12,6 +12,7 @@ import io.jans.eleven.model.KeyRequestParam;
 import io.jans.eleven.model.SignatureAlgorithm;
 import io.jans.eleven.model.SignatureAlgorithmFamily;
 import io.jans.eleven.util.Base64Util;
+import io.jans.eleven.util.StringUtils;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,10 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.x500.X500Principal;
-import java.io.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.Certificate;
@@ -35,15 +39,17 @@ import java.util.UUID;
 /**
  * @author Javier Rojas Blum
  * @author Yuriy Movchan
- * @version May 18, 2022
+ * @version Jun 13, 2022
  */
 public class PKCS11Service implements Serializable {
 
     private static final long serialVersionUID = -2541585376018724618L;
 
-    private Logger log = LoggerFactory.getLogger(PKCS11Service.class);
+    private final Logger log = LoggerFactory.getLogger(PKCS11Service.class);
 
-    public static final String UTF8_STRING_ENCODING = "UTF-8";
+    public static final String CONFIG_FILE_NAME = "softhsm.cfg";
+    public static final String SECURITY_PROVIDER = "SunPKCS11";
+    public static final String KEY_STORE = "PKCS11";
 
     private Provider provider;
     private KeyStore keyStore;
@@ -54,9 +60,6 @@ public class PKCS11Service implements Serializable {
 
         try {
             init(pin, pkcs11Config);
-        } catch (CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
-            e.printStackTrace();
-            log.error("Failed to init PCKS11. Please fix it!!!.", e);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("Failed to init PCKS11. Please fix it!!!.", e);
@@ -66,65 +69,54 @@ public class PKCS11Service implements Serializable {
     public void init(String pin, Map<String, String> pkcs11Config) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         this.pin = pin.toCharArray();
 
-        initConfig();
-        String pkcs11ConfigData = "softhsm.cfg";
-        Provider pkcs11Provider = Security.getProvider("SunPKCS11");
-        pkcs11Provider = pkcs11Provider.configure(pkcs11ConfigData);
+        initConfig(pkcs11Config);
+        Provider pkcs11Provider = Security.getProvider(SECURITY_PROVIDER);
+        pkcs11Provider = pkcs11Provider.configure(CONFIG_FILE_NAME);
 
         if (-1 == Security.addProvider(pkcs11Provider)) {
-            throw new RuntimeException("could not add security provider");
+            log.error("Could not add security provider");
+            throw new RuntimeException("Could not add security provider");
         } else {
-            System.out.println("provider initialized !!!");
+            log.debug("provider initialized !!!");
         }
 
         Security.addProvider(pkcs11Provider);
         provider = pkcs11Provider;
 
-        keyStore = KeyStore.getInstance("PKCS11", pkcs11Provider);
+        keyStore = KeyStore.getInstance(KEY_STORE, pkcs11Provider);
         keyStore.load(null, pin.toCharArray());
     }
 
-    private static void initConfig() {
+    private void initConfig(Map<String, String> pkcs11Config) {
         try {
-            String filePath = "/usr/lib/softhsm/libsofthsm2.so";
-            //To create softhsm.cfg
-            FileWriter fw = new FileWriter("softhsm.cfg");
-            fw.write("name = SoftHSM\n" + "library = " + filePath);
-            //Change the slot ID
-            fw.write("\n slot = 908337478\n" + "attributes(generate, *, *) = {\n");
+            String library = pkcs11Config.get("library");
+            String name = pkcs11Config.get("name");
+            String slot = pkcs11Config.get("slot");
+
+            //Create config file
+            FileWriter fw = new FileWriter(CONFIG_FILE_NAME);
+            fw.write("name = " + name + "\n");
+            fw.write("library = " + library + "\n");
+            fw.write("slot = " + slot + "\n");
+            fw.write("attributes(generate, *, *) = {\n");
             fw.write("\t CKA_TOKEN = true\n}\n" + "attributes(generate, CKO_CERTIFICATE, *) = {\n");
             fw.write("\t CKA_PRIVATE = false\n}\n" + "attributes(generate, CKO_PUBLIC_KEY, *) = {\n");
             fw.write("\t CKA_PRIVATE = false\n}\n");
             fw.close();
-        } catch (IOException e2) {
-            e2.printStackTrace();
+        } catch (IOException e) {
+            log.debug(e.getMessage());
+            e.printStackTrace();
         }
-    }
-
-    private static InputStream getTokenCfg(Map<String, String> pkcs11Config) {
-        StringBuilder sb = new StringBuilder();
-
-        for (Map.Entry<String, String> entry : pkcs11Config.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            sb.append(key).append("=").append(value).append("\n");
-        }
-
-        String cfg = sb.toString();
-
-        return new ByteArrayInputStream(cfg.getBytes());
     }
 
     public String generateKey(String dnName, SignatureAlgorithm signatureAlgorithm, Long expirationTime)
             throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, CertificateException,
             NoSuchProviderException, InvalidKeyException, SignatureException, KeyStoreException, IOException {
-        KeyPairGenerator keyGen = null;
+        KeyPairGenerator keyGen;
 
         if (signatureAlgorithm == null) {
             throw new RuntimeException("The signature algorithm parameter cannot be null");
         } else if (SignatureAlgorithmFamily.RSA.equals(signatureAlgorithm.getFamily())) {
-//            keyGen = KeyPairGenerator.getInstance(signatureAlgorithm.getFamily(), provider);
             keyGen = KeyPairGenerator.getInstance(signatureAlgorithm.getFamily());
             keyGen.initialize(2048, new SecureRandom());
         } else if (SignatureAlgorithmFamily.EC.equals(signatureAlgorithm.getFamily())) {
@@ -155,7 +147,9 @@ public class PKCS11Service implements Serializable {
         if (signatureAlgorithm == SignatureAlgorithm.NONE) {
             return null;
         } else if (SignatureAlgorithmFamily.HMAC.equals(signatureAlgorithm.getFamily())) {
-            SecretKey secretKey = new SecretKeySpec(sharedSecret.getBytes(UTF8_STRING_ENCODING), signatureAlgorithm.getAlgorithm());
+            SecretKey secretKey = new SecretKeySpec(
+                    sharedSecret.getBytes(StringUtils.UTF8_STRING_ENCODING),
+                    signatureAlgorithm.getAlgorithm());
             Mac mac = Mac.getInstance(signatureAlgorithm.getAlgorithm());
             mac.init(secretKey);
             byte[] sig = mac.doFinal(signingInput);
@@ -173,7 +167,7 @@ public class PKCS11Service implements Serializable {
 
     public boolean verifySignature(String signingInput, String encodedSignature, String alias, String sharedSecret,
                                    JwksRequestParam jwksRequestParam, SignatureAlgorithm signatureAlgorithm) throws InvalidKeyException, NoSuchAlgorithmException, KeyStoreException, UnsupportedEncodingException, SignatureException, UnrecoverableEntryException {
-        boolean verified = false;
+        boolean verified;
 
         if (signatureAlgorithm == SignatureAlgorithm.NONE) {
             return Strings.isNullOrEmpty(encodedSignature);
@@ -181,7 +175,7 @@ public class PKCS11Service implements Serializable {
             String expectedSignature = getSignature(signingInput.getBytes(), null, sharedSecret, signatureAlgorithm);
             return expectedSignature.equals(encodedSignature);
         } else { // EC or RSA
-            PublicKey publicKey = null;
+            PublicKey publicKey;
 
             try {
                 if (jwksRequestParam == null) {
@@ -199,15 +193,6 @@ public class PKCS11Service implements Serializable {
                 verifier.initVerify(publicKey);
                 verifier.update(signingInput.getBytes());
                 verified = verifier.verify(signature);
-            } catch (NoSuchAlgorithmException e) {
-                log.error(e.getMessage(), e);
-                verified = false;
-            } catch (SignatureException e) {
-                log.error(e.getMessage(), e);
-                verified = false;
-            } catch (InvalidKeyException e) {
-                log.error(e.getMessage(), e);
-                verified = false;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 verified = false;
@@ -221,7 +206,7 @@ public class PKCS11Service implements Serializable {
         keyStore.deleteEntry(alias);
     }
 
-    public PublicKey getPublicKey(String alias, JwksRequestParam jwksRequestParam) throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, InvalidParameterSpecException, InvalidKeySpecException {
+    public PublicKey getPublicKey(String alias, JwksRequestParam jwksRequestParam) throws NoSuchAlgorithmException, InvalidParameterSpecException, InvalidKeySpecException {
         PublicKey publicKey = null;
 
         for (KeyRequestParam key : jwksRequestParam.getKeyRequestParams()) {
@@ -286,9 +271,12 @@ public class PKCS11Service implements Serializable {
         if (key == null) {
             return null;
         }
-        PrivateKey privateKey = (PrivateKey) key;
 
-        return privateKey;
+        if (key instanceof PrivateKey) {
+            return (PrivateKey) key;
+        }
+
+        return null;
     }
 
     private X509Certificate[] generateV3Certificate(KeyPair pair, String dnName, SignatureAlgorithm signatureAlgorithm,

@@ -8,10 +8,10 @@ package io.jans.eleven.model;
 
 /**
  * @author Javier Rojas Blum
- * @version April 27, 2016
+ * @version Jun 13, 2022
  */
 public interface GenerateKeyRequestParam {
 
-    public static final String SIGNATURE_ALGORITHM = "signatureAlgorithm";
-    public static final String EXPIRATION_TIME = "expirationTime";
+    String SIGNATURE_ALGORITHM = "signatureAlgorithm";
+    String EXPIRATION_TIME = "expirationTime";
 }

@@ -6,10 +6,14 @@
 
 package io.jans.eleven.client;
 
+import io.jans.eleven.util.StringUtils;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.core.MediaType;
 
 import io.jans.eleven.model.SignRequestParam;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  * @author Javier Rojas Blum
@@ -39,14 +43,15 @@ public class SignRequest extends BaseRequest {
     public String getQueryString() {
         StringBuilder queryStringBuilder = new StringBuilder();
 
-        /*try {
-            if (signRequestParam != null) {
-                queryStringBuilder.append(SignRequestParam.)
-                        .append("=").append(URLEncoder.encode(signRequestParam, StringUtils.UTF8_STRING_ENCODING));
-            }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }*/
+//        try {
+//            if (signRequestParam != null) {
+//                queryStringBuilder
+//                        .append(SignRequestParam.)
+//                        .append("=").append(URLEncoder.encode(signRequestParam, StringUtils.UTF8_STRING_ENCODING));
+//            }
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
 
         return queryStringBuilder.toString();
     }

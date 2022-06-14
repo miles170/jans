@@ -1,11 +1,10 @@
 {
-    "pkcs11Config": {
-        "name": "SoftHSM",
-        "library": "/usr/lib/softhsm/libsofthsm2.so",
-        "slot": "908337478",
-        "showInfo": "true"
-    },
-    "pkcs11Pin": "1234",
-    "dnName": "CN=jans-auth-server CA Certificate",
-    "testModeToken": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  "pkcs11Config": {
+    "name": "SoftHSM",
+    "library": "/usr/lib/softhsm/libsofthsm2.so",
+    "slot": "908337478"
+  },
+  "pkcs11Pin": "1234",
+  "dnName": "CN=jans-auth-server CA Certificate",
+  "testModeToken": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
