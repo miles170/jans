@@ -19,7 +19,7 @@ import java.io.File;
 /**
  * @author Javier Rojas Blum
  * @author Yuriy Movchan
- * @version June 9, 2022
+ * @version June 16, 2022
  */
 @ApplicationScoped
 @Named("configurationFactory")
@@ -38,8 +38,8 @@ public class ConfigurationFactory {
         } else if (System.getProperty("jboss.home.dir") != null) {
             BASE_DIR = System.getProperty("jboss.home.dir");
         } else {
-            //BASE_DIR = null;
-            BASE_DIR = "/home/javier/Projects/Gluu/jans/jans-eleven/server"; // TODO: Fix !!!
+            throw new RuntimeException("Could not determine BASE_DIR");
+            //BASE_DIR = "/home/javier/Projects/Gluu/jans/jans-eleven/server"; // TODO: Comment this line!
         }
     }
 
@@ -48,7 +48,6 @@ public class ConfigurationFactory {
 
     private final String CONFIG_FILE_NAME = "jans-eleven.json";
 
-    private String confDir;
     private String configFilePath;
 
     private Configuration configuration;
@@ -56,9 +55,10 @@ public class ConfigurationFactory {
 
     @PostConstruct
     public void init() {
-        this.confDir = confDir();
-        this.configFilePath = this.confDir + CONFIG_FILE_NAME;
+        String confDir = confDir();
+        this.configFilePath = confDir + CONFIG_FILE_NAME;
         this.configuration = loadConfiguration();
+        assert configuration != null;
         this.pkcs11Service = new PKCS11Service(configuration.getPkcs11Pin(), configuration.getPkcs11Config());
     }
 

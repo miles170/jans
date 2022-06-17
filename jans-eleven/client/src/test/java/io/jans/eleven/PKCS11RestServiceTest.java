@@ -6,41 +6,24 @@
 
 package io.jans.eleven;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
+import io.jans.eleven.client.*;
+import io.jans.eleven.model.JwksRequestParam;
+import io.jans.eleven.model.KeyRequestParam;
+import io.jans.eleven.model.SignatureAlgorithm;
+import org.apache.http.HttpStatus;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import io.jans.eleven.model.JwksRequestParam;
-import io.jans.eleven.model.KeyRequestParam;
-import io.jans.eleven.model.SignatureAlgorithm;
-import org.apache.http.HttpStatus;
-import io.jans.eleven.client.BaseClient;
-import io.jans.eleven.client.ClientUtils;
-import io.jans.eleven.client.DeleteKeyClient;
-import io.jans.eleven.client.DeleteKeyRequest;
-import io.jans.eleven.client.DeleteKeyResponse;
-import io.jans.eleven.client.GenerateKeyClient;
-import io.jans.eleven.client.GenerateKeyRequest;
-import io.jans.eleven.client.GenerateKeyResponse;
-import io.jans.eleven.client.SignClient;
-import io.jans.eleven.client.SignRequest;
-import io.jans.eleven.client.SignResponse;
-import io.jans.eleven.client.VerifySignatureClient;
-import io.jans.eleven.client.VerifySignatureRequest;
-import io.jans.eleven.client.VerifySignatureResponse;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Parameters;
-import org.testng.annotations.Test;
+import static org.testng.Assert.*;
 
 /**
  * @author Javier Rojas Blum
- * @version March 20, 2017
+ * @version June 16, 2022
  */
 public class PKCS11RestServiceTest {
 
@@ -1858,5 +1841,5 @@ public class PKCS11RestServiceTest {
     public static void showClient(BaseClient client) {
         ClientUtils.showClient(client);
     }
- 
+
 }
