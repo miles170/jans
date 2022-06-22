@@ -1,12 +1,29 @@
-# oxEleven
+# jans-eleven
 
-Java web application providing REST API's for a PKCS #11 interface.
+Java Web Application providing REST API's for a PKCS#11 interface.
+
+jans-eleven uses the PKCS#11 interface with [SoftHSMv2](https://www.opendnssec.org/softhsm/) without having a Hardware Security Module.
+
+## Supported Algorithms
+
+Algorithm | Family
+----------|-------------
+none      | -
+HS256     | HMAC
+HS384     | HMAC
+HS512     | HMAC
+RS256     | RSA
+RS384     | RSA
+RS512     | RSA
+ES256     | EC
+ES384     | EC
+ES512     | EC
 
 ## Operations
 
 ### /generateKey
 
-- **URL:** https://ce.gluu.info:8443/oxeleven/rest/oxeleven/generateKey
+- **URL:** https://jenkins-dev1.jans.io/jans-eleven/restv1/generateKey
 - **Method:** POST
 - **Media Type:** application/x-www-form-urlencoded
 - **Data Params**
@@ -34,9 +51,9 @@ String rs256Alias = response.getKeyId();
 
 #### Sample Request - RS256
 
-```
-POST /oxeleven/rest/oxeleven/generateKey HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/generateKey HTTP/1.1
+Host: jenkins-dev1.jans.io
 Cache-Control: no-cache
 Content-Type: application/x-www-form-urlencoded
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -46,7 +63,7 @@ signatureAlgorithm=RS256&expirationTime=1462916947752
 
 #### Sample Response - RS256
 
-```
+```json
 {
     "kty": "RSA",
     "kid": "57a6c4fd-f65e-4baa-8a5d-f34812265383",
@@ -76,9 +93,9 @@ String es256Alias = response.getKeyId();
 
 #### Sample Request - ES256
 
-```
-POST /oxeleven/rest/oxeleven/generateKey HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/generateKey HTTP/1.1
+Host: jenkins-dev1.jans.io
 Cache-Control: no-cache
 Content-Type: application/x-www-form-urlencoded
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -88,7 +105,7 @@ signatureAlgorithm=ES256&expirationTime=1462916947752
 
 #### Sample Response - ES256
 
-```
+```json
 {
     "kty": "EC",
     "kid": "f6ade591-4230-4114-8147-316dde969395",
@@ -101,12 +118,13 @@ signatureAlgorithm=ES256&expirationTime=1462916947752
 
 ### /sign
 
-- **URL:** https://ce.gluu.info:8443/oxeleven/rest/oxeleven/sign
+- **URL:** https://jenkins-dev1.jans.io/jans-eleven/restv1/sign
 - **Method:** POST
 - **Media Type:** application/json
 - **Data Params**
     - accessToken [string]
-```javascript
+
+```json
 {
     "signingInput": [string], 
     "signatureAlgorithm": [string],
@@ -135,9 +153,9 @@ String hs256Signature = response.getSignature();
 
 #### Sample Request - HS256
 
-```
-POST /oxeleven/rest/oxeleven/sign HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/sign HTTP/1.1
+Host: jenkins-dev1.jans.io
 Content-Type: application/json
 Cache-Control: no-cache
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -151,7 +169,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 #### Sample Response - HS256
 
-```
+```json
 {
     "sig": "CZag3MkkRmJXCnDbE43k6gRit_7ZIPzzpBMHXiNNHBg"
 }
@@ -177,9 +195,9 @@ String rs256Signature = response.getSignature();
 
 #### Sample Request - RS256
 
-```
-POST /oxeleven/rest/oxeleven/sign HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/sign HTTP/1.1
+Host: jenkins-dev1.jans.io
 Content-Type: application/json
 Cache-Control: no-cache
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -193,7 +211,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 #### Sample Response - RS256
 
-```
+```json
 {
     "sig": "TharYC_SVPb_PDWyLM2d1_XsAAiePEMom0Wja8R9aWZpP2mRrzMJKuLUcOG7QE7JxnVgQmGGnEV8QPKguGDca5S2EU9NiodFBzg6N4JEFC5FvrpDyZPRhtQP3OKshGWyLKa37KddUWGVRTwfluUhirMRgFmTMYjv6Wuhj_Dx7DoBvMY5KbEkIcBm1tqvqT2U02RNo8ts0PSW3z3hkdygCAcwqmzb0ICBxZ6aCePmVtSXaicEX0Z8FuZY0t4b-PjkuCIUIPLdb5043HFdGX1dwErEi3Y1j-osALnamS8LCqvogjMxbx_MJt6QaUkW952JT0Tk1Xvc_J81ZekzvMpptw"
 }
@@ -219,9 +237,9 @@ String es256Signature = response.getSignature();
 
 #### Sample Request - ES256
 
-```
-POST /oxeleven/rest/oxeleven/sign HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/sign HTTP/1.1
+Host: jenkins-dev1.jans.io
 Content-Type: application/json
 Cache-Control: no-cache
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -235,7 +253,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 #### Sample Response - ES256
 
-```
+```json
 {
     "sig": "MEUCIQCe-t-b4ba7OaIBuNKHCCW2GIKPzjTZKCdBAP4EEmVJAQIgXHIW3c9_Ax2DvUHu_tJJzV9LUeYH5uw40m-h2qy-jgM"
 }
@@ -243,12 +261,13 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 ### /verifySignature
 
-- **URL:** https://ce.gluu.info:8443/oxeleven/rest/oxeleven/verifySignature
+- **URL:** https://jenkins-dev1.jans.io/jans-eleven/restv1/verifySignature
 - **Method:** POST
 - **Media Type:** application/json
 - **Data Params**
     - accessToken [string]
-```javascript
+
+```json
 {
     "signingInput": [string],
     "signature": [string],
@@ -290,9 +309,9 @@ assertTrue(response.isVerified());
 
 #### Sample Request - none
 
-```
-POST /oxeleven/rest/oxeleven/verifySignature HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/verifySignature HTTP/1.1
+Host: jenkins-dev1.jans.io
 Content-Type: application/json
 Cache-Control: no-cache
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -306,7 +325,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 #### Sample Response - none
 
-```
+```json
 {
     "verified": true
 }
@@ -332,9 +351,9 @@ assertTrue(response.isVerified());
 
 #### Sample Request - HS256
 
-```
-POST /oxeleven/rest/oxeleven/verifySignature HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/verifySignature HTTP/1.1
+Host: jenkins-dev1.jans.io
 Content-Type: application/json
 Cache-Control: no-cache
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -349,7 +368,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 #### Sample Response - HS256
 
-```
+```json
 {
     "verified": true
 }
@@ -383,9 +402,9 @@ assertTrue(response.isVerified());
 
 #### Sample Request - RS256
 
-```
-POST /oxeleven/rest/oxeleven/verifySignature HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/verifySignature HTTP/1.1
+Host: jenkins-dev1.jans.io
 Content-Type: application/json
 Cache-Control: no-cache
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -410,7 +429,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 #### Sample Response - RS256
 
-```
+```json
 {
     "verified": true
 }
@@ -436,9 +455,9 @@ assertTrue(response.isVerified());
 
 #### Sample Request - RS256
 
-```
-POST /oxeleven/rest/oxeleven/verifySignature HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/verifySignature HTTP/1.1
+Host: jenkins-dev1.jans.io
 Content-Type: application/json
 Cache-Control: no-cache
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -453,7 +472,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 #### Sample Response - RS256
 
-```
+```json
 {
     "verified": true
 }
@@ -488,9 +507,9 @@ assertTrue(response.isVerified());
 
 #### Sample Request - ES256
 
-```
-POST /oxeleven/rest/oxeleven/verifySignature HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/verifySignature HTTP/1.1
+Host: jenkins-dev1.jans.io
 Content-Type: application/json
 Cache-Control: no-cache
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -516,7 +535,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 #### Sample Response - ES256
 
-```
+```json
 {
     "verified": true
 }
@@ -542,9 +561,9 @@ assertTrue(response.isVerified());
 
 #### Sample Request - ES256
 
-```
-POST /oxeleven/rest/oxeleven/verifySignature HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/verifySignature HTTP/1.1
+Host: jenkins-dev1.jans.io
 Content-Type: application/json
 Cache-Control: no-cache
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -559,7 +578,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 #### Sample Response - ES256
 
-```
+```json
 {
     "verified": true
 }
@@ -567,7 +586,7 @@ Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 ### /deleteKey
 
-- **URL:** https://ce.gluu.info:8443/oxeleven/rest/oxeleven/deleteKey
+- **URL:** https://jenkins-dev1.jans.io/jans-eleven/restv1/deleteKey
 - **Method:** POST
 - **Media Type:** application/x-www-form-urlencoded
 - **Data Params**
@@ -591,9 +610,9 @@ assertTrue(response.isDeleted());
 
 #### Sample Request - RS256
 
-```
-POST /oxeleven/rest/oxeleven/deleteKey HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/deleteKey HTTP/1.1
+Host: jenkins-dev1.jans.io
 Cache-Control: no-cache
 Content-Type: application/x-www-form-urlencoded
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -603,7 +622,7 @@ kid=57a6c4fd-f65e-4baa-8a5d-f34812265383
 
 #### Sample Response - RS256
 
-```
+```json
 {
     "deleted": true
 }
@@ -626,9 +645,9 @@ assertTrue(response.isDeleted());
 
 #### Sample Request - ES256
 
-```
-POST /oxeleven/rest/oxeleven/deleteKey HTTP/1.1
-Host: ce.gluu.info:8443
+```http request
+POST /jans-eleven/restv1/deleteKey HTTP/1.1
+Host: jenkins-dev1.jans.io
 Cache-Control: no-cache
 Content-Type: application/x-www-form-urlencoded
 Authorization: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -638,69 +657,20 @@ kid=f6ade591-4230-4114-8147-316dde969395
 
 #### Sample Response - ES256
 
-```
+```json
 {
     "deleted": true
 }
 ```
 
+## Run Tests
 
-## Supported Algorithms
-
-- none
-- HS256
-- HS384
-- HS512
-- RS256
-- RS384
-- RS512
-- ES256
-- ES384
-- ES512
-
-## Installation
-
-  1. Install [SoftHSM version 2](https://github.com/opendnssec/SoftHSMv2)
-
-  2. Copy the file Server/conf/oxeleven-config.json to $CATALINA_HOME/conf/oxeleven-config.json
-
-  3. Edit the configuration file $CATALINA_HOME/conf/oxeleven-config.json
-
-  ```javascript
-  {
-    "pkcs11Config": {
-      "name": "SoftHSM",
-      "library": "/usr/local/lib/softhsm/libsofthsm2.so",
-      "slot": "0",
-      "showInfo": "true"
-    },
-    "pkcs11Pin": "1234",
-    "dnName": "CN=oxAuth CA Certificate",
-    "testModeToken": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-  }
-  ```
+  1. Ensure jans-eleven is deployed and running.
   
-  Attribute     | Value                                 | Description
-  ------------  | -------------                         | -------------
-  name          | Name suffix of this provider instance | This string is concatenated with the prefix SunPKCS11- to produce this provider instance's name (that is, the string returned by its Provider.getName() method). For example, if the name attribute is "SoftHSM", then the provider instance's name will be "SunPKCS11-SoftHSM".
-  library       | Pathname of PKCS#11 implementation    | This is the full pathname (including extension) of the PKCS#11 implementation; the format of the pathname is platform dependent. For example, /opt/foo/lib/libpkcs11.so might be the pathname of a PKCS#11 implementation on Solaris and Linux while C:\foo\mypkcs11.dll might be one on Windows.
-  slot          | Slot ID                               | This is the id of the slot that this provider instance is to be associated with. For example, you would use 1 for the slot with the id 1 under PKCS#11. At most one of slot or slotListIndex may be specified. If neither is specified, the default is a slotListIndex of 0.
-  showinfo      | boolean                               | Whether to print debug info during startup.
-  pkcs11Pin     | Personal Identification Number        | Certain PKCS#11 operations, such as accessing private keys, require a login using a Personal Identification Number, or PIN, before the operations can proceed. The most common type of operations that require login are those that deal with keys on the token.
-  dnName        | DN of certificate issuer              | DN of certificate issuer.
-  testModeToken | Access Token                          | Token used to consume the rest services.
-
-  4. Deploy oxEleven.war in Tomcat
-  
-## Test
-
-  1. Ensure oxEleven is deployed an running.
-  
-  2. Edit the file Client/src/test/Resources/testng.xml to point to your oxEleven deployment.
+  2. Edit the file Client/src/test/Resources/testng.xml to point to your jans-eleven deployment.
   
   3. cd Client.
   
   4. mvn test.
 
 To access Gluu support, please register and open a ticket on [Gluu Support](http://support.gluu.org)
-

@@ -39,7 +39,7 @@ public class ConfigurationFactory {
             BASE_DIR = System.getProperty("jboss.home.dir");
         } else {
             throw new RuntimeException("Could not determine BASE_DIR");
-            //BASE_DIR = "/home/javier/Projects/Gluu/jans/jans-eleven/server"; // TODO: Comment this line!
+            //BASE_DIR = "/home/javier/Projects/Gluu/jans/jans-eleven/server";
         }
     }
 
