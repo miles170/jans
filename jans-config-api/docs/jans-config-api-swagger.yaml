@@ -2531,7 +2531,7 @@ paths:
             schema:
               title: User Details.
               description: User Details.
-              $ref: '#/components/schemas/CustomUser'
+              $ref: '#/components/schemas/ExtendedCustomUser'
       responses:
         '201':
           description: Created
@@ -4164,6 +4164,11 @@ components:
         requestUriParameterSupported:
           type: boolean
           description: Boolean value specifying whether the OP supports use of the request_uri parameter.
+        requestUriBlockList:
+          type: array
+          description: Block list for requestUri that can come to Authorization Endpoint (e.g. "localhost")
+          items:
+            type: string
         requestUriHashVerificationEnabled:
           type: boolean
           description: Boolean value specifying whether the OP supports use of the request_uri hash verification.
@@ -6813,7 +6818,6 @@ components:
         - displayName
         - givenName
         - jansStatus
-        - userPassword
       properties:
         dn:
           type: string
@@ -6824,6 +6828,11 @@ components:
         jansStatus:
           type: string
           description: User status
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - EXPIRED
+            - REGISTER
         userId:
           description: A domain issued and managed identifier for the user.
           type: string
@@ -6860,7 +6869,18 @@ components:
         inum:
           description: XRI i-number. Identifier to uniquely identify the user.
           type: string
-
+		  
+    ExtendedCustomUser:
+      allOf:     # Combines the CustomUser and the inline model
+        - $ref: '#/components/schemas/CustomUser'
+        - type: object
+          required:
+            - userPassword
+          properties:
+            userPassword:
+              type: string
+              description: User password
+          
     UserPatchRequest:
       title: User Patch Request object
       description: UserPatchRequest.

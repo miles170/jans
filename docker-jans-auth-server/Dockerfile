@@ -55,7 +55,7 @@ RUN /opt/jython/bin/pip uninstall -y pip
 # ===========
 
 ENV CN_VERSION=1.0.1-SNAPSHOT
-ENV CN_BUILD_DATE='2022-06-06 08:14'
+ENV CN_BUILD_DATE='2022-06-22 08:14'
 ENV CN_SOURCE_URL=https://jenkins.jans.io/maven/io/jans/jans-auth-server/${CN_VERSION}/jans-auth-server-${CN_VERSION}.war
 
 # Install Jans Auth
@@ -90,15 +90,15 @@ RUN wget -q https://jenkins.gluu.org/maven/org/gluu/casa-config/${CASA_CONFIG_VE
 # Casa external scripts
 # =====================
 
-ARG CASA_EXTRAS_VERSION=fe01bcb3d46311355b15a37b655253ca17997358
+ARG FLEX_SOURCE_VERSION=87276ada2aa5004941e3fd6cc55833f5153f8254
 ARG CASA_EXTRAS_DIR=casa/extras
 
 RUN mkdir -p /opt/jans/python/libs
 RUN git clone --filter blob:none --no-checkout https://github.com/GluuFederation/flex.git /tmp/flex \
     && cd /tmp/flex \
     && git sparse-checkout init --cone \
-    && git checkout ${CASA_EXTRAS_VERSION} \
-    && git sparse-checkout set ${CASA_EXTRAS_DIR} \
+    && git checkout ${FLEX_SOURCE_VERSION} \
+    && git sparse-checkout add ${CASA_EXTRAS_DIR} \
     && cd /opt/jans/python/libs \
     && cp /tmp/flex/${CASA_EXTRAS_DIR}/casa-external_* . \
     && rm -rf /tmp/flex
@@ -111,14 +111,15 @@ RUN mkdir -p ${JETTY_BASE}/jans-auth/agama/fl \
     ${JETTY_BASE}/jans-auth/agama/ftl \
     ${JETTY_BASE}/jans-auth/agama/scripts
 
-ARG JANS_AGAMA_VERSION=6b23bfe19ef960039f76df4de167c159312dd930
+# janssenproject/jans SHA commit
+ARG JANS_SOURCE_VERSION=0f1a2e6761c0522acdfdab3d69adac5c8062e780
 
 # note that as we're pulling from a monorepo (with multiple project in it)
 # we are using partial-clone and sparse-checkout to get the agama code
 RUN git clone --filter blob:none --no-checkout https://github.com/janssenproject/jans /tmp/jans \
     && cd /tmp/jans \
     && git sparse-checkout init --cone \
-    && git checkout ${JANS_AGAMA_VERSION} \
+    && git checkout ${JANS_SOURCE_VERSION} \
     && git sparse-checkout add agama/misc
 
 RUN cp -R /tmp/jans/agama/misc/* ${JETTY_BASE}/jans-auth/agama/ \
@@ -133,6 +134,16 @@ RUN python3 -m ensurepip \
     && pip3 install --no-cache-dir -U pip wheel \
     && pip3 install --no-cache-dir --default-timeout=300 -r /app/requirements.txt \
     && pip3 uninstall -y pip wheel
+
+# ==========
+# Prometheus
+# ==========
+
+ARG PROMETHEUS_JAVAAGENT_VERSION=0.17.0
+COPY conf/prometheus-config.yaml /opt/prometheus/
+RUN mkdir -p /opt/prometheus \
+    && wget -q https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_JAVAAGENT_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_JAVAAGENT_VERSION}.jar -O /opt/prometheus/jmx_prometheus_javaagent.jar \
+    && java -jar ${JETTY_HOME}/start.jar jetty.home=${JETTY_HOME} jetty.base=${JETTY_BASE}/jans-auth --add-module=jmx,stats
 
 # =======
 # Cleanup
@@ -230,7 +241,8 @@ ENV CN_MAX_RAM_PERCENTAGE=75.0 \
     GOOGLE_PROJECT_ID="" \
     GOOGLE_APPLICATION_CREDENTIALS=/etc/jans/conf/google-credentials.json \
     ADMIN_UI_JWKS=http://0.0.0.0:8080/jans-auth/restv1/jwks \
-    CN_JETTY_REQUEST_HEADER_SIZE=8192
+    CN_JETTY_REQUEST_HEADER_SIZE=8192 \
+    CN_PROMETHEUS_PORT=""
 
 # ==========
 # misc stuff
@@ -274,7 +286,8 @@ RUN chmod -R g=u ${JETTY_BASE}/jans-auth/custom \
     && chmod 664 /usr/java/latest/jre/lib/security/cacerts \
     && chmod 664 /opt/jetty/etc/jetty.xml \
     && chmod 664 /opt/jetty/etc/webdefault.xml \
-    && chown -R 1000:0 ${JETTY_BASE}/jans-auth/agama
+    && chown -R 1000:0 ${JETTY_BASE}/jans-auth/agama \
+    && chown -R 1000:0 /opt/jans/python/libs
 
 USER 1000
 

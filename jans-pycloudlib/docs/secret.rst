@@ -13,6 +13,7 @@ Vault
     :members:
     :private-members:
     :undoc-members:
+    :show-inheritance:
 
 Kubernetes
 ==========
@@ -21,3 +22,13 @@ Kubernetes
     :members:
     :private-members:
     :undoc-members:
+    :show-inheritance:
+
+Google
+======
+
+.. autoclass:: jans.pycloudlib.secret.google_secret.GoogleSecret
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
