@@ -12,25 +12,28 @@ import io.jans.eleven.model.KeyRequestParam;
 import io.jans.eleven.model.SignatureAlgorithm;
 import io.jans.eleven.model.SignatureAlgorithmFamily;
 import io.jans.eleven.util.Base64Util;
-import io.jans.eleven.util.StringUtils;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.security.auth.x500.X500Principal;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.security.spec.*;
 import java.util.Date;
 import java.util.Map;
@@ -39,7 +42,7 @@ import java.util.UUID;
 /**
  * @author Javier Rojas Blum
  * @author Yuriy Movchan
- * @version Jun 13, 2022
+ * @version Jun 22, 2022
  */
 public class PKCS11Service implements Serializable {
 
@@ -47,6 +50,7 @@ public class PKCS11Service implements Serializable {
 
     private final Logger log = LoggerFactory.getLogger(PKCS11Service.class);
 
+    public static final String PROVIDER = "SunPKCS11-SoftHSM";
     public static final String CONFIG_FILE_NAME = "softhsm.cfg";
     public static final String SECURITY_PROVIDER = "SunPKCS11";
     public static final String KEY_STORE = "PKCS11";
@@ -56,13 +60,13 @@ public class PKCS11Service implements Serializable {
     private char[] pin;
 
     public PKCS11Service(String pin, Map<String, String> pkcs11Config) {
-        log.info("Creating PKCS11Service service");
+        log.info("Creating PKCS#11Service service");
 
         try {
             init(pin, pkcs11Config);
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("Failed to init PCKS11. Please fix it!!!.", e);
+            log.error("Failed to init PKCS#11. Please fix it!!!.", e);
         }
     }
 
@@ -111,7 +115,7 @@ public class PKCS11Service implements Serializable {
 
     public String generateKey(String dnName, SignatureAlgorithm signatureAlgorithm, Long expirationTime)
             throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, CertificateException,
-            NoSuchProviderException, InvalidKeyException, SignatureException, KeyStoreException, IOException {
+            KeyStoreException, IOException, OperatorCreationException {
         KeyPairGenerator keyGen;
 
         if (signatureAlgorithm == null) {
@@ -120,9 +124,9 @@ public class PKCS11Service implements Serializable {
             keyGen = KeyPairGenerator.getInstance(signatureAlgorithm.getFamily());
             keyGen.initialize(2048, new SecureRandom());
         } else if (SignatureAlgorithmFamily.EC.equals(signatureAlgorithm.getFamily())) {
-            ECGenParameterSpec eccgen = new ECGenParameterSpec(signatureAlgorithm.getCurve().getAlias());
+            ECGenParameterSpec ecGenParameterSpec = new ECGenParameterSpec(signatureAlgorithm.getCurve().getAlias());
             keyGen = KeyPairGenerator.getInstance(signatureAlgorithm.getFamily());
-            keyGen.initialize(eccgen, new SecureRandom());
+            keyGen.initialize(ecGenParameterSpec, new SecureRandom());
         } else {
             throw new RuntimeException("The provided signature algorithm parameter is not supported");
         }
@@ -132,7 +136,7 @@ public class PKCS11Service implements Serializable {
         PrivateKey pk = keyPair.getPrivate();
 
         // Java API requires a certificate chain
-        X509Certificate[] chain = generateV3Certificate(keyPair, dnName, signatureAlgorithm, expirationTime);
+        Certificate[] chain = generateV3Certificate(keyPair, dnName, signatureAlgorithm, expirationTime);
 
         String alias = UUID.randomUUID().toString();
 
@@ -143,12 +147,12 @@ public class PKCS11Service implements Serializable {
     }
 
     public String getSignature(byte[] signingInput, String alias, String sharedSecret, SignatureAlgorithm signatureAlgorithm) throws UnrecoverableEntryException,
-            NoSuchAlgorithmException, KeyStoreException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+            NoSuchAlgorithmException, KeyStoreException, InvalidKeyException, SignatureException {
         if (signatureAlgorithm == SignatureAlgorithm.NONE) {
             return null;
         } else if (SignatureAlgorithmFamily.HMAC.equals(signatureAlgorithm.getFamily())) {
             SecretKey secretKey = new SecretKeySpec(
-                    sharedSecret.getBytes(StringUtils.UTF8_STRING_ENCODING),
+                    sharedSecret.getBytes(StandardCharsets.UTF_8),
                     signatureAlgorithm.getAlgorithm());
             Mac mac = Mac.getInstance(signatureAlgorithm.getAlgorithm());
             mac.init(secretKey);
@@ -166,7 +170,9 @@ public class PKCS11Service implements Serializable {
     }
 
     public boolean verifySignature(String signingInput, String encodedSignature, String alias, String sharedSecret,
-                                   JwksRequestParam jwksRequestParam, SignatureAlgorithm signatureAlgorithm) throws InvalidKeyException, NoSuchAlgorithmException, KeyStoreException, UnsupportedEncodingException, SignatureException, UnrecoverableEntryException {
+                                   JwksRequestParam jwksRequestParam, SignatureAlgorithm signatureAlgorithm)
+            throws InvalidKeyException, NoSuchAlgorithmException, KeyStoreException, SignatureException,
+            UnrecoverableEntryException {
         boolean verified;
 
         if (signatureAlgorithm == SignatureAlgorithm.NONE) {
@@ -279,67 +285,29 @@ public class PKCS11Service implements Serializable {
         return null;
     }
 
-    private X509Certificate[] generateV3Certificate(KeyPair pair, String dnName, SignatureAlgorithm signatureAlgorithm,
-                                                    Long expirationTime)
-            throws NoSuchAlgorithmException, CertificateEncodingException, NoSuchProviderException, InvalidKeyException,
-            SignatureException {
-        X500Principal principal = new X500Principal(dnName);
+    private Certificate[] generateV3Certificate(KeyPair pair, String dnName, SignatureAlgorithm signatureAlgorithm,
+                                                Long expirationTime)
+            throws OperatorCreationException, CertificateException {
+        X500Name owner = new X500Name(dnName);
         BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
-
-        X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-
-        certGen.setSerialNumber(serialNumber);
-        certGen.setIssuerDN(principal);
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 10000));
-        certGen.setNotAfter(new Date(expirationTime));
-        certGen.setSubjectDN(principal);
-        certGen.setPublicKey(pair.getPublic());
-        certGen.setSignatureAlgorithm(signatureAlgorithm.getAlgorithm());
-
-        //certGen.addExtension(X509Extensions.BasicConstraints, true, new BasicConstraints(false));
-        //certGen.addExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
-        //certGen.addExtension(X509Extensions.ExtendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_serverAuth));
-        //certGen.addExtension(X509Extensions.SubjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.rfc822Name, "test@test.test")));
-
-        X509Certificate[] chain = new X509Certificate[1];
-        chain[0] = certGen.generate(pair.getPrivate(), "SunPKCS11-SoftHSM");
-
-        return chain;
-    }
-
-
-    /*public X509Certificate generateV3Certificate(KeyPair keyPair, String issuer, SignatureAlgorithm signatureAlgorithm, Long expirationTime) throws CertIOException, OperatorCreationException, CertificateException {
-        PrivateKey privateKey = keyPair.getPrivate();
-        PublicKey publicKey = keyPair.getPublic();
-
-        // Signers name
-        X500Name issuerName = new X500Name(issuer);
-
-        // Subjects name - the same as we are self signed.
-        X500Name subjectName = new X500Name(issuer);
-
-        // Serial
-        BigInteger serial = new BigInteger(256, new SecureRandom());
-
-        // Not before
         Date notBefore = new Date(System.currentTimeMillis() - 10000);
         Date notAfter = new Date(expirationTime);
 
-        // Create the certificate - version 3
-        JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(issuerName, serial, notBefore, notAfter, subjectName, publicKey);
+        X509v3CertificateBuilder builder = new X509v3CertificateBuilder(
+                owner,
+                serialNumber,
+                notBefore,
+                notAfter,
+                owner,
+                SubjectPublicKeyInfo.getInstance(pair.getPublic().getEncoded())
+        );
 
-        ASN1EncodableVector purposes = new ASN1EncodableVector();
-        purposes.add(KeyPurposeId.id_kp_serverAuth);
-        purposes.add(KeyPurposeId.id_kp_clientAuth);
-        purposes.add(KeyPurposeId.anyExtendedKeyUsage);
+        ContentSigner signer = new JcaContentSignerBuilder(signatureAlgorithm.getAlgorithm())
+                .setProvider(PROVIDER).build(pair.getPrivate());
+        final X509CertificateHolder holder = builder.build(signer);
 
-        ASN1ObjectIdentifier extendedKeyUsage = new ASN1ObjectIdentifier("2.5.29.37").intern();
-        builder.addExtension(extendedKeyUsage, false, new DERSequence(purposes));
+        Certificate cert = new JcaX509CertificateConverter().getCertificate(holder);
 
-        ContentSigner signer = new JcaContentSignerBuilder(signatureAlgorithm.getAlgorithm()).setProvider("BC").build(privateKey);
-        X509CertificateHolder holder = builder.build(signer);
-        X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(holder);
-
-        return cert;
-    }*/
+        return new Certificate[]{cert};
+    }
 }

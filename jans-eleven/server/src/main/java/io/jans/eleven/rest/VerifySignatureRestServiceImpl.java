@@ -18,17 +18,12 @@ import jakarta.inject.Named;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.CacheControl;
 import jakarta.ws.rs.core.Response;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-
 /**
  * @author Javier Rojas Blum
- * @version June 9, 2022
+ * @version June 2, 2022
  */
 @Path("/")
 public class VerifySignatureRestServiceImpl implements VerifySignatureRestService {
@@ -93,18 +88,6 @@ public class VerifySignatureRestServiceImpl implements VerifySignatureRestServic
 
                 builder.entity(jsonObject.toString());
             }
-        } catch (NoSuchAlgorithmException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (KeyStoreException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (IOException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
-        } catch (JSONException e) {
-            builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-            log.error(e.getMessage(), e);
         } catch (Exception e) {
             builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
             log.error(e.getMessage(), e);
