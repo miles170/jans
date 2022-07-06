@@ -46,7 +46,7 @@
             <dependency>
                 <groupId>io.jans</groupId>
                 <artifactId>jans-bom</artifactId>
-                <version>${jans.version}</version>
+                <version>1.0.1-SNAPSHOT</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
