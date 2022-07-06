@@ -107,7 +107,7 @@
         <dependency>
             <groupId>io.jans</groupId>
             <artifactId>jans-client-api-common</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.1-SNAPSHOT</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
