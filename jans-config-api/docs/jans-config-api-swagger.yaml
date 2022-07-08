@@ -39,6 +39,7 @@ tags:
   - name: SCIM - Config Management
   - name: Organization Configuration
   - name: Auth Server Health - Check
+  - name: Agama - Flow
   - name: Admin UI - Role
   - name: Admin UI - Permission
   - name: Admin UI - Role-Permissions Mapping
@@ -2852,6 +2853,29 @@ paths:
                 title: Organization
                 description: Organization configuration.
                 $ref: '#/components/schemas/Organization'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+		  
+  /jans-config-api/agama:
+    get:
+      summary: Retrieves Agama flows.
+      description: Retrieves Agama flows.
+      operationId: get-agama-flows
+      security:
+        - oauth2: [https://jans.io/oauth/config/agama.readonly]
+      tags:
+        - Agama - Flow
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                title: Agama Flow Details
+                description:  Agama Flow Details.
+                $ref: '#/components/schemas/AgamaFlow'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
@@ -7078,7 +7102,7 @@ components:
           format: date
 			
 			
-    ProtoFlow:
+    AgamaFlow:
       title: Agama Flow object
       description: Object for Agama Flow.
       type: object

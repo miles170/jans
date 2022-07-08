@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 
-@Path(ApiConstants.CONFIG + ApiConstants.AGAMA)
+@Path(ApiConstants.AGAMA)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AgamaResource extends ConfigBaseResource {
