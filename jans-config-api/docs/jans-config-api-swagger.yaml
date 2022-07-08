@@ -7078,7 +7078,7 @@ components:
           format: date
 			
 			
-    AgamaFlow:
+    ProtoFlow:
       title: Agama Flow object
       description: Object for Agama Flow.
       type: object
@@ -7087,7 +7087,7 @@ components:
           description: Domain name
           type: string
         QName:
-          description: Agama Flow queue name.
+          description: Agama flow identifier.
           type: string
         transHash:
           description: Agama Flow custom message.

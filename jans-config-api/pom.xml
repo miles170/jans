@@ -227,7 +227,13 @@
 				<groupId>io.jans</groupId>
 				<artifactId>agama-model</artifactId>
 				<version>${jans.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.jans</groupId>
+				<artifactId>agama-transpiler</artifactId>
+				<version>${jans.version}</version>
 			</dependency>	
+      			
       		
 			<!-- Security -->
 			<dependency>
