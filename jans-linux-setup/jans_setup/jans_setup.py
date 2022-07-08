@@ -88,8 +88,6 @@ from setup_app import downloads
 downloads.download_apps()
 
 sys.path.insert(0, base.pylib_dir)
-sys.path.insert(0, os.path.join(base.pylib_dir, 'gcs'))
-
 
 if argsp.download_exit:
     downloads.download_all()
@@ -98,6 +96,7 @@ if argsp.download_exit:
 from setup_app.utils.package_utils import packageUtils
 
 packageUtils.check_and_install_packages()
+sys.path.insert(0, os.path.join(base.pylib_dir, 'gcs'))
 
 from setup_app.messages import msg
 from setup_app.config import Config
@@ -129,6 +128,8 @@ from setup_app.installers.config_api import ConfigApiInstaller
 from setup_app.installers.jans_cli import JansCliInstaller
 from setup_app.installers.rdbm import RDBMInstaller
 # from setup_app.installers.oxd import OxdInstaller
+from setup_app.installers.client_api import ClientApiInstaller
+
 
 if base.snap:
     try:
@@ -150,6 +151,9 @@ Config.init(paths.INSTALL_DIR)
 if Config.profile != 'jans':
     argsp.t = False
 
+if os.path.exists(Config.jans_properties_fn):
+    Config.installed_instance = True
+
 # we must initilize SetupUtils after initilizing Config
 SetupUtils.init()
 
@@ -166,7 +170,7 @@ try:
 except:
     argsp.no_progress = True
 
-if not argsp.n:
+if not (argsp.n or Config.installed_instance):
     base.check_resources()
 
 # pass progress indicator to Config object
@@ -178,17 +182,18 @@ for key in setupOptions:
 jansInstaller = JansInstaller()
 jansInstaller.initialize()
 
-print()
-detected_os = '{} {}'.format(base.os_type, base.os_version)
-if base.snap:
-    detected_os = 'snap ' + detected_os
-print("Installing Janssen Server...\n\nFor more info see:\n  {}  \n  {}\n".format(paths.LOG_FILE, paths.LOG_ERROR_FILE))
-print("Profile         :  {}".format(Config.profile))
-print("Detected OS     :  {}".format(detected_os))
-print("Janssen Version :  {}".format(base.current_app.app_info['ox_version']))
-print("Detected init   :  {}".format(base.os_initdaemon))
-print("Detected Apache :  {}".format(base.determineApacheVersion()))
-print()
+if not Config.installed_instance:
+    print()
+    detected_os = '{} {}'.format(base.os_type, base.os_version)
+    if base.snap:
+        detected_os = 'snap ' + detected_os
+    print("Installing Janssen Server...\n\nFor more info see:\n  {}  \n  {}\n".format(paths.LOG_FILE, paths.LOG_ERROR_FILE))
+    print("Profile         :  {}".format(Config.profile))
+    print("Detected OS     :  {}".format(detected_os))
+    print("Janssen Version :  {}".format(base.current_app.app_info['ox_version']))
+    print("Detected init   :  {}".format(base.os_initdaemon))
+    print("Detected Apache :  {}".format(base.determineApacheVersion()))
+    print()
 
 setup_loaded = {}
 if setupOptions['setup_properties']:
@@ -211,7 +216,6 @@ collectProperties = CollectProperties()
 if os.path.exists(Config.jans_properties_fn):
     collectProperties.collect()
     collectProperties.save()
-    Config.installed_instance = True
 
     if argsp.csx:
         print("Saving collected properties")
@@ -240,7 +244,7 @@ if Config.profile == 'jans':
     fidoInstaller = FidoInstaller()
     scimInstaller = ScimInstaller()
     elevenInstaller = ElevenInstaller()
-
+    client_api_installer = ClientApiInstaller()
 jansCliInstaller = JansCliInstaller()
 
 # oxdInstaller = OxdInstaller()
@@ -248,6 +252,18 @@ jansCliInstaller = JansCliInstaller()
 rdbmInstaller.packageUtils = packageUtils
 
 if Config.installed_instance:
+
+    if argsp.enable_script:
+        print("Enabling scripts {}".format(', '.join(argsp.enable_script)))
+        jansInstaller.enable_scripts(argsp.enable_script)
+        sys.exit()
+
+    if argsp.disable_script:
+        print("Disabling scripts {}".format(', '.join(argsp.disable_script)))
+        jansInstaller.enable_scripts(argsp.disable_script, enable=False)
+        sys.exit()
+
+
     for service in jansProgress.services:
         setattr(Config, service['object'].install_var, service['object'].installed())
 
@@ -399,6 +415,11 @@ def main():
                 if (Config.installed_instance and elevenInstaller.install_var in Config.addPostSetupService) or (
                         not Config.installed_instance and Config.get(elevenInstaller.install_var)):
                     elevenInstaller.start_installation()
+
+                if (Config.installed_instance and client_api_installer.install_var in Config.addPostSetupService) or (
+                        not Config.installed_instance and Config.get(client_api_installer.install_var)):
+                    client_api_installer.start_installation()
+
 
             if Config.install_jans_cli:
                 jansCliInstaller.start_installation()

@@ -2,6 +2,7 @@ import base64
 import contextlib
 import json
 import os
+import typing as _t
 from itertools import chain
 from pathlib import Path
 from urllib.parse import urlparse
@@ -152,7 +153,12 @@ def get_base_ctx(manager):
     return ctx
 
 
-def merge_extension_ctx(ctx):
+def merge_extension_ctx(ctx: dict[str, _t.Any]) -> dict[str, _t.Any]:
+    """Merge extension script contexts into given contexts.
+
+    :param ctx: A key-value pairs of existing contexts.
+    :returns: Merged contexts.
+    """
     basedir = "/app/static/extension"
 
     if os.environ.get("CN_DISTRIBUTION", "default") == "openbanking":
@@ -163,8 +169,10 @@ def merge_extension_ctx(ctx):
         if not ext_path.is_file() or ext_path.suffix.lower() not in (".py", ".java"):
             continue
 
-        ext_name = f"{ext_path.parent.name.lower()}_{ext_path.stem.lower()}"
-        ctx[ext_name] = generate_base64_contents(ext_path.read_text())
+        ext_type = ext_path.relative_to(filepath).parent.as_posix().lower().replace(os.path.sep, "_")
+        ext_name = ext_path.stem.lower()
+        script_name = f"{ext_type}_{ext_name}"
+        ctx[script_name] = generate_base64_contents(ext_path.read_text())
     return ctx
 
 
@@ -316,7 +324,9 @@ def prepare_template_ctx(manager):
     return ctx
 
 
-def get_ldif_mappings(optional_scopes=None):
+def get_ldif_mappings(group, optional_scopes=None):
+    from jans.pycloudlib.persistence.utils import PersistenceMapper
+
     optional_scopes = optional_scopes or []
     dist = os.environ.get("CN_DISTRIBUTION", "default")
 
@@ -392,6 +402,12 @@ def get_ldif_mappings(optional_scopes=None):
         "cache": [],
         "token": [],
         "session": [],
+    }
+
+    mapper = PersistenceMapper()
+    ldif_mappings = {
+        mapping: files for mapping, files in ldif_mappings.items()
+        if mapping in mapper.groups()[group]
     }
     return ldif_mappings
 

@@ -1163,8 +1163,8 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
-          $ref: '#/components/responses/InternalServerError'	
-				
+          $ref: '#/components/responses/InternalServerError'
+
   /jans-config-api/api/v1/config/cache:
     get:
       summary: Returns cache configuration.
@@ -1893,8 +1893,8 @@ paths:
     post:
       tags:
         - OAuth - OpenID Connect - Clients
-      summary: Create new OpenId connect client
-      description: Create new OpenId connect client
+      summary: Create new OpenId Connect client
+      description: Create new OpenId Connect client
       operationId: post-oauth-openid-clients
       requestBody:
         content:
@@ -2561,7 +2561,7 @@ paths:
                 $ref: '#/components/schemas/StatsData'
         '500':
           description: Internal Server Error
-		  
+  
   /jans-config-api/mgt/configuser:
     get:
       tags:
@@ -2630,7 +2630,7 @@ paths:
             schema:
               title: User Details.
               description: User Details.
-              $ref: '#/components/schemas/CustomUser'
+              $ref: '#/components/schemas/ExtendedCustomUser'
       responses:
         '201':
           description: Created
@@ -3560,7 +3560,7 @@ components:
           type: string
           enum:
             - PYTHON
-            - JAVA_SCRIPT
+            - JAVA
           description: Programming language of the custom script.
         moduleProperties:
           type: array
@@ -4263,6 +4263,11 @@ components:
         requestUriParameterSupported:
           type: boolean
           description: Boolean value specifying whether the OP supports use of the request_uri parameter.
+        requestUriBlockList:
+          type: array
+          description: Block list for requestUri that can come to Authorization Endpoint (e.g. "localhost")
+          items:
+            type: string
         requestUriHashVerificationEnabled:
           type: boolean
           description: Boolean value specifying whether the OP supports use of the request_uri hash verification.
@@ -4807,9 +4812,6 @@ components:
         dcrAuthorizationWithClientCredentials:
           type: boolean
           description: Boolean value indicating if DCR authorization to be performed using client credentials.
-        dcrSkipSignatureValidation:
-          type: boolean
-          description: Boolean value indicating if signature validation is to be skipped.
         statTimerIntervalInSeconds:
           type: integer
           description: Statistical data capture time interval.
@@ -5145,10 +5147,7 @@ components:
       description: Client.
       type: object
       required:
-        - applicationType
-        - logout
-        - includeClaimsInIdToken
-        - displayName
+        - redirectUris
       properties:
         dn:
           type: string
@@ -6158,6 +6157,10 @@ components:
       properties:
         month:
           type: integer
+        start_month:
+          type: integer
+        end_month:
+          type: integer
         monthly_active_users:
           type: integer
           format: int64
@@ -6908,6 +6911,10 @@ components:
       type: object
       required:
         - userId
+        - mail
+        - displayName
+        - givenName
+        - jansStatus
       properties:
         dn:
           type: string
@@ -6915,9 +6922,14 @@ components:
         baseDN:
           type: string
           description: Base DN for the User entity
-        status:
+        jansStatus:
           type: string
           description: User status
+          enum:
+            - ACTIVE
+            - INACTIVE
+            - EXPIRED
+            - REGISTER
         userId:
           description: A domain issued and managed identifier for the user.
           type: string
@@ -6955,6 +6967,17 @@ components:
           description: XRI i-number. Identifier to uniquely identify the user.
           type: string
 
+    ExtendedCustomUser:
+      allOf:     # Combines the CustomUser and the inline model
+        - $ref: '#/components/schemas/CustomUser'
+        - type: object
+          required:
+            - userPassword
+          properties:
+            userPassword:
+              type: string
+              description: User password
+          
     UserPatchRequest:
       title: User Patch Request object
       description: UserPatchRequest.
@@ -7023,6 +7046,7 @@ components:
           type: object
           additionalProperties:
             type: string
+
 
     FlowMetadata:
       title: Agama Flow meta data

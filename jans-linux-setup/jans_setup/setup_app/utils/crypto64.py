@@ -37,7 +37,7 @@ class Crypto64:
         decrypted = cipher.decrypt(base64.b64decode(data), padmode=PAD_PKCS5)
         return decrypted.decode('utf-8')
 
-    def gen_cert(self, suffix, password, user='root', cn=None, truststore_fn=None):
+    def gen_cert(self, suffix, password, user='root', cn=None, truststore_fn=None, truststore_pw='changeit'):
         self.logIt('Generating Certificate for %s' % suffix)
         key_with_password = '%s/%s.key.orig' % (Config.certFolder, suffix)
         key = '%s/%s.key' % (Config.certFolder, suffix)
@@ -98,8 +98,9 @@ class Crypto64:
 
         self.run([Config.cmd_keytool, "-import", "-trustcacerts", "-alias", "%s_%s" % (Config.hostname, suffix), \
                   "-file", public_certificate, "-keystore", truststore_fn, \
-                  "-storepass", "changeit", "-noprompt"])
+                  "-storepass", truststore_pw, "-noprompt"])
 
+        return key, csr, public_certificate
 
     def gen_ca(self, ca_suffix='ca'):
         self.logIt('Generating CA Certificate')
@@ -160,7 +161,7 @@ class Crypto64:
         extension_path = Path(Config.extensionFolder)
         for ep in extension_path.glob("**/*"):
             if ep.is_file() and ep.suffix.lower() in ['.py', '.java']:
-                extension_type = ep.parent.name.lower()
+                extension_type = ep.relative_to(Config.extensionFolder).parent.as_posix().lower().replace(os.path.sep, '_')
                 extension_name = ep.stem.lower()
                 extension_script_name = '{}_{}'.format(extension_type, extension_name)
 

@@ -9,7 +9,7 @@
     <parent>
         <groupId>io.jans</groupId>
         <artifactId>agama</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
     
     <properties>
@@ -45,12 +45,6 @@
             <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         
-        <!-- JSF -->
-        <dependency>
-            <groupId>jakarta.faces</groupId>
-            <artifactId>jakarta.faces-api</artifactId>   
-        </dependency>
-        
         <!-- JAX-RS -->
         <dependency>
             <groupId>org.jboss.spec.javax.ws.rs</groupId>
@@ -61,6 +55,10 @@
         <dependency>
             <groupId>org.jboss.weld.servlet</groupId>
             <artifactId>weld-servlet-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         
         <!-- FREEMARKER -->
@@ -107,9 +105,9 @@
         
         <!-- Groovy -->
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
+            <groupId>org.apache.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>3.0.10</version>
+            <version>4.0.3</version>
         </dependency>
         
         <!-- JANS -->
@@ -132,6 +130,10 @@
         <dependency>
             <groupId>io.jans</groupId>
             <artifactId>jans-auth-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jans</groupId>
+            <artifactId>jans-core-jsf-util</artifactId>
         </dependency>
 
         <!-- COMMONS -->

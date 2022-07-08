@@ -42,8 +42,11 @@ tabulate_endpoints = {
     'jca.get-user': ['inum', 'userId', 'mail','sn', 'givenName', 'jansStatus'],
     'jca.get-attributes': ['inum', 'name', 'displayName', 'status', 'dataType', 'claimName'],
     'jca.get-oauth-openid-clients': ['inum', 'displayName', 'clientName', 'applicationType'],
-    'jca.get-oauth-scopes': ['dn', 'id', 'scopeType']
+    'jca.get-oauth-scopes': ['dn', 'id', 'scopeType'],
+    'scim.get-users': ['id', 'userName', 'displayName', 'active']
 }
+
+tabular_dataset = {'scim.get-users': 'Resources'}
 
 my_op_mode = 'scim' if 'scim' in os.path.basename(sys.argv[0]) else 'jca'
 sys.path.append(os.path.join(cur_dir, my_op_mode))
@@ -474,6 +477,8 @@ class JCA_CLI:
                     for method_name in path:
                         method = path[method_name]
                         if 'tags' in method and tag in method['tags'] and 'operationId' in method:
+                            if method.get('x-cli-plugin') and  method['x-cli-plugin'] not in plugins:
+                                continue
                             method['__method_name__'] = method_name
                             method['__path_name__'] = path_name
                             methods.append(method)
@@ -484,10 +489,10 @@ class JCA_CLI:
 
         
         for grp in menu_groups:
+            methods = get_methods_of_tag(grp.tag)
             m = Menu(name=grp.mname)
             m.display_name = m.name + ' ˅'
             menu.add_child(m)
-            methods = get_methods_of_tag(grp.tag)
 
             for method in methods:
                 for tag in method['tags']:
@@ -503,10 +508,13 @@ class JCA_CLI:
             if grp.submenu:
                 m.display_name = m.name + ' ˅'
                 for sub in grp.submenu:
+                    methods = get_methods_of_tag(sub.tag)
+                    if not methods:
+                        continue
                     smenu = Menu(name=sub.mname)
                     smenu.display_name = smenu.name + ' ˅'
                     m.add_child(smenu)
-                    methods = get_methods_of_tag(sub.tag)
+                    
                     for method in methods:
                         for tag in method['tags']:
 
@@ -749,7 +757,12 @@ class JCA_CLI:
                   example=None, spacing=0
                   ):
         if 'b' in values and 'q' in values and 'x' in values:
-            print(self.colored_text("b: back, q: quit x: logout and quit", grey_color))
+            greyed_help_list = [ ('b', 'back'), ('q', 'quit'),  ('x', 'logout and quit') ]
+            for k,v in (('w', 'write result'), ('y', 'yes'), ('n', 'no')):
+                if k in values:
+                    greyed_help_list.insert(1, (k, v))
+            grey_help_text = ', '.join(['{}: {}'.format(k,v) for k,v in greyed_help_list])
+            print(self.colored_text(grey_help_text, grey_color))
         print()
         type_text = ''
         if itype:
@@ -1092,7 +1105,7 @@ class JCA_CLI:
         for i, entry in enumerate(data):
             row_ = [i + 1]
             for header in headers:
-                row_.append(entry.get(header, ''))
+                row_.append(str(entry.get(header, '')))
             tab_data.append(row_)
 
         print(tabulate(tab_data, headers, tablefmt="grid"))
@@ -1167,13 +1180,17 @@ class JCA_CLI:
                 api_response_unmapped_ext = copy.deepcopy(api_response_unmapped)
                 if endpoint.info['operationId'] == 'get-user':
                     for entry in api_response_unmapped_ext:
-                        for attrib in entry['customAttributes']:
-                            if attrib['name'] == 'mail':
-                                entry['mail'] = ', '.join(attrib['values'])
-                            elif attrib['name'] in tabulate_endpoints[op_mode_endpoint]:
-                                entry[attrib['name']] = attrib['values'][0]
+                        if entry.get('customAttributes'):
+                            for attrib in entry['customAttributes']:
+                                if attrib['name'] == 'mail':
+                                    entry['mail'] = ', '.join(attrib['values'])
+                                elif attrib['name'] in tabulate_endpoints[op_mode_endpoint]:
+                                    entry[attrib['name']] = attrib['values'][0]
 
-                self.tabular_data(api_response_unmapped_ext, op_mode_endpoint)
+                tab_data = api_response_unmapped_ext
+                if op_mode_endpoint in tabular_dataset:
+                    tab_data = api_response_unmapped_ext[tabular_dataset[op_mode_endpoint]]
+                self.tabular_data(tab_data, op_mode_endpoint)
                 item_counters = [str(i + 1) for i in range(len(api_response_unmapped))]
                 tabulated = True
             else:
@@ -1208,6 +1225,7 @@ class JCA_CLI:
 
         if 'allOf' in schema_:
             all_schema = OrderedDict()
+            all_schema['required'] = []
 
             all_schema['properties'] = OrderedDict()
             for sch in schema_['allOf']:
@@ -1216,6 +1234,7 @@ class JCA_CLI:
                 elif 'properties' in sch:
                     for sprop in sch['properties']:
                         all_schema['properties'][sprop] = sch['properties'][sprop]
+                all_schema['required'] += sch.get('required', [])
 
             schema_ = all_schema
 
@@ -1391,10 +1410,12 @@ class JCA_CLI:
 
         if model.__class__.__name__ == 'type':
             modelObject = model(**data)
+            for key_ in data:
+                if data[key_] and not getattr(modelObject, key_, None):
+                    setattr(modelObject, key_, data[key_])
             return modelObject
         else:
             for key_ in data:
-                # if data[key_]:
                 setattr(model, key_, data[key_])
 
             return model
@@ -1814,8 +1835,9 @@ class JCA_CLI:
 
         c = 0
         for i, item in enumerate(menu):
-            if item.info.get('x-cli-ignore'):
+            if item.info.get('x-cli-ignore') or (item.parent.name == 'Main Menu' and not item.children):
                 continue
+
             print(c + 1, item)
             selection_values.append(str(c + 1))
             menu_numbering[c + 1] = i

@@ -31,8 +31,8 @@ RUN wget -q https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-home/${JETTY_
 # Config API
 # ==========
 
-ENV CN_VERSION=1.0.1-SNAPSHOT
-ENV CN_BUILD_DATE='2022-06-01 08:17'
+ENV CN_VERSION=1.0.2-SNAPSHOT
+ENV CN_BUILD_DATE='2022-07-06 12:54'
 ENV CN_SOURCE_URL=https://jenkins.jans.io/maven/io/jans/jans-config-api-server/${CN_VERSION}/jans-config-api-server-${CN_VERSION}.war
 
 # Install Jans Config API
@@ -63,13 +63,21 @@ RUN wget -q https://github.com/GluuFederation/gluu-snap/raw/${PYFACTER_VERSION}/
 
 RUN mkdir -p /usr/share/java
 
-ENV SCIM_PLUGIN_BUILD_DATE='2022-05-19 16:27'
+ENV SCIM_PLUGIN_BUILD_DATE='2022-07-06 12:55'
 ENV SCIM_PLUGIN_SOURCE_URL=https://jenkins.jans.io/maven/io/jans/jans-config-api/plugins/scim-plugin/${CN_VERSION}/scim-plugin-${CN_VERSION}-distribution.jar
 RUN wget -q ${SCIM_PLUGIN_SOURCE_URL} -O /usr/share/java/scim-plugin.jar
 
-ENV ADMIN_UI_PLUGIN_BUILD_DATE='2022-05-19 16:27'
-ENV ADMIN_UI_SOURCE_URL=https://jenkins.jans.io/maven/io/jans/jans-config-api/plugins/admin-ui-plugin/${CN_VERSION}/admin-ui-plugin-${CN_VERSION}-distribution.jar
-RUN wget -q ${ADMIN_UI_SOURCE_URL} -O /usr/share/java/admin-ui-plugin.jar
+ENV ADMIN_UI_PLUGIN_BUILD_DATE='2022-07-06 12:54'
+ENV ADMIN_UI_PLUGIN_SOURCE_URL=https://jenkins.jans.io/maven/io/jans/jans-config-api/plugins/admin-ui-plugin/${CN_VERSION}/admin-ui-plugin-${CN_VERSION}-distribution.jar
+RUN wget -q ${ADMIN_UI_PLUGIN_SOURCE_URL} -O /usr/share/java/admin-ui-plugin.jar
+
+ENV FIDO2_PLUGIN_BUILD_DATE='2022-07-06 12:55'
+ENV FIDO2_PLUGIN_SOURCE_URL=https://jenkins.jans.io/maven/io/jans/jans-config-api/plugins/fido2-plugin/${CN_VERSION}/fido2-plugin-${CN_VERSION}-distribution.jar
+RUN wget -q ${FIDO2_PLUGIN_SOURCE_URL} -O /usr/share/java/fido2-plugin.jar
+
+ENV USER_MGT_PLUGIN_BUILD_DATE='2022-07-06 12:55'
+ENV USER_MGT_PLUGIN_SOURCE_URL=https://jenkins.jans.io/maven/io/jans/jans-config-api/plugins/user-mgt-plugin/${CN_VERSION}/user-mgt-plugin-${CN_VERSION}-distribution.jar
+RUN wget -q ${USER_MGT_PLUGIN_SOURCE_URL} -O /usr/share/java/user-mgt-plugin.jar
 
 # ======
 # Python
@@ -80,6 +88,16 @@ RUN python3 -m ensurepip \
     && pip3 install --no-cache-dir -U pip wheel \
     && pip3 install --no-cache-dir --default-timeout=300 -r /app/requirements.txt \
     && pip3 uninstall -y pip wheel
+
+# ==========
+# Prometheus
+# ==========
+
+ARG PROMETHEUS_JAVAAGENT_VERSION=0.17.0
+COPY conf/prometheus-config.yaml /opt/prometheus/
+RUN mkdir -p /opt/prometheus \
+    && wget -q https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_JAVAAGENT_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_JAVAAGENT_VERSION}.jar -O /opt/prometheus/jmx_prometheus_javaagent.jar \
+    && java -jar ${JETTY_HOME}/start.jar jetty.home=${JETTY_HOME} jetty.base=${JETTY_BASE}/jans-config-api --add-module=jmx,stats
 
 # =======
 # Cleanup
@@ -142,7 +160,7 @@ ENV CN_SECRET_ADAPTER=vault \
 # ===============
 
 ENV CN_PERSISTENCE_TYPE=ldap \
-    CN_PERSISTENCE_LDAP_MAPPING=default \
+    CN_HYBRID_MAPPING="{}" \
     CN_LDAP_URL=localhost:1636 \
     CN_LDAP_USE_SSL=true \
     CN_COUCHBASE_URL=localhost \
@@ -168,7 +186,8 @@ ENV CN_MAX_RAM_PERCENTAGE=75.0 \
     CN_WAIT_SLEEP_DURATION=10 \
     CN_JAVA_OPTIONS="" \
     GOOGLE_PROJECT_ID="" \
-    GOOGLE_APPLICATION_CREDENTIALS=/etc/jans/conf/google-credentials.json
+    GOOGLE_APPLICATION_CREDENTIALS=/etc/jans/conf/google-credentials.json \
+    CN_PROMETHEUS_PORT=""
 
 # ====
 # misc
@@ -177,7 +196,7 @@ ENV CN_MAX_RAM_PERCENTAGE=75.0 \
 LABEL name="janssenproject/config-api" \
     maintainer="Janssen Project <support@jans.io>" \
     vendor="Janssen Project" \
-    version="1.0.1" \
+    version="1.0.2" \
     release="1" \
     summary="Janssen Config API" \
     description=""

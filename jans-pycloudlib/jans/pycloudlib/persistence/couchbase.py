@@ -1,9 +1,4 @@
-"""
-jans.pycloudlib.persistence.couchbase
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This module contains various helpers related to Couchbase persistence.
-"""
+"""This module contains various helpers related to Couchbase persistence."""
 
 import contextlib
 import json
@@ -18,6 +13,8 @@ import requests
 from requests_toolbelt.adapters.host_header_ssl import HostHeaderSSLAdapter
 from ldif import LDIFParser
 
+from jans.pycloudlib.persistence.utils import PersistenceMapper
+from jans.pycloudlib.persistence.utils import RDN_MAPPING
 from jans.pycloudlib.utils import encode_text
 from jans.pycloudlib.utils import cert_to_truststore
 from jans.pycloudlib.utils import as_boolean
@@ -36,12 +33,11 @@ def _get_cb_password(manager, password_file, secret_name):
     1. get from password file (for backward-compat)
     2. get from secrets
 
-    :params manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
-    :params password_file: Path to file contains password.
-    :params secret_name: Name of the secrets to pull/push the password.
+    :param manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
+    :param password_file: Path to file contains password.
+    :param secret_name: Name of the secrets to pull/push the password.
     :returns: Plaintext password.
     """
-
     if os.path.isfile(password_file):
         with open(password_file) as f:
             password = f.read().strip()
@@ -57,97 +53,49 @@ def _get_cb_password(manager, password_file, secret_name):
 
 
 def get_couchbase_user(manager=None) -> str:
-    """Get Couchbase username from ``CN_COUCHBASE_USER``
-    environment variable (default to ``admin``).
+    """Get Couchbase username from ``CN_COUCHBASE_USER`` environment variable (default to ``admin``).
 
-    :params manager: A no-op argument, preserved for backward compatibility.
+    :param manager: A no-op argument, preserved for backward compatibility.
     :returns: Couchbase username.
     """
     return os.environ.get("CN_COUCHBASE_USER", "admin")
 
 
 def get_couchbase_password(manager) -> str:
-    """Get Couchbase user's password from file
-    (default to ``/etc/jans/conf/couchbase_password``).
+    """Get Couchbase user's password from file.
 
+    Default file is set to ``/etc/jans/conf/couchbase_password``.
     To change the location, simply pass ``CN_COUCHBASE_PASSWORD_FILE`` environment variable.
 
-    :params manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
+    :param manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
     :returns: Plaintext password.
     """
-    secret_name = "couchbase_password"
+    secret_name = "couchbase_password"  # nosec: B105
     password_file = os.environ.get("CN_COUCHBASE_PASSWORD_FILE", "/etc/jans/conf/couchbase_password")
     return _get_cb_password(manager, password_file, secret_name)
 
 
 def get_couchbase_superuser(manager=None) -> str:
-    """Get Couchbase username from ``CN_COUCHBASE_SUPERUSER``
-    environment variable (default to empty-string).
+    """Get Couchbase username from ``CN_COUCHBASE_SUPERUSER`` environment variable (default to empty-string).
 
-    :params manager: A no-op argument, preserved for backward compatibility.
+    :param manager: A no-op argument, preserved for backward compatibility.
     :returns: Couchbase username.
     """
     return os.environ.get("CN_COUCHBASE_SUPERUSER", "")
 
 
 def get_couchbase_superuser_password(manager) -> str:
-    """Get Couchbase superuser's password from file (default to
-    ``/etc/jans/conf/couchbase_superuser_password``).
+    """Get Couchbase superuser's password from file.
 
+    Default file is set to ``/etc/jans/conf/couchbase_superuser_password``.
     To change the location, simply pass ``CN_COUCHBASE_SUPERUSER_PASSWORD_FILE`` environment variable.
 
-    :params manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
+    :param manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
     :returns: Plaintext password.
     """
-    secret_name = "couchbase_superuser_password"
+    secret_name = "couchbase_superuser_password"  # nosec: B105
     password_file = os.environ.get("CN_COUCHBASE_SUPERUSER_PASSWORD_FILE", "/etc/jans/conf/couchbase_superuser_password")
     return _get_cb_password(manager, password_file, secret_name)
-
-
-def prefixed_couchbase_mappings():
-    prefix = os.environ.get("CN_COUCHBASE_BUCKET_PREFIX", "jans")
-    mappings = {
-        "default": {"bucket": prefix, "mapping": ""},
-        "user": {"bucket": f"{prefix}_user", "mapping": "people, groups, authorizations"},
-        "cache": {"bucket": f"{prefix}_cache", "mapping": "cache"},
-        "site": {"bucket": f"{prefix}_site", "mapping": "cache-refresh"},
-        "token": {"bucket": f"{prefix}_token", "mapping": "tokens"},
-        "session": {"bucket": f"{prefix}_session", "mapping": "sessions"},
-    }
-    return mappings
-
-
-def get_couchbase_mappings(persistence_type: str, ldap_mapping: str) -> dict:
-    """Get mappings of Couchbase buckets.
-
-    Supported persistence types:
-
-    - ``ldap``
-    - ``couchbase``
-    - ``hybrid``
-
-    Supported LDAP mappings:
-
-    - ``default``
-    - ``user``
-    - ``token``
-    - ``site``
-    - ``cache``
-    - ``session``
-
-    :params persistence_type: Type of persistence.
-    :params ldap_mapping: Mapping that stored in LDAP persistence.
-    :returns: A map of Couchbase buckets.
-    """
-    mappings = prefixed_couchbase_mappings()
-
-    if persistence_type == "hybrid":
-        return {
-            name: mapping
-            for name, mapping in mappings.items()
-            if name != ldap_mapping
-        }
-    return mappings
 
 
 def get_couchbase_conn_timeout() -> int:
@@ -204,31 +152,44 @@ def get_couchbase_scan_consistency() -> str:
 
 
 def render_couchbase_properties(manager, src: str, dest: str) -> None:
-    """Render file contains properties to connect to Couchbase server,
-    i.e. ``/etc/jans/conf/jans-couchbase.properties``.
+    """Render file contains properties to connect to Couchbase server.
 
-    :params manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
-    :params src: Absolute path to the template.
-    :params dest: Absolute path where generated file is located.
+    :param manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
+    :param src: Absolute path to the template.
+    :param dest: Absolute path where generated file is located.
     """
-    persistence_type = os.environ.get("CN_PERSISTENCE_TYPE", "couchbase")
-    ldap_mapping = os.environ.get("CN_PERSISTENCE_LDAP_MAPPING", "default")
     hostname = os.environ.get("CN_COUCHBASE_URL", "localhost")
     bucket_prefix = os.environ.get("CN_COUCHBASE_BUCKET_PREFIX", "jans")
 
-    _couchbase_mappings = get_couchbase_mappings(persistence_type, ldap_mapping)
+    mapper = PersistenceMapper()
+    groups = mapper.groups()["couchbase"]
+
+    mappings = {}
+    for mapping, rdn in RDN_MAPPING.items():
+        if mapping not in groups:
+            continue
+
+        if mapping == "default":
+            bucket = ""
+        else:
+            bucket = f"{bucket_prefix}_{mapping}"
+
+        mappings[mapping] = {
+            "bucket": bucket,
+            "rdn": rdn,
+        }
+
     couchbase_buckets = []
     couchbase_mappings = []
 
-    for _, mapping in _couchbase_mappings.items():
-        couchbase_buckets.append(mapping["bucket"])
+    for mapping in mappings.values():
+        if mapping["bucket"]:
+            couchbase_buckets.append(mapping["bucket"])
 
-        if not mapping["mapping"]:
-            continue
-
-        couchbase_mappings.append(
-            f"bucket.{mapping['bucket']}.mapping: {mapping['mapping']}"
-        )
+        if mapping["rdn"]:
+            couchbase_mappings.append(
+                f"bucket.{mapping['bucket']}.mapping: {mapping['rdn']}"
+            )
 
     # always have  _default_ bucket
     if bucket_prefix not in couchbase_buckets:
@@ -237,48 +198,51 @@ def render_couchbase_properties(manager, src: str, dest: str) -> None:
     with open(src) as fr:
         txt = fr.read()
 
-        with open(dest, "w") as fw:
-            rendered_txt = txt % {
-                "hostname": hostname,
-                "couchbase_server_user": get_couchbase_user(manager),
-                "encoded_couchbase_server_pw": encode_text(
-                    get_couchbase_password(manager),
-                    manager.secret.get("encoded_salt"),
-                ).decode(),
-                "couchbase_buckets": ", ".join(couchbase_buckets),
-                "default_bucket": bucket_prefix,
-                "couchbase_mappings": "\n".join(couchbase_mappings),
-                "encryption_method": "SSHA-256",
-                "ssl_enabled": str(as_boolean(
-                    os.environ.get("CN_COUCHBASE_TRUSTSTORE_ENABLE", True)
-                )).lower(),
-                "couchbaseTrustStoreFn": manager.config.get("couchbaseTrustStoreFn") or "/etc/certs/couchbase.pkcs12",
-                "encoded_couchbaseTrustStorePass": encode_text(
-                    CN_COUCHBASE_TRUSTSTORE_PASSWORD,
-                    manager.secret.get("encoded_salt"),
-                ).decode(),
-                "couchbase_conn_timeout": get_couchbase_conn_timeout(),
-                "couchbase_conn_max_wait": get_couchbase_conn_max_wait(),
-                "couchbase_scan_consistency": get_couchbase_scan_consistency(),
-                "couchbase_keepalive_interval": get_couchbase_keepalive_interval(),
-                "couchbase_keepalive_timeout": get_couchbase_keepalive_timeout(),
-            }
-            fw.write(rendered_txt)
+    with open(dest, "w") as fw:
+        rendered_txt = txt % {
+            "hostname": hostname,
+            "couchbase_server_user": get_couchbase_user(manager),
+            "encoded_couchbase_server_pw": encode_text(
+                get_couchbase_password(manager),
+                manager.secret.get("encoded_salt"),
+            ).decode(),
+            "couchbase_buckets": ", ".join(couchbase_buckets),
+            "default_bucket": bucket_prefix,
+            "couchbase_mappings": "\n".join(couchbase_mappings),
+            "encryption_method": "SSHA-256",
+            "ssl_enabled": str(as_boolean(
+                os.environ.get("CN_COUCHBASE_TRUSTSTORE_ENABLE", True)
+            )).lower(),
+            "couchbaseTrustStoreFn": manager.config.get("couchbaseTrustStoreFn") or "/etc/certs/couchbase.pkcs12",
+            "encoded_couchbaseTrustStorePass": encode_text(
+                CN_COUCHBASE_TRUSTSTORE_PASSWORD,
+                manager.secret.get("encoded_salt"),
+            ).decode(),
+            "couchbase_conn_timeout": get_couchbase_conn_timeout(),
+            "couchbase_conn_max_wait": get_couchbase_conn_max_wait(),
+            "couchbase_scan_consistency": get_couchbase_scan_consistency(),
+            "couchbase_keepalive_interval": get_couchbase_keepalive_interval(),
+            "couchbase_keepalive_timeout": get_couchbase_keepalive_timeout(),
+        }
+        fw.write(rendered_txt)
 
 
 # DEPRECATED
 def sync_couchbase_cert(manager=None) -> str:
+    """Synchronize Couchbase certificate.
+
+    This function is deprecated and will be removed in future versions.
+    """
     cert_file = os.environ.get("CN_COUCHBASE_CERT_FILE", "/etc/certs/couchbase.crt")
     with open(cert_file) as f:
         return f.read()
 
 
 def sync_couchbase_truststore(manager, dest: str = "/etc/certs/couchbase.pkcs12") -> None:
-    """Pull secret contains base64-string contents of Couchbase truststore,
-    and save it as a JKS file, i.e. ``/etc/certs/couchbase.pkcs12``.
+    """Pull secret contains base64-string contents of Couchbase truststore and save it as a JKS file.
 
-    :params manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
-    :params dest: Absolute path where generated file is located.
+    :param manager: An instance of :class:`~jans.pycloudlib.manager._Manager`.
+    :param dest: Absolute path where generated file is located.
     """
     cert_file = os.environ.get("CN_COUCHBASE_CERT_FILE", "/etc/certs/couchbase.crt")
     dest = dest or manager.config.get("couchbaseTrustStoreFn")
@@ -288,8 +252,7 @@ def sync_couchbase_truststore(manager, dest: str = "/etc/certs/couchbase.pkcs12"
 
 
 class BaseClient:
-    """A base class for API client.
-    """
+    """A base class for API client."""
 
     def __init__(self, hosts, user, password):
         self._hosts = hosts
@@ -300,8 +263,7 @@ class BaseClient:
 
     @property
     def scheme(self):
-        """Scheme used when connecting to Couchbase server.
-        """
+        """Scheme used when connecting to Couchbase server."""
         if as_boolean(os.environ.get("CN_COUCHBASE_TRUSTSTORE_ENABLE", True)):
             return "https"
         return "http"
@@ -367,13 +329,11 @@ class BaseClient:
 
 
 class N1qlClient(BaseClient):
-    """This class interacts with N1QL server (part of Couchbase).
-    """
+    """This class interacts with N1QL server (part of Couchbase)."""
 
     @property
     def port(self):
-        """Port where N1QL server is bind to.
-        """
+        """Port where N1QL server is bind to."""
         if as_boolean(os.environ.get("CN_COUCHBASE_TRUSTSTORE_ENABLE", True)):
             return 18093
         return 8093
@@ -381,7 +341,7 @@ class N1qlClient(BaseClient):
     def healthcheck(self, host):
         """Run healthcheck to a host.
 
-        :params host: Hostname or IP address.
+        :param host: Hostname or IP address.
         :returns: An instance of ``requests.models.Response``.
         """
         return self.session.post(
@@ -394,8 +354,8 @@ class N1qlClient(BaseClient):
     def exec_api(self, path, **kwargs):
         """Execute a request to REST server.
 
-        :params path: Path (or sub-URL) of API server.
-        :params kwargs: Keyword-argument passed to ``requests.api.*`` function.
+        :param path: Path (or sub-URL) of API server.
+        :param kwargs: Keyword-argument passed to ``requests.api.*`` function.
         :returns: An instance of ``requests.models.Response``.
         """
         data = kwargs.get("data", {})
@@ -417,9 +377,9 @@ def build_n1ql_request_body(query: str, *args, **kwargs) -> dict:
 
     See https://docs.couchbase.com/server/current/n1ql/n1ql-rest-api/index.html for reference.
 
-    :params query: N1QL query string.
-    :params *args: Positional parameters passed as ``args`` in request body.
-    :params **kwargs: Named parameters passed as ``$``-prefixed
+    :param query: N1QL query string.
+    :param *args: Positional parameters passed as ``args`` in request body.
+    :param **kwargs: Named parameters passed as ``$``-prefixed
                       parameter in request body.
     """
     body = {"statement": query}
@@ -434,13 +394,11 @@ def build_n1ql_request_body(query: str, *args, **kwargs) -> dict:
 
 
 class RestClient(BaseClient):
-    """This class interacts with REST server (part of Couchbase).
-    """
+    """This class interacts with REST server (part of Couchbase)."""
 
     @property
     def port(self):
-        """Port where REST server is bind to.
-        """
+        """Port where REST server is bind to."""
         if as_boolean(os.environ.get("CN_COUCHBASE_TRUSTSTORE_ENABLE", True)):
             return 18091
         return 8091
@@ -448,7 +406,7 @@ class RestClient(BaseClient):
     def healthcheck(self, host):
         """Run healthcheck to a host.
 
-        :params host: Hostname or IP address.
+        :param host: Hostname or IP address.
         :returns: An instance of ``requests.models.Response``.
         """
         return self.session.get(
@@ -460,8 +418,8 @@ class RestClient(BaseClient):
     def exec_api(self, path, **kwargs):
         """Execute a request to REST server.
 
-        :params path: Path (or sub-URL) of API server.
-        :params kwargs: Keyword-argument passed to ``requests.api.*`` function.
+        :param path: Path (or sub-URL) of API server.
+        :param kwargs: Keyword-argument passed to ``requests.api.*`` function.
         :returns: An instance of ``requests.models.Response``.
         """
         data = kwargs.get("data", {})
@@ -485,6 +443,8 @@ class RestClient(BaseClient):
 
 
 class AttrProcessor:
+    """Attribute processor."""
+
     def __init__(self):
         self._attrs = {}
         self._attr_maps = {}
@@ -492,6 +452,7 @@ class AttrProcessor:
 
     @property
     def attr_maps(self):
+        """Get a mapping of OpenDJ types."""
         if not self._attr_maps:
             with open("/app/schema/opendj_types.json") as f:
                 self._attr_maps = json.loads(f.read())
@@ -499,6 +460,7 @@ class AttrProcessor:
 
     @property
     def schemas(self):
+        """Get a mapping of schemas from pre-defined file."""
         if not self._schemas:
             with open("/app/schema/jans_schema.json") as f:
                 self._schemas = json.loads(f.read()).get("attributeTypes", {})
@@ -506,6 +468,7 @@ class AttrProcessor:
 
     @property
     def syntax_types(self):
+        """Get a mapping of syntax types."""
         return {
             '1.3.6.1.4.1.1466.115.121.1.7': 'boolean',
             '1.3.6.1.4.1.1466.115.121.1.27': 'integer',
@@ -513,6 +476,7 @@ class AttrProcessor:
         }
 
     def process(self):
+        """Pre-populate attributes."""
         attrs = {}
 
         for type_, names in self.attr_maps.items():
@@ -540,20 +504,28 @@ class AttrProcessor:
 
     @property
     def attrs(self):
+        """Get a mapping of attributes."""
         if not self._attrs:
             self._attrs = self.process()
         return self._attrs
 
     def is_multivalued(self, name):
+        """Check whether attribute is multivalued.
+
+        :param name: Attribute name.
+        """
         return self.attrs.get(name, {}).get("multivalued", False)
 
     def get_type(self, name):
+        """Get attribute's data type.
+
+        :param name: Attribute name.
+        """
         return self.attrs.get(name, {}).get("type", "string")
 
 
 class CouchbaseClient:
-    """This class interacts with Couchbase server.
-    """
+    """This class interacts with Couchbase server."""
 
     def __init__(self, manager, *args, **kwargs):
         self.manager = manager
@@ -572,8 +544,7 @@ class CouchbaseClient:
 
     @property
     def rest_client(self):
-        """An instance of :class:`~jans.pycloudlib.persistence.couchbase.RestClient`.
-        """
+        """Get instance of :class:`~jans.pycloudlib.persistence.couchbase.RestClient`."""
         if not self._rest_client:
             self._rest_client = RestClient(self.hosts, self.user, self.password)
             self._rest_client.resolve_host()
@@ -583,8 +554,7 @@ class CouchbaseClient:
 
     @property
     def n1ql_client(self):
-        """An instance of :class:`~jans.pycloudlib.persistence.couchbase.N1qlClient`.
-        """
+        """Get instance of :class:`~jans.pycloudlib.persistence.couchbase.N1qlClient`."""
         if not self._n1ql_client:
             self._n1ql_client = N1qlClient(self.hosts, self.user, self.password)
             self._n1ql_client.resolve_host()
@@ -600,11 +570,11 @@ class CouchbaseClient:
         return self.rest_client.exec_api("pools/default/buckets", method="GET",)
 
     def add_bucket(self, name: str, memsize: int = 100, type_: str = "couchbase"):
-        """Add new bucket.
+        r"""Add new bucket.
 
-        :params name: Bucket's name.
-        :params memsize: Desired memory size of the bucket.
-        :params type\\_: Bucket's type.
+        :param name: Bucket's name.
+        :param memsize: Desired memory size of the bucket.
+        :param type\_: Bucket's type.
         :returns: An instance of ``requests.models.Response``.
         """
         return self.rest_client.exec_api(
@@ -633,13 +603,14 @@ class CouchbaseClient:
     def exec_query(self, query: str, *args, **kwargs):
         """Execute N1QL query.
 
-        :params query: N1QL query string.
+        :param query: N1QL query string.
         :returns: An instance of ``requests.models.Response``.
         """
         data = build_n1ql_request_body(query, *args, **kwargs)
         return self.n1ql_client.exec_api("query/service", data=data)
 
     def create_user(self, username, password, fullname, roles):
+        """Create user by making request to REST API."""
         data = {
             "name": fullname,
             "password": password,
@@ -650,12 +621,18 @@ class CouchbaseClient:
         )
 
     def get_index_nodes(self):
+        """Get list of nodes that has index service."""
         resp = self.rest_client.exec_api("pools/default", method="GET")
         if not resp.ok:
             return []
         return [node for node in resp.json()["nodes"] if "index" in node["services"]]
 
     def _transform_value(self, name, values):
+        """Transform value from one to another based on its data type.
+
+        :param name: Attribute name.
+        :param values: Pre-transformed values.
+        """
         def as_dict(val):
             return json.loads(val)
 
@@ -722,7 +699,6 @@ class CouchbaseClient:
         :param filepath: Path to LDIF template file.
         :param ctx: Key-value pairs of context that rendered into LDIF template file.
         """
-
         with open(filepath) as src, NamedTemporaryFile("w+") as dst:
             dst.write(safe_render(src.read(), ctx))
             # ensure rendered template is written
@@ -742,15 +718,42 @@ class CouchbaseClient:
                     data = json.dumps(entry)
 
                     # using INSERT will cause duplication error, but the data is left intact
-                    query = 'INSERT INTO `%s` (KEY, VALUE) VALUES ("%s", %s)' % (bucket, key, data)
+                    query = 'INSERT INTO `%s` (KEY, VALUE) VALUES ("%s", %s)' % (bucket, key, data)  # nosec: B608
                     req = self.exec_query(query)
 
                     if not req.ok:
                         logger.warning("Failed to execute query, reason={}".format(req.json()))
 
+    def doc_exists(self, bucket: str, id_: str) -> bool:
+        """
+        Check if certain document exists in a bucket.
+
+        :param bucket: Bucket name.
+        :param id_: ID of document.
+        """
+        req = self.exec_query(
+            f"SELECT objectClass FROM {bucket} USE KEYS $key",  # nosec: B608
+            key=id_,
+        )
+
+        if not req.ok:
+            try:
+                data = json.loads(req.text)
+                err = data["errors"][0]["msg"]
+            except (ValueError, KeyError, IndexError):
+                err = req.reason
+            logger.warning(f"Unable to find document {id_} in bucket {bucket}; reason={err}")
+            return False
+
+        if not req.json()["results"]:
+            logger.warning(f"Missing document {id_} in bucket {bucket}")
+            return False
+        return True
+
 
 # backward-compat
 def suppress_verification_warning():
+    """Hide verification warning when using non-secure connection."""
     import urllib3
 
     if as_boolean(os.environ.get("CN_COUCHBASE_SUPPRESS_VERIFICATION", True)):
@@ -792,6 +795,10 @@ def get_couchbase_keepalive_timeout():
 
 
 def id_from_dn(dn):
+    """Determine document ID based on LDAP's DN.
+
+    :param dn: LDAP's DN string.
+    """
     # for example: `"inum=29DA,ou=attributes,o=jans"`
     # becomes `["29DA", "attributes"]`
     dns = [i.split("=")[-1] for i in dn.split(",") if i != "o=jans"]
@@ -802,6 +809,7 @@ def id_from_dn(dn):
 
 
 def get_bucket_for_key(key):
+    """Determine which bucket goes for specific key."""
     bucket_prefix = os.environ.get("CN_COUCHBASE_BUCKET_PREFIX", "jans")
 
     cursor = key.find("_")

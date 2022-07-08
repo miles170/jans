@@ -110,6 +110,9 @@ class PropertiesUtils(SetupUtils):
 
         if Config.profile == 'jans':
 
+            if not (Config.cb_install or Config.rdbm_install):
+                Config.opendj_install = InstallTypes.LOCAL
+
             if not Config.ldapPass:
                 Config.ldapPass = Config.admin_password
 
@@ -129,6 +132,7 @@ class PropertiesUtils(SetupUtils):
                     print(msg.used_ports.format(','.join(used_ports)))
                     sys.exit(1)
 
+
             self.set_persistence_type()
 
             if not Config.opendj_p12_pass:
@@ -141,6 +145,7 @@ class PropertiesUtils(SetupUtils):
 
         if not Config.jans_max_mem:
             Config.jans_max_mem = int(base.current_mem_size * .83 * 1000) # 83% of physical memory
+
 
     def check_oxd_server_https(self):
 
@@ -199,6 +204,9 @@ class PropertiesUtils(SetupUtils):
         if p.get('opendj_install') == '0':
             p['opendj_install'] = InstallTypes.NONE
 
+        if p.get('enable-script'):
+            base.argsp.enable_script = p['enable-script'].split()
+
         properties_list = list(p.keys())
 
         for prop in properties_list:
@@ -223,7 +231,7 @@ class PropertiesUtils(SetupUtils):
         if prop_file.endswith('-DEC~'):
             self.run(['rm', '-f', prop_file])
 
-        if not 'admin_password' in properties_list:
+        if 'admin_password' not in properties_list and 'ldapPass' in p:
             Config.admin_password = p['ldapPass']
             
         if p.get('ldap_hostname') != 'localhost':
@@ -271,15 +279,13 @@ class PropertiesUtils(SetupUtils):
                 print("Can't connect to remote LDAP Server with credentials found in setup.properties.")
                 sys.exit(1)
 
-
-        if not 'admin_password' in p:
-            p['admin_password'] = p['ldapPass']
-
+        if not (Config.cb_install or Config.rdbm_install):
+            p['opendj_install'] = InstallTypes.LOCAL
 
         return p
 
     def save_properties(self, prop_fn=None, obj=None):
-        
+
         if not prop_fn:
             prop_fn = Config.savedProperties
 
@@ -313,7 +319,7 @@ class PropertiesUtils(SetupUtils):
                     else:
                         value = getString(obj)
                         if value != '':
-                            p[obj_name] = value                
+                            p[obj_name] = value
 
             with open(prop_fn, 'wb') as f:
                 p.store(f, encoding="utf-8")
@@ -597,6 +603,24 @@ class PropertiesUtils(SetupUtils):
 
         if Config.installed_instance and Config.install_config_api:
             Config.addPostSetupService.append('install_config_api')
+
+
+    def prompt_for_client_api(self):
+
+        prompt = self.getPrompt("Install Jans Client Api?", 
+                            self.getDefaultOption(Config.install_client_api)
+                            )[0].lower()
+
+        Config.install_client_api = True if prompt == 'y' else False
+
+        if Config.installed_instance and Config.install_client_api:
+            Config.addPostSetupService.append('install_client_api')
+
+        if Config.install_client_api:
+            prompt = self.getPrompt("  Use Jans Storage for Client Api?", 'y')[0].lower()
+            if prompt == 'n':
+                Config.client_api_storage_type = 'h2'
+
 
     def prompt_for_rdbm(self):
         while True:
@@ -912,7 +936,7 @@ class PropertiesUtils(SetupUtils):
             self.promptForScimServer()
             self.promptForFido2Server()
             self.promptForEleven()
-
+            self.prompt_for_client_api()
             #if (not Config.installOxd) and Config.oxd_package:
             #    self.promptForOxd()
 

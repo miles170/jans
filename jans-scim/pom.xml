@@ -5,10 +5,17 @@
 	<groupId>io.jans</groupId>
 	<artifactId>jans-scim</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<name>SCIM API</name>
 	<url>http://www.gluu.org</url>
-	
+    <distributionManagement>
+	  <repository>
+          <id>github</id>
+          <name>GitHub Packages</name>
+          <url>https://maven.pkg.github.com/JanssenProject/jans</url>
+      </repository>
+    </distributionManagement>
+
 	<properties>
 		<maven.min-version>3.3.9</maven.min-version>
 		<maven.compiler.source>1.8</maven.compiler.source>

@@ -5,9 +5,16 @@
 	<groupId>io.jans</groupId>
 	<artifactId>jans-config-api-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<name>jans-config-api-parent</name>
 
+    <distributionManagement>
+	  <repository>
+          <id>github</id>
+          <name>GitHub Packages</name>
+          <url>https://maven.pkg.github.com/JanssenProject/jans</url>
+      </repository>
+    </distributionManagement>
 	<properties>
 		<maven.min-version>3.3.9</maven.min-version>
 		<compiler-plugin.version>3.8.1</compiler-plugin.version>

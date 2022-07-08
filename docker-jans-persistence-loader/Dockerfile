@@ -1,4 +1,4 @@
-FROM alpine:3.15.4
+FROM alpine:3.16.0
 
 # ===============
 # Alpine packages
@@ -23,7 +23,8 @@ RUN python3 -m ensurepip \
 # jans-linux-setup sync
 # =====================
 
-ENV JANS_LINUX_SETUP_VERSION=07f544ff00c6e8923b480da1bfb4ee7847933c60
+# janssenproject/jans SHA commit
+ENV JANS_SOURCE_VERSION=7ad2b06edf70322d85b40de05a423c2f8cdd4200
 ARG JANS_SETUP_DIR=jans-linux-setup/jans_setup
 
 # note that as we're pulling from a monorepo (with multiple project in it)
@@ -31,7 +32,7 @@ ARG JANS_SETUP_DIR=jans-linux-setup/jans_setup
 RUN git clone --filter blob:none --no-checkout https://github.com/janssenproject/jans /tmp/jans \
     && cd /tmp/jans \
     && git sparse-checkout init --cone \
-    && git checkout ${JANS_LINUX_SETUP_VERSION} \
+    && git checkout ${JANS_SOURCE_VERSION} \
     && git sparse-checkout set ${JANS_SETUP_DIR}
 
 RUN mkdir -p /app/static /app/static/couchbase /app/schema /app/openbanking/static /app/static/opendj
@@ -63,7 +64,7 @@ RUN cd /tmp/jans \
     && cp -R ${JANS_SETUP_DIR}/templates/jans-cli /app/templates/jans-cli
 
 # Download jans-config-api-swagger for role_scope_mapping
-RUN wget -q https://github.com/JanssenProject/jans/raw/${JANS_LINUX_SETUP_VERSION}/jans-config-api/docs/jans-config-api-swagger.yaml -P /app/static
+RUN wget -q https://github.com/JanssenProject/jans/raw/${JANS_SOURCE_VERSION}/jans-config-api/docs/jans-config-api-swagger.yaml -P /app/static
 
 # cleanup
 RUN rm -rf /tmp/jans
@@ -128,7 +129,7 @@ ENV CN_SECRET_ADAPTER=vault \
 # ===============
 
 ENV CN_PERSISTENCE_TYPE=couchbase \
-    CN_PERSISTENCE_LDAP_MAPPING=default \
+    CN_HYBRID_MAPPING="{}" \
     CN_COUCHBASE_URL=localhost \
     CN_COUCHBASE_USER=admin \
     CN_COUCHBASE_CERT_FILE=/etc/certs/couchbase.crt \
@@ -172,7 +173,7 @@ ENV CN_CACHE_TYPE=NATIVE_PERSISTENCE \
 LABEL name="janssenproject/persistence-loader" \
     maintainer="Janssen Project <support@jans.io>" \
     vendor="Janssen Project" \
-    version="1.0.1" \
+    version="1.0.2" \
     release="1" \
     summary="Janssen Authorization Server Persistence loader" \
     description="Generate initial data for persistence layer"

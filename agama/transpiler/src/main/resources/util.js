@@ -6,13 +6,14 @@ let
     _numberCls = new Packages.java.lang.Class.forName("java.lang.Number"),
     _integerCls = new Packages.java.lang.Class.forName("java.lang.Integer"),
     _stringCls = new Packages.java.lang.Class.forName("java.lang.String"),
+    _collectionCls = new Packages.java.lang.Class.forName("java.util.Collection"),
     _listCls = new Packages.java.lang.Class.forName("java.util.List"),
     _mapCls = new Packages.java.lang.Class.forName("java.util.Map")
 
 function _renderReplyFetch(base, page, allowCallbackResume, data) {
     if (_isObject(data))
         return _scriptUtils.pauseForRender(base + "/" + page, allowCallbackResume, data)
-    throw new TypeError("Data passed to RRF was not an object")
+    throw new TypeError("Data passed to RRF was not a map or Java equivalent")
 }
 
 function _redirectFetchAtCallback(url) {
@@ -47,7 +48,11 @@ function _flowCall(flowName, basePath, urlOverrides, args) {
     let p = _scriptUtils.prepareSubflow(flowName, basePath, urlOverrides)
     let params = args.map(_scan)
     params.splice(0, 0, p.second)
-    let result = p.first.apply(null, params)
+
+    let f = p.first
+    //Nullify p to avoid serializing a Java Pair in the next RRF call
+    p = null
+    let result = f.apply(null, params)
 
     _scriptUtils.closeSubflow()
     return result
@@ -58,7 +63,9 @@ function _finish(val) {
 
     let javaish = _javaish(val)
     
-    if (_isBool(val, javaish))
+    if (_isString(val, javaish))
+        return { success: true, data: { userId: val } }
+    else if (_isBool(val, javaish))
         return { success: val }
     else if (_isObject(val, javaish) && _isBool(val.success))
         return val
@@ -113,7 +120,8 @@ function _isObject(val, javaish) {
     let jish = _isNil(javaish) ? _javaish(val) : javaish
     if (jish) {
         let cls = val.getClass()
-        return !(_stringCls.isInstance(val) || _primitiveUtils.isPrimitive(cls, true) || cls.isArray())
+        return !(_stringCls.isInstance(val) || _primitiveUtils.isPrimitive(cls, true)
+            || cls.isArray() || _collectionCls.isInstance(val))
     }
     return !_isNil(val) && !Array.isArray(val) && typeof val === "object"
 

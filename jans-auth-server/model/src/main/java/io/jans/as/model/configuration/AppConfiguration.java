@@ -126,6 +126,7 @@ public class AppConfiguration implements Configuration {
     private Boolean requestUriParameterSupported;
     private Boolean requestUriHashVerificationEnabled;
     private Boolean requireRequestUriRegistration;
+    private List<String> requestUriBlockList;
     private String opPolicyUri;
     private String opTosUri;
     private int authorizationCodeLifetime;
@@ -253,7 +254,6 @@ public class AppConfiguration implements Configuration {
     private String dcrSignatureValidationJwks;
     private String dcrSignatureValidationJwksUri;
     private Boolean dcrAuthorizationWithClientCredentials = false;
-    private Boolean dcrSkipSignatureValidation = false;
     private Boolean dcrAuthorizationWithMTLS = false;
     private List<String> dcrIssuers = new ArrayList<>();
 
@@ -627,15 +627,6 @@ public class AppConfiguration implements Configuration {
 
     public void setFapiCompatibility(Boolean fapiCompatibility) {
         this.fapiCompatibility = fapiCompatibility;
-    }
-
-    public Boolean getDcrSkipSignatureValidation() {
-        if (dcrSkipSignatureValidation == null) dcrSkipSignatureValidation = false;
-        return dcrSkipSignatureValidation;
-    }
-
-    public void setDcrSkipSignatureValidation(Boolean dcrSkipSignatureValidation) {
-        this.dcrSkipSignatureValidation = dcrSkipSignatureValidation;
     }
 
     public Boolean getDcrAuthorizationWithClientCredentials() {
@@ -1397,6 +1388,15 @@ public class AppConfiguration implements Configuration {
 
     public void setRequireRequestUriRegistration(Boolean requireRequestUriRegistration) {
         this.requireRequestUriRegistration = requireRequestUriRegistration;
+    }
+
+    public List<String> getRequestUriBlockList() {
+        if (requestUriBlockList == null) requestUriBlockList = Lists.newArrayList();
+        return requestUriBlockList;
+    }
+
+    public void setRequestUriBlockList(List<String> requestUriBlockList) {
+        this.requestUriBlockList = requestUriBlockList;
     }
 
     public String getOpPolicyUri() {

@@ -44,8 +44,8 @@ RUN wget -q https://ox.gluu.org/maven/org/gluufederation/jython-installer/${JYTH
 # SCIM
 # ====
 
-ENV CN_VERSION=1.0.1-SNAPSHOT
-ENV CN_BUILD_DATE='2022-06-01 08:15'
+ENV CN_VERSION=1.0.2-SNAPSHOT
+ENV CN_BUILD_DATE='2022-07-06 12:52'
 ENV CN_SOURCE_URL=https://jenkins.jans.io/maven/io/jans/jans-scim-server/${CN_VERSION}/jans-scim-server-${CN_VERSION}.war
 
 # Install SCIM
@@ -68,6 +68,16 @@ RUN python3 -m ensurepip \
     && pip3 install --no-cache-dir -U pip wheel \
     && pip3 install --no-cache-dir -r /app/requirements.txt \
     && pip3 uninstall -y pip wheel
+
+# ==========
+# Prometheus
+# ==========
+
+ARG PROMETHEUS_JAVAAGENT_VERSION=0.17.0
+COPY conf/prometheus-config.yaml /opt/prometheus/
+RUN mkdir -p /opt/prometheus \
+    && wget -q https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_JAVAAGENT_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_JAVAAGENT_VERSION}.jar -O /opt/prometheus/jmx_prometheus_javaagent.jar \
+    && java -jar ${JETTY_HOME}/start.jar jetty.home=${JETTY_HOME} jetty.base=${JETTY_BASE}/jans-scim --add-module=jmx,stats
 
 # =======
 # Cleanup
@@ -130,7 +140,7 @@ ENV CN_SECRET_ADAPTER=vault \
 # ===============
 
 ENV CN_PERSISTENCE_TYPE=ldap \
-    CN_PERSISTENCE_LDAP_MAPPING=default \
+    CN_HYBRID_MAPPING="{}" \
     CN_LDAP_URL=localhost:1636 \
     CN_LDAP_USE_SSL=true \
     CN_COUCHBASE_URL=localhost \
@@ -154,7 +164,8 @@ ENV CN_MAX_RAM_PERCENTAGE=75.0 \
     CN_WAIT_SLEEP_DURATION=10 \
     CN_JAVA_OPTIONS="" \
     GOOGLE_PROJECT_ID="" \
-    GOOGLE_APPLICATION_CREDENTIALS=/etc/jans/conf/google-credentials.json
+    GOOGLE_APPLICATION_CREDENTIALS=/etc/jans/conf/google-credentials.json \
+    CN_PROMETHEUS_PORT=""
 
 # ==========
 # misc stuff
@@ -163,7 +174,7 @@ ENV CN_MAX_RAM_PERCENTAGE=75.0 \
 LABEL name="janssenproject/scim" \
     maintainer="Janssen Project <support@jans.io>" \
     vendor="Janssen Project" \
-    version="1.0.1" \
+    version="1.0.2" \
     release="1" \
     summary="Janssen SCIM" \
     description="SCIM server"

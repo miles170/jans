@@ -46,13 +46,13 @@ The following environment variables are supported by the container:
 - `CN_WAIT_SLEEP_DURATION`: Delay between startup "health checks" (default to `10` seconds).
 - `CN_MAX_RAM_PERCENTAGE`: Value passed to Java option `-XX:MaxRAMPercentage`.
 - `CN_PERSISTENCE_TYPE`: Persistence backend being used (one of `ldap`, `couchbase`, or `hybrid`; default to `ldap`).
-- `CN_PERSISTENCE_LDAP_MAPPING`: Specify data that should be saved in LDAP (one of `default`, `user`, `cache`, `site`, or `token`; default to `default`). Note this environment only takes effect when `CN_PERSISTENCE_TYPE` is set to `hybrid`.
-- `CN_LDAP_URL`: Address and port of LDAP server (default to `localhost:1636`); required if `CN_PERSISTENCE_TYPE` is set to `ldap` or `hybrid`.
+- `CN_HYBRID_MAPPING`: Specify data mapping for each persistence (default to `"{}"`). Note this environment only takes effect when `CN_PERSISTENCE_TYPE` is set to `hybrid`. See [hybrid mapping](#hybrid-mapping) section for details.
+- `CN_LDAP_URL`: Address and port of LDAP server (default to `localhost:1636`).
 - `CN_LDAP_USE_SSL`: Whether to use SSL connection to LDAP server (default to `true`).
-- `CN_COUCHBASE_URL`: Address of Couchbase server (default to `localhost`); required if `CN_PERSISTENCE_TYPE` is set to `couchbase` or `hybrid`.
-- `CN_COUCHBASE_USER`: Username of Couchbase server (default to `admin`); required if `CN_PERSISTENCE_TYPE` is set to `couchbase` or `hybrid`.
-- `CN_COUCHBASE_CERT_FILE`: Couchbase root certificate location (default to `/etc/certs/couchbase.crt`); required if `CN_PERSISTENCE_TYPE` is set to `couchbase` or `hybrid`.
-- `CN_COUCHBASE_PASSWORD_FILE`: Path to file contains Couchbase password (default to `/etc/jans/conf/couchbase_password`); required if `CN_PERSISTENCE_TYPE` is set to `couchbase` or `hybrid`.
+- `CN_COUCHBASE_URL`: Address of Couchbase server (default to `localhost`).
+- `CN_COUCHBASE_USER`: Username of Couchbase server (default to `admin`).
+- `CN_COUCHBASE_CERT_FILE`: Couchbase root certificate location (default to `/etc/certs/couchbase.crt`).
+- `CN_COUCHBASE_PASSWORD_FILE`: Path to file contains Couchbase password (default to `/etc/jans/conf/couchbase_password`).
 - `CN_COUCHBASE_CONN_TIMEOUT`: Connect timeout used when a bucket is opened (default to `10000` milliseconds).
 - `CN_COUCHBASE_CONN_MAX_WAIT`: Maximum time to wait before retrying connection (default to `20000` milliseconds).
 - `CN_COUCHBASE_SCAN_CONSISTENCY`: Default scan consistency; one of `not_bounded`, `request_plus`, or `statement_plus` (default to `not_bounded`).
@@ -60,13 +60,13 @@ The following environment variables are supported by the container:
 - `CN_COUCHBASE_TRUSTSTORE_ENABLE`: Enable truststore for encrypted Couchbase connection (default to `true`).
 - `CN_COUCHBASE_KEEPALIVE_INTERVAL`: Keep-alive interval for Couchbase connection (default to `30000` milliseconds).
 - `CN_COUCHBASE_KEEPALIVE_TIMEOUT`: Keep-alive timeout for Couchbase connection (default to `2500` milliseconds).
-- `CN_CLIENT_API_APPLICATION_CERT_CN`: CommonName used in application certificate subject
-- `CN_CLIENT_API_ADMIN_CERT_CN`: CommonName used in admin certificate subject
+- `CN_CLIENT_API_CERT_CN`: CommonName used in certificate subject.
 - `CN_CLIENT_API_BIND_IP_ADDRESSES`: A comma-separated host/IP address that are allowed to access client-api (default to `*`).
 - `CN_JAVA_OPTIONS`: Java options passed to entrypoint, i.e. `-Xmx1024m` (default to empty-string).
 - `GOOGLE_PROJECT_ID`: Google Project ID (default to empty string). Used when `CN_CONFIG_ADAPTER` or `CN_SECRET_ADAPTER` set to `google`.
 - `GOOGLE_APPLICATION_CREDENTIALS`: Path to Google credentials JSON file (default to `/etc/jans/conf/google-credentials.json`). Used when `CN_CONFIG_ADAPTER` or `CN_SECRET_ADAPTER` set to `google`.
 - `CN_CLIENT_API_APP_LOGGERS`: Custom logging configuration in JSON-string format with hash type (see [Configure app loggers](#configure-app-loggers) section for details).
+- `CN_PROMETHEUS_PORT`: Port used by Prometheus JMX agent (default to empty string). To enable Prometheus JMX agent, set the value to a number. See [Exposing metrics](#exposing-metrics) for details.
 
 ### Configure app loggers
 
@@ -91,7 +91,56 @@ The following key-value pairs are the defaults:
 ```json
 {
     "client_api_log_target": "STDOUT",
-    "client_api_log_level": "INFO"
+    "client_api_log_level": "INFO",
+    "persistence_log_target": "FILE",
+    "persistence_log_level": "INFO",
+    "persistence_duration_log_target": "FILE",
+    "persistence_duration_log_level": "INFO",
+    "ldap_stats_log_target": "FILE",
+    "ldap_stats_log_level": "INFO",
+    "script_log_target": "FILE",
+    "script_log_level": "INFO"
 }
 ```
 
+### Hybrid mapping
+
+As per v1.0.1, hybrid persistence supports all available persistence types. To configure hybrid persistence and its data mapping, follow steps below:
+
+1.  Set `CN_PERSISTENCE_TYPE` environment variable to `hybrid`
+
+1.  Set `CN_HYBRID_MAPPING` with the following format:
+
+    ```
+    {
+        "default": "<couchbase|ldap|spanner|sql>",
+        "user": "<couchbase|ldap|spanner|sql>",
+        "site": "<couchbase|ldap|spanner|sql>",
+        "cache": "<couchbase|ldap|spanner|sql>",
+        "token": "<couchbase|ldap|spanner|sql>",
+        "session": "<couchbase|ldap|spanner|sql>",
+    }
+    ```
+
+    Example:
+
+    ```
+    {
+        "default": "sql",
+        "user": "spanner",
+        "site": "ldap",
+        "cache": "sql",
+        "token": "couchbase",
+        "session": "spanner",
+    }
+    ```
+
+### Exposing metrics
+
+As per v1.0.1, certain metrics can be exposed via Prometheus JMX exporter.
+To expose the metrics, set the `CN_PROMETHEUS_PORT` environment variable, i.e. `CN_PROMETHEUS_PORT=9093`.
+Afterwards, metrics can be scraped by Prometheus or accessed manually by making request to `/metrics` URL,
+i.e. `http://container:9093/metrics`.
+
+Note that Prometheus JMX exporter uses pre-defined config file (see `conf/prometheus-config.yaml`).
+To customize the config, mount custom config file to `/opt/prometheus/prometheus-config.yaml` inside the container.

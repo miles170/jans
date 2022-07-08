@@ -47,13 +47,13 @@ The following environment variables are supported by the container:
 - `CN_MAX_RAM_PERCENTAGE`: Value passed to Java option `-XX:MaxRAMPercentage`.
 - `CN_DEBUG_PORT`: port of remote debugging (if omitted, remote debugging will be disabled).
 - `CN_PERSISTENCE_TYPE`: Persistence backend being used (one of `ldap`, `couchbase`, or `hybrid`; default to `ldap`).
-- `CN_PERSISTENCE_LDAP_MAPPING`: Specify data that should be saved in LDAP (one of `default`, `user`, `cache`, `site`, `token`, or `session`; default to `default`). Note this environment only takes effect when `CN_PERSISTENCE_TYPE` is set to `hybrid`.
-- `CN_LDAP_URL`: Address and port of LDAP server (default to `localhost:1636`); required if `CN_PERSISTENCE_TYPE` is set to `ldap` or `hybrid`.
+- `CN_HYBRID_MAPPING`: Specify data mapping for each persistence (default to `"{}"`). Note this environment only takes effect when `CN_PERSISTENCE_TYPE` is set to `hybrid`. See [hybrid mapping](#hybrid-mapping) section for details.
+- `CN_LDAP_URL`: Address and port of LDAP server (default to `localhost:1636`).
 - `CN_LDAP_USE_SSL`: Whether to use SSL connection to LDAP server (default to `true`).
-- `CN_COUCHBASE_URL`: Address of Couchbase server (default to `localhost`); required if `CN_PERSISTENCE_TYPE` is set to `couchbase` or `hybrid`.
-- `CN_COUCHBASE_USER`: Username of Couchbase server (default to `admin`); required if `CN_PERSISTENCE_TYPE` is set to `couchbase` or `hybrid`.
-- `CN_COUCHBASE_CERT_FILE`: Couchbase root certificate location (default to `/etc/certs/couchbase.crt`); required if `CN_PERSISTENCE_TYPE` is set to `couchbase` or `hybrid`.
-- `CN_COUCHBASE_PASSWORD_FILE`: Path to file contains Couchbase password (default to `/etc/jans/conf/couchbase_password`); required if `CN_PERSISTENCE_TYPE` is set to `couchbase` or `hybrid`.
+- `CN_COUCHBASE_URL`: Address of Couchbase server (default to `localhost`).
+- `CN_COUCHBASE_USER`: Username of Couchbase server (default to `admin`).
+- `CN_COUCHBASE_CERT_FILE`: Couchbase root certificate location (default to `/etc/certs/couchbase.crt`).
+- `CN_COUCHBASE_PASSWORD_FILE`: Path to file contains Couchbase password (default to `/etc/jans/conf/couchbase_password`).
 - `CN_COUCHBASE_CONN_TIMEOUT`: Connect timeout used when a bucket is opened (default to `10000` milliseconds).
 - `CN_COUCHBASE_CONN_MAX_WAIT`: Maximum time to wait before retrying connection (default to `20000` milliseconds).
 - `CN_COUCHBASE_SCAN_CONSISTENCY`: Default scan consistency; one of `not_bounded`, `request_plus`, or `statement_plus` (default to `not_bounded`).
@@ -75,6 +75,7 @@ The following environment variables are supported by the container:
 - `CN_GOOGLE_SPANNER_DATABASE_ID`: Google Spanner database ID.
 - `CN_JETTY_REQUEST_HEADER_SIZE`: Maximum size of request header accepted by Jetty (default to `8192`).
 - `CN_AUTH_APP_LOGGERS`: Custom logging configuration in JSON-string format with hash type (see [Configure app loggers](#configure-app-loggers) section for details).
+- `CN_PROMETHEUS_PORT`: Port used by Prometheus JMX agent (default to empty string). To enable Prometheus JMX agent, set the value to a number. See [Exposing metrics](#exposing-metrics) for details.
 
 ### Configure app loggers
 
@@ -114,3 +115,45 @@ The following key-value pairs are the defaults:
     "audit_log_level": "INFO"
 }
 ```
+
+### Hybrid mapping
+
+As per v1.0.1, hybrid persistence supports all available persistence types. To configure hybrid persistence and its data mapping, follow steps below:
+
+1.  Set `CN_PERSISTENCE_TYPE` environment variable to `hybrid`
+
+1.  Set `CN_HYBRID_MAPPING` with the following format:
+
+    ```
+    {
+        "default": "<couchbase|ldap|spanner|sql>",
+        "user": "<couchbase|ldap|spanner|sql>",
+        "site": "<couchbase|ldap|spanner|sql>",
+        "cache": "<couchbase|ldap|spanner|sql>",
+        "token": "<couchbase|ldap|spanner|sql>",
+        "session": "<couchbase|ldap|spanner|sql>",
+    }
+    ```
+
+    Example:
+
+    ```
+    {
+        "default": "sql",
+        "user": "spanner",
+        "site": "ldap",
+        "cache": "sql",
+        "token": "couchbase",
+        "session": "spanner",
+    }
+    ```
+
+### Exposing metrics
+
+As per v1.0.1, certain metrics can be exposed via Prometheus JMX exporter.
+To expose the metrics, set the `CN_PROMETHEUS_PORT` environment variable, i.e. `CN_PROMETHEUS_PORT=9093`.
+Afterwards, metrics can be scraped by Prometheus or accessed manually by making request to `/metrics` URL,
+i.e. `http://container:9093/metrics`.
+
+Note that Prometheus JMX exporter uses pre-defined config file (see `conf/prometheus-config.yaml`).
+To customize the config, mount custom config file to `/opt/prometheus/prometheus-config.yaml` inside the container.
