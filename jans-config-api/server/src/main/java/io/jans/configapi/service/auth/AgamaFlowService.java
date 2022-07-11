@@ -100,7 +100,7 @@ public class AgamaFlowService implements Serializable {
 
     public void addAgamaFlow(Flow flow) {
         logger.debug("Added Agama Flow:{}", flow);
-        flow.setBaseDn(getAgamaFlowDn(flow.getFlowName()));
+        flow.setBaseDn(getAgamaFlowDn(flow.getQname()));
         persistenceEntryManager.persist(flow);
     }
 

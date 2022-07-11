@@ -69,7 +69,7 @@ public class Flow extends ProtoFlow  {
                 + ", source=" + source
                 + ", transpiled=" + transpiled
                 + ", codeError=" + codeError
-                + ", QName=" + getFlowName()
+                + ", qname=" + getQname()
                 + ", transHash=" + getTransHash()
                 + ", revision=" + getRevision()
                 + "]";

@@ -77,14 +77,14 @@ public class AgamaResource extends ConfigBaseResource {
     @POST
     @ProtectedApi(scopes = { ApiAccessConstants.AGAMA_WRITE_ACCESS })
     public Response createFlow(@Valid Flow flow) {
-        log.debug(" Flow to be added flow:{}, flow.getQName():{}, flow.getSource():{} ", flow, flow.getFlowName(),
+        log.debug(" Flow to be added flow:{}, flow.getQName():{}, flow.getSource():{} ", flow, flow.getQname(),
                 flow.getSource());
 
         // validate data
         validateAgamaFlowData(flow);
         agamaFlowService.addAgamaFlow(flow);
 
-        flow = agamaFlowService.getFlowByName(flow.getFlowName());
+        flow = agamaFlowService.getFlowByName(flow.getQname());
         return Response.status(Response.Status.CREATED).entity(flow).build();
     }
 
@@ -104,10 +104,10 @@ public class AgamaResource extends ConfigBaseResource {
             return;
         }
 
-        log.debug(" Validate Agama Flow to be added flow:{}, flow.getQName():{}, flow.getSource():{} ", flow,
-                flow.getFlowName(), flow.getSource());
+        log.debug(" Validate Agama Flow to be added flow:{}, flow.getQname():{}, flow.getSource():{} ", flow,
+                flow.getQname(), flow.getSource());
         StringBuilder sb = new StringBuilder();
-        if (StringUtils.isBlank(flow.getFlowName())) {
+        if (StringUtils.isBlank(flow.getQname())) {
             sb.append(AGAMA_QName).append(",");
         }
 
