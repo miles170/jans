@@ -25,14 +25,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 
 @Path(ApiConstants.AGAMA)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AgamaResource extends ConfigBaseResource {
-    
+
     private static final String AGAMA_FLOW = "Agama flow";
+    private static final String AGAMA_QName = "FlowName";
+    private static final String AGAMA_SOURCE = "source";
 
     @Inject
     Logger log;
@@ -67,26 +70,23 @@ public class AgamaResource extends ConfigBaseResource {
             log.debug("Search Agama with flowName:{}, ", escapeLog(flowName));
         }
         Flow flow = agamaFlowService.getFlowByName(flowName);
-        checkResourceNotNull(flow, AGAMA_FLOW);
+
         return Response.ok(flow).build();
     }
 
     @POST
     @ProtectedApi(scopes = { ApiAccessConstants.AGAMA_WRITE_ACCESS })
-    public Response createFlow(@NotNull Flow flow) {
-        log.debug(" Flow to be added flow:{} ",flow);
-     
-       //validate data
-        checkNotNull(flow.getQName(), Flow.ATTR_NAMES.QNAME);
-        checkNotNull(flow.getSource(),"SOURCE");
-        
+    public Response createFlow(@Valid Flow flow) {
+        log.debug(" Flow to be added flow:{}, flow.getQName():{}, flow.getSource():{} ", flow, flow.getFlowName(),
+                flow.getSource());
+
+        // validate data
+        validateAgamaFlowData(flow);
         agamaFlowService.addAgamaFlow(flow);
-        
-        flow = agamaFlowService.getFlowByName(flow.getQName());
+
+        flow = agamaFlowService.getFlowByName(flow.getFlowName());
         return Response.status(Response.Status.CREATED).entity(flow).build();
     }
-
-
 
     @DELETE
     @Path(ApiConstants.QNAME_PATH)
@@ -99,6 +99,28 @@ public class AgamaResource extends ConfigBaseResource {
         return Response.noContent().build();
     }
 
-    
-    
+    private void validateAgamaFlowData(Flow flow) {
+        if (flow == null) {
+            return;
+        }
+
+        log.debug(" Validate Agama Flow to be added flow:{}, flow.getQName():{}, flow.getSource():{} ", flow,
+                flow.getFlowName(), flow.getSource());
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.isBlank(flow.getFlowName())) {
+            sb.append(AGAMA_QName).append(",");
+        }
+
+        if (StringUtils.isBlank(flow.getSource())) {
+            sb.append(AGAMA_SOURCE).append(",");
+        }
+
+        log.debug(" sb:{} ", sb);
+        if (sb.length() > 0) {
+            sb.insert(0, "Required feilds missing -> ");
+            sb.replace(sb.lastIndexOf(","), sb.length(), "");
+            thorwBadRequestException(sb.toString());
+        }
+
+    }
 }
