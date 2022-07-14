@@ -19,10 +19,7 @@ import io.jans.orm.model.base.LocalizedString;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * @author Javier Rojas Blum
@@ -1313,5 +1310,18 @@ public class Client extends DeletableEntity implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getDisplayLocalizedString(LocalizedString localizedString) {
+        if (localizedString != null || !localizedString.getValues().isEmpty()) {
+            if (localizedString.getValues().keySet().contains("")) {
+                return localizedString.getValues().get("");
+            } else {
+                for (String fisrtValue : localizedString.getValues().values()) {
+                    return fisrtValue;
+                }
+            }
+        }
+        return "";
     }
 }

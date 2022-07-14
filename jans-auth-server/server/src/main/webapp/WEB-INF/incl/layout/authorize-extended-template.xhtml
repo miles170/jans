@@ -36,8 +36,8 @@
 						<h:outputText value="#{msgs['authorize.requestForPermission']}" />
 					</h3>
 					<h:panelGroup layout="block" class="border_rad"
-						rendered='#{!empty client.getLogoUri()}'>
-						<h:graphicImage url='#{client.getLogoUri()}' width="65px"
+						rendered='#{!empty client.getDisplayLocalizedString(client.getLogoUri())}'>
+						<h:graphicImage url='#{client.getDisplayLocalizedString(client.getLogoUri())}' width="65px"
 							height="65px" />
 					</h:panelGroup>
 
@@ -46,7 +46,7 @@
 							<h:outputFormat
 								value="#{msgs['authorize.requestingPermissionForScopes']}">
 								<f:param
-									value="#{empty client.getClientName()? client.getClientId() : client.getClientName()}" />
+									value="#{empty client.getDisplayLocalizedString(client.getClientName())? client.getClientId() : client.getDisplayLocalizedString(client.getClientName())}" />
 							</h:outputFormat>
 						</p>
 					</h3>
@@ -100,19 +100,19 @@
 						</p>
 					</h:panelGroup>
 					<h:panelGroup layout="block"
-						rendered='#{!empty client.getPolicyUri()}'>
+						rendered='#{!empty client.getDisplayLocalizedString(client.getPolicyUri())}'>
 						<p>
 							<h:outputText value="#{msgs['common.agreePolicy']}" />
-							<a target="_blank" href='#{client.getPolicyUri()}'> <h:outputText
+							<a target="_blank" href='#{client.getDisplayLocalizedString(client.getPolicyUri())}'> <h:outputText
 									value="#{msgs['common.privacyPolicy']}" />
 							</a>
 						</p>
 					</h:panelGroup>
 					<h:panelGroup layout="block"
-						rendered='#{!empty client.getTosUri()}'>
+						rendered='#{!empty client.getDisplayLocalizedString(client.getTosUri())}'>
 						<p>
 							<h:outputText value="#{msgs['common.pleaseReadTheTos']}" />
-							<a target="_blank" href='#{client.getTosUri()}'> <h:outputText
+							<a target="_blank" href='#{client.getDisplayLocalizedString(client.getTosUri())}'> <h:outputText
 									value="#{msgs['common.termsOfService']}" />
 							</a>
 						</p>
