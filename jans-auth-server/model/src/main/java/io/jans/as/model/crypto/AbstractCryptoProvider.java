@@ -13,11 +13,7 @@ import io.jans.as.model.crypto.signature.EllipticEdvardsCurve;
 import io.jans.as.model.crypto.signature.SignatureAlgorithm;
 import io.jans.as.model.exception.CryptoProviderException;
 import io.jans.as.model.exception.InvalidParameterException;
-import io.jans.as.model.jwk.Algorithm;
-import io.jans.as.model.jwk.JSONWebKey;
-import io.jans.as.model.jwk.JSONWebKeySet;
-import io.jans.as.model.jwk.JWKParameter;
-import io.jans.as.model.jwk.Use;
+import io.jans.as.model.jwk.*;
 import io.jans.as.model.util.Base64Util;
 import io.jans.eleven.model.JwksRequestParam;
 import io.jans.eleven.model.KeyRequestParam;
@@ -26,31 +22,20 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.math.BigInteger;
-import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.ECGenParameterSpec;
-import java.security.spec.ECParameterSpec;
-import java.security.spec.ECPoint;
-import java.security.spec.ECPublicKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
-import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.*;
+import java.security.spec.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
+
+import static io.jans.as.model.jwk.JWKParameter.JSON_WEB_KEY_SET;
 
 /**
  * @author Javier Rojas Blum
  * @author Sergey Manoylo
- * @version October 26, 2021
+ * @version July 20, 2022
  */
 public abstract class AbstractCryptoProvider {
 
@@ -96,26 +81,34 @@ public abstract class AbstractCryptoProvider {
         return null;
     }
 
-    public JwksRequestParam getJwksRequestParam(JSONObject jwkJsonObject) {
-        JwksRequestParam jwks = new JwksRequestParam();
-        jwks.setKeyRequestParams(new ArrayList<>());
-
+    public JwksRequestParam getJwksRequestParam(JSONObject jwkJsonObject, String keyId) {
+        JwksRequestParam jwksRequestParam = new JwksRequestParam();
+        jwksRequestParam.setKeyRequestParams(new ArrayList<>());
         KeyRequestParam key = new KeyRequestParam();
-        key.setAlg(jwkJsonObject.getString(JWKParameter.ALGORITHM));
-        key.setKid(jwkJsonObject.getString(JWKParameter.KEY_ID));
-        key.setUse(jwkJsonObject.getString(JWKParameter.KEY_USE));
-        key.setKty(jwkJsonObject.getString(JWKParameter.KEY_TYPE));
 
-        key.setN(jwkJsonObject.optString(JWKParameter.MODULUS));
-        key.setE(jwkJsonObject.optString(JWKParameter.EXPONENT));
+        if (jwkJsonObject.has(JSON_WEB_KEY_SET)) {
+            JSONWebKeySet jwks = JSONWebKeySet.fromJSONObject(jwkJsonObject);
+            JSONWebKey jsonWebKey = jwks.getKey(keyId);
 
-        key.setCrv(jwkJsonObject.optString(JWKParameter.CURVE));
-        key.setX(jwkJsonObject.optString(JWKParameter.X));
-        key.setY(jwkJsonObject.optString(JWKParameter.Y));
+            key.setAlg(jsonWebKey.getAlg().getParamName());
+            key.setKid(jsonWebKey.getKid());
+            key.setUse(jsonWebKey.getUse().getParamName());
+            key.setKty(jsonWebKey.getKty().toString());
 
-        jwks.getKeyRequestParams().add(key);
+            key.setN(jsonWebKey.getN());
+            key.setE(jsonWebKey.getE());
 
-        return jwks;
+            if (jsonWebKey.getCrv() != null) {
+                key.setCrv(jsonWebKey.getCrv().getName());
+                key.setX(jsonWebKey.getX());
+                key.setY(jsonWebKey.getY());
+            }
+
+            jwksRequestParam.getKeyRequestParams().add(key);
+            return jwksRequestParam;
+        }
+
+        return null;
     }
 
     public static JSONObject generateJwks(AbstractCryptoProvider cryptoProvider, AppConfiguration configuration) {

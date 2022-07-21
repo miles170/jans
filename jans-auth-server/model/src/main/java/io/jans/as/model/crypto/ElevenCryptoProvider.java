@@ -9,18 +9,7 @@ package io.jans.as.model.crypto;
 import io.jans.as.model.crypto.signature.SignatureAlgorithm;
 import io.jans.as.model.exception.CryptoProviderException;
 import io.jans.as.model.jwk.Algorithm;
-import io.jans.eleven.client.DeleteKeyClient;
-import io.jans.eleven.client.DeleteKeyRequest;
-import io.jans.eleven.client.DeleteKeyResponse;
-import io.jans.eleven.client.GenerateKeyClient;
-import io.jans.eleven.client.GenerateKeyRequest;
-import io.jans.eleven.client.GenerateKeyResponse;
-import io.jans.eleven.client.SignClient;
-import io.jans.eleven.client.SignRequest;
-import io.jans.eleven.client.SignResponse;
-import io.jans.eleven.client.VerifySignatureClient;
-import io.jans.eleven.client.VerifySignatureRequest;
-import io.jans.eleven.client.VerifySignatureResponse;
+import io.jans.eleven.client.*;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 
@@ -29,7 +18,7 @@ import java.security.PublicKey;
 
 /**
  * @author Javier Rojas Blum
- * @version February 12, 2019
+ * @version July 20, 2022
  */
 public class ElevenCryptoProvider extends AbstractCryptoProvider {
 
@@ -116,7 +105,7 @@ public class ElevenCryptoProvider extends AbstractCryptoProvider {
         request.getVerifySignatureRequestParam().setSignatureAlgorithm(signatureAlgorithm.getName());
         request.setAccessToken(accessToken);
         if (jwks != null) {
-            request.getVerifySignatureRequestParam().setJwksRequestParam(getJwksRequestParam(jwks));
+            request.getVerifySignatureRequestParam().setJwksRequestParam(getJwksRequestParam(jwks, keyId));
         }
 
         VerifySignatureClient client = new VerifySignatureClient(verifySignatureEndpoint);
