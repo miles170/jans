@@ -23,7 +23,7 @@ import static org.testng.Assert.*;
 
 /**
  * @author Javier Rojas Blum
- * @version June 16, 2022
+ * @version July 20, 2022
  */
 public class PKCS11RestServiceTest {
 
@@ -34,6 +34,9 @@ public class PKCS11RestServiceTest {
     private String es256Alias;
     private String es384Alias;
     private String es512Alias;
+    private String ps256Alias;
+    private String ps384Alias;
+    private String ps512Alias;
     private String noneSignature;
     private String hs256Signature;
     private String hs384Signature;
@@ -385,6 +388,31 @@ public class PKCS11RestServiceTest {
             assertEquals(response.getStatus(), HttpStatus.SC_OK);
             assertNotNull(response.getKeyId());
             es512Alias = response.getKeyId();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Parameters({"generateKeyEndpoint", "testModeToken"})
+    @Test
+    public void testGenerateKeyPS256(final String generateKeyEndpoint, final String testModeToken) {
+        try {
+            showTitle("testGenerateKeyPS256");
+
+            GenerateKeyRequest request = new GenerateKeyRequest();
+            request.setAccessToken(testModeToken);
+            request.setSignatureAlgorithm(SignatureAlgorithm.PS256);
+            request.setExpirationTime(expirationTime);
+
+            GenerateKeyClient client = new GenerateKeyClient(generateKeyEndpoint);
+            client.setRequest(request);
+
+            GenerateKeyResponse response = client.exec();
+
+            showClient(client);
+            assertEquals(response.getStatus(), HttpStatus.SC_OK);
+            assertNotNull(response.getKeyId());
+            ps256Alias = response.getKeyId();
         } catch (Exception e) {
             fail(e.getMessage());
         }

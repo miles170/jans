@@ -8,18 +8,25 @@ package io.jans.eleven.model;
 
 /**
  * @author Javier Rojas Blum
- * @version May 4, 2016
+ * @version July 20, 2022
  */
 public interface SignatureAlgorithm {
 
-    public static final String NONE = "none";
-    public static final String HS256 = "HS256";
-    public static final String HS384 = "HS384";
-    public static final String HS512 = "HS512";
-    public static final String RS256 = "RS256";
-    public static final String RS384 = "RS384";
-    public static final String RS512 = "RS512";
-    public static final String ES256 = "ES256";
-    public static final String ES384 = "ES384";
-    public static final String ES512 = "ES512";
+    String NONE = "none";
+
+    String HS256 = "HS256";
+    String HS384 = "HS384";
+    String HS512 = "HS512";
+
+    String RS256 = "RS256";
+    String RS384 = "RS384";
+    String RS512 = "RS512";
+
+    String ES256 = "ES256";
+    String ES384 = "ES384";
+    String ES512 = "ES512";
+
+    String PS256 = "PS256";
+    String PS384 = "PS384";
+    String PS512 = "PS512";
 }
