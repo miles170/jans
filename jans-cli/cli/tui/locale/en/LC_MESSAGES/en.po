@@ -1,0 +1,188 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2022-07-21 22:08+0200\n"
+"PO-Revision-Date: 2022-07-21 22:31+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 3.1.1\n"
+
+#: jans_cli.py:14
+msgid "Name of the user suitable for display to end-users"
+msgstr "Name of the user suitable for display to end-users"
+
+#: jans_cli.py:14 jans_cli.py:74
+msgid "displayName"
+msgstr "displayName"
+
+#: jans_cli.py:15
+msgid ""
+"The client secret. The client MAY omit the parameter if the client secret is "
+"an empty string"
+msgstr ""
+"The client secret. The client MAY omit the parameter if the client secret is "
+"an empty string"
+
+#: jans_cli.py:15 jans_cli.py:75
+msgid "clientSecret"
+msgstr "clientSecret"
+
+#: jans_cli.py:16
+msgid ""
+"Redirection URI values used by the Client. One of these registered "
+"Redirection URI values must exactly match the redirect_uri parameter value "
+"used in each Authorization Request"
+msgstr ""
+"Redirection URI values used by the Client. One of these registered "
+"Redirection URI values must exactly match the redirect_uri parameter value "
+"used in each Authorization Request"
+
+#: jans_cli.py:16 jans_cli.py:76
+msgid "redirectUris"
+msgstr "redirectUris"
+
+#: jans_cli.py:17
+msgid ""
+"A list of the OAuth 2.0 response_type values that the Client is declaring "
+"that it will restrict itself to using. If omitted, the default is that the "
+"Client will use only the code Response Type. Allowed values are code, token, "
+"id_token"
+msgstr ""
+"A list of the OAuth 2.0 response_type values that the Client is declaring "
+"that it will restrict itself to using. If omitted, the default is that the "
+"Client will use only the code Response Type. Allowed values are code, token, "
+"id_token"
+
+#: jans_cli.py:17 jans_cli.py:79
+msgid "responseTypes"
+msgstr "responseTypes"
+
+#: jans_cli.py:18
+msgid "Raido Helper"
+msgstr "Raido Helper"
+
+#: jans_cli.py:18
+msgid "radioName"
+msgstr "radioName"
+
+#: jans_cli.py:19
+msgid "save"
+msgstr "save"
+
+#: jans_cli.py:19 jans_cli.py:83
+msgid "ok"
+msgstr "ok"
+
+#: jans_cli.py:24
+msgid "CLI Frame"
+msgstr "CLI Frame"
+
+#: jans_cli.py:42
+msgid "Help"
+msgstr "Help"
+
+#: jans_cli.py:59
+msgid "Select Many"
+msgstr "Select Many"
+
+#: jans_cli.py:60
+msgid "responseTypes:"
+msgstr "responseTypes:"
+
+#: jans_cli.py:65
+msgid "Select One"
+msgstr "Select One"
+
+#: jans_cli.py:66
+msgid "radioName:"
+msgstr "radioName:"
+
+#: jans_cli.py:72
+msgid "OpenID Client"
+msgstr "OpenID Client"
+
+#: jans_cli.py:74
+msgid "Display Name:"
+msgstr "Display Name:"
+
+#: jans_cli.py:75
+msgid "Client Secret:"
+msgstr "Client Secret:"
+
+#: jans_cli.py:76
+msgid "Redirect Uris:"
+msgstr "Redirect Uris:"
+
+#: jans_cli.py:79
+msgid "code"
+msgstr "code"
+
+#: jans_cli.py:79
+msgid "id_token"
+msgstr "id_token"
+
+#: jans_cli.py:79
+msgid "token"
+msgstr "token"
+
+#: jans_cli.py:80
+msgid "Option 1"
+msgstr "Option 1"
+
+#: jans_cli.py:80
+msgid "Option 2"
+msgstr "Option 2"
+
+#: jans_cli.py:80
+msgid "Option 3"
+msgstr "Option 3"
+
+#: jans_cli.py:80
+msgid "radio"
+msgstr "radio"
+
+#: jans_cli.py:83
+msgid "OK"
+msgstr "OK"
+
+#: jans_cli.py:84
+msgid "Next"
+msgstr "Next"
+
+#: jans_cli.py:84
+msgid "next"
+msgstr "next"
+
+#: jans_cli.py:92
+msgid "Main"
+msgstr "Main"
+
+#: jans_cli.py:95 jans_cli.py:107
+msgid "Test"
+msgstr "Test"
+
+#: jans_cli.py:100
+msgid "Test Form"
+msgstr "Test Form"
+
+#: jans_cli.py:101
+msgid "Test Name :"
+msgstr "Test Name :"
+
+#: jans_cli.py:101
+msgid "testName"
+msgstr "testName"
+
+#: jans_cli.py:106
+msgid "OpenIDClientForm"
+msgstr "OpenIDClientForm"
