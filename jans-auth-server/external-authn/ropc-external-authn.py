@@ -12,6 +12,11 @@ from java.lang import String
 from java.util import Date, HashMap
 from io.jans.service.cache import CacheProvider
 
+from io.jans.as.server.service import RequestParameterService
+from io.jans.as.server.service.net import HttpService
+from jakarta.faces.context import FacesContext
+from io.jans.jsf2.service import FacesService
+
 class ResourceOwnerPasswordCredentials(ResourceOwnerPasswordCredentialsType):
     def __init__(self, currentTimeMillis):
         self.currentTimeMillis = currentTimeMillis
@@ -32,16 +37,19 @@ class ResourceOwnerPasswordCredentials(ResourceOwnerPasswordCredentialsType):
     def authenticate(self, context):
         print "ROPC External Authn. Authenticate"
 
-        # Retrieve jansKey from cache
+        # Retrieve jansKey from request parameters
         jansKey = context.getHttpRequest().getParameter("jansKey")
         if (jansKey == None or StringHelper.isEmpty(jansKey)):
-            print "ROPC External Authn. Authenticate. jansKey is empty"
+            print "ROPC External Authn. Authenticate. jansKey not found or empty"
             return False
+        print "ROPC External Authn. Authenticate. jansKey '%s' found in request" % jansKey
+
         cacheProvider = CdiUtil.bean(CacheProvider)
         jsonValues = cacheProvider.get(jansKey)
-        if jsonValues == None:
-            print "ROPC External Authn. Authenticate. Could not find jansKey in cache"
+        if (jsonValues == None):
+            print "ROPC External Authn. Authenticate. Could not find jsonValues in cache"
             return False
+        print "ROPC External Authn. Authenticate. jsonValues found in cache"
 
         # Do generic authentication
         authenticationService = CdiUtil.bean(AuthenticationService)
@@ -53,11 +61,9 @@ class ResourceOwnerPasswordCredentials(ResourceOwnerPasswordCredentialsType):
             print "ROPC External Authn. Authenticate. Could not authenticate user '%s' " % username
             return False
 
-        print "ROPC External Authn. Authenticate. JANS values: '%s'" % (jsonValues)
-
         context.setUser(authenticationService.getAuthenticatedUser())
         print "ROPC External Authn. Authenticate. User '%s' authenticated successfully" % username
-        
+
         # Get cusom parameters from request
         customParam1Value = context.getHttpRequest().getParameter("custom1")
         customParam2Value = context.getHttpRequest().getParameter("custom2")
@@ -73,13 +79,12 @@ class ResourceOwnerPasswordCredentials(ResourceOwnerPasswordCredentialsType):
         authenticationService.configureEventUser(session)
         print "ROPC External Authn. Authenticate. User '%s'. Created authenticated session: '%s'" % (username, customParameters)
 
-        # Set session id cache
-        jsonValues["status"] = "OK"
-        # jsonValues["sessionId"] = str(session.getId())
-        jsonValues["sessionDn"] = str(session.getDn())
-        cacheProvider.put(300, jansKey, jsonValues)
-        print "ROPC External Authn. Authenticate. Stored sessionDn: '%s' and status: '%s' in cache" % (jsonValues.get("sessionDn"), jsonValues.get("status"))
-        
+        callbackUrl = self.createCallbackUrl(context, session, jsonValues)
+        if (callbackUrl != None and StringHelper.isNotEmpty(callbackUrl)):
+            jsonValues["callbackUrl"] = str(callbackUrl)
+            cacheProvider.put(300, jansKey, jsonValues)
+            print "ROPC External Authn. Authenticate. CallbackUrl stored in cache: '%s'" % callbackUrl
+
         return True
 
     def createNewAuthenticatedSession(self, context, customParameters={}):
@@ -102,33 +107,39 @@ class ResourceOwnerPasswordCredentials(ResourceOwnerPasswordCredentialsType):
         # Generate authenticated session
         sessionId = sessionIdService.generateAuthenticatedSessionId(context.getHttpRequest(), user.getDn(), sessionAttributes)
 
-        print "ROPC External Authn. Generated session id. DN: '%s'" % sessionId.getDn()
+        print "ROPC External Authn. Generated sessionId. DN: '%s'" % sessionId.getDn()
 
         return sessionId
-    
-    # def createCallBackRedirect(self, context, sessionId, jsonValues):
-        
-    #     # Retrieve authorizeEndpoint from appConfiguration
-    #     authorizeEndpoint = context.getAppConfiguration().getAuthorizationEndpoint()
-    #     if authorizeEndpoint == None:
-    #         print "ROPC External Authn. CreateCallBackRedirect Could not find authorizeEndpoint in app configuration"
-    #         return ""
-    #     print "ROPC External Authn. CreateCallBackRedirect authorizeEndpoint '%s' found in app configuration" % authorizeEndpoint
 
-    #     clientId = CdiUtil.bean(Identity).getSessionClient().getClient().getClientId()
-    #     if (clientId == None or StringHelper.isEmpty(clientId)):
-    #         print "ROPC External Authn. CreateCallBackRedirect Could not find clientId in session"
-    #         return ""
-    #     print "ROPC External Authn. CreateCallBackRedirect clientId '%s' found in session" % clientId
+    def createCallbackUrl(self, context, sessionId={}, jsonValues={}):
+        print "ROPC External Authn. CreateCallbackUrl context: '%s'" % context
 
-    #     # Retrieve redirectUri from cache using jansKey
-    #     jsonValRedirectUri = jsonValues.get("redirectUri")
-    #     if (jsonValRedirectUri == None or StringHelper.isEmpty(jsonValRedirectUri)):
-    #         print "ROPC External Authn. CreateCallBackRedirect Could not find redirectUri in cache or is empty"
-    #         return ""
-    #     print "ROPC External Authn. CreateCallBackRedirect '%s' found in cache" % jsonValRedirectUri
+        # Retrieve redirectUri from cache using jansKey
+        jsonValRedirectUri = jsonValues.get("redirectUri")
+        if (jsonValRedirectUri == None):
+            print "ROPC External Authn. CreateCallbackUrl. redirectUri not found in cache"
+            return ""
+        print "ROPC External Authn. CreateCallbackUrl. redirectUri found '%s' in cache" % jsonValRedirectUri
 
-    #     callbackUri = '%s?response_type=code&client_id=%s&redirect_uri=%s&session_id=%s' % (authorizeEndpoint, clientId, jsonValRedirectUri, sessionId.getId())
-    #     print "ROPC External Authn. CreateCallBackRedirect callbackUri '%s'" % callbackUri
+        # Retrieve clientId from context
+        client = context.getExecutionContext().getClient()
+        if (client == None):
+            print "ROPC External Authn. CreateCallbackUrl. Client not found in context"
+            return ""
+        print "ROPC External Authn. CreateCallbackUrl. Client found '%s' in context" % client.getClientId()
 
-    #     return callbackUri
+        parameterMap = HashMap()
+        parameterMap.put("response_type", "code")
+        parameterMap.put("client_id", client.getClientId())
+        parameterMap.put("redirect_uri", jsonValRedirectUri)
+        parameterMap.put("session_id", sessionId.getId())
+
+        requestParameterService = CdiUtil.bean(RequestParameterService)
+        parameterString = requestParameterService.parametersAsString(parameterMap)
+
+        authorizeEndpoint = context.getExecutionContext().getAppConfiguration().getAuthorizationEndpoint()
+        jansUrl = '%s?%s' % (authorizeEndpoint, parameterString)
+
+        print "ROPC External Authn. CreateCallbackUrl. jansUrl '%s'" % jansUrl
+
+        return jansUrl
