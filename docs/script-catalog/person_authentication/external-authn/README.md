@@ -1,6 +1,45 @@
 # External Authn
 
 ## Design
+```
+Title External Authn
+
+actor Person
+participant Browser
+participant Website1
+participant Website2
+participant IDP
+database cache
+
+Person->Browser: 1. Navigate to website1
+Browser->Website1:
+Website1->Browser: 2. redirect
+group Person Authn Script : Step One
+Browser->IDP: 3. [GET] /oxauth/authorize?client_id=__&redirect_uri=__&state=__\n&nonce=__&prompt=none&scope=__\n&response_mode=__&response_type=__
+IDP->IDP: 4. generate jans_key
+IDP<->cache: cache in session context\njans_key: {request params}
+IDP->Browser: 5. redirect /internal.idp?________\nSet Pre-Authn Session Cookie
+Browser->Website2: 
+end
+Website2->Browser: 6. Display login page
+Person->Browser: 7. Enter Username / PW
+Browser->Website2: 8. (creds)
+group ROPW script
+Website2->IDP: 9. /oxauth/token?uid=__&pw="__&browser_ip=__&jans_key=__
+IDP->IDP: 10. update cache:\n "jans_key": "auth_success"
+IDP->IDP: 11. retreive user claims
+IDP->Website2:12. {\n        "callback_url":"https://op-host/oxauth**/authorize?session_id={session_id}&redirect_uri={original_redirect}&...**",\n        "userinfo": {"uid": "__",...}\n       }
+end
+group Person Authn Script Step 2
+Website2->Browser: 13. write website 2 cookie;\n302 Location IDP callback_url
+Browser->IDP: 14. callback_url_from_step_12
+IDP->IDP: 15. get session context
+IDP->cache:16. delete jans_key\n lookup original redirect_uri
+IDP->Browser: 17. write IDP session cookie\nand 302: Location original redirect_uri
+end
+Browser->Website1:
+Website1->Website1: optional: 18 Validate id_token\n (claims optional)
+```
 ![](external-authn-diagram.png)
 
 Follow the instructions below to set up:
