@@ -65,7 +65,7 @@ import jakarta.interceptor.InvocationContext;
 public class RequestReaderInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestReaderInterceptor.class);
-    private static final String[] IGNORE_METHODS = { "@jakarta.ws.rs.GET()", "@jakarta.ws.rs.DELETE()", "@jakarta.ws.rs.OPTIONS()", "@jakarta.ws.rs.PATCH()" };
+    private static final String[] IGNORE_METHODS = { "@jakarta.ws.rs.DELETE()", "@jakarta.ws.rs.OPTIONS()", "@jakarta.ws.rs.PATCH()" };
 
     @Inject
     private Logger log;
@@ -177,15 +177,9 @@ public class RequestReaderInterceptor {
                         clazz.isPrimitive());
 
                 Object obj = ctxParameters[i];
-                String jsonStr = null;
-                if (!clazz.isPrimitive()) {
-
-                    jsonStr = getJsonString(obj);
-                    logger.error("RequestReaderInterceptor final - obj -  jsonStr:{} ", jsonStr);
-
-                    //validate Json
-                    //validateJson(jsonStr);
-                    
+               
+                if (!clazz.isPrimitive()) {                 
+                                      
                     performDataConversion(castObject(obj, clazz));
 
                     logger.error("RequestReaderInterceptor final - obj -  obj:{} ", obj);
@@ -206,53 +200,14 @@ public class RequestReaderInterceptor {
         return obj;
     }
 
-    private <T> String getJsonString(T obj) {
-        String jsonStr = null;
-        try {
-            jsonStr = dataProcessingUtil.getJsonString(obj);
-            logger.error("RequestReaderInterceptor -  Object string -  jsonStr:{}", jsonStr);
-        } catch (Exception ex) {
-            logger.error("Exception while data conversion ", ex.getMessage());
-        }
-        return jsonStr;
-    }
+   
 
     private <T> T castObject(Object obj, Class<T> clazz) {
         T t = (T) clazz.cast(obj);
         return t;
     }
     
-    private void validateJson(String jsonStr) throws JsonProcessingException {
-        logger.error("\n\n\n validateJson() -  jsonStr:{} ", jsonStr);
-        JSONObject jsonObj = new JSONObject(jsonStr);
-        logger.error("\n\n\n validateJson() -  jsonObj:{} ", jsonObj);
-        
-        Map<String, Object> jsonObjMap = jsonObj.toMap();
-        logger.error("\n\n\n validateJson() -  jsonObjMap:{} ", jsonObjMap);
-        
-        for (Map.Entry<String, Object> entry : jsonObjMap.entrySet()) {
-            logger.error("validateJson() - entry.getKey():{}, entry.getValue():{}", entry.getKey(), entry.getValue());
-            
-            if ( entry.getValue() instanceof Date) {
-                logger.error("validateJson() - entry.getKey():{} is instanceof Date entry.getValue():{}", entry.getKey(), entry.getValue());
-                
-                //encodeDate
-                logger.error("\n\n\n validateJson() - Encoding date \n\n\n\n");
-                jsonObjMap.put(entry.getKey(), "31-12-2080");      
-            }
-            
-            if (entry.getKey().equalsIgnoreCase("createdAt")) {
-                logger.error("validateJson() - entry.getKey():{} is instanceof Date entry.getValue():{}", entry.getKey(), entry.getValue());
-                
-                //encodeDate
-                logger.error("\n\n\n validateJson() - Encoding date \n\n\n\n");
-                //logger.error("\n\n\n  decodeTime(null, (String) entry.getValue():{} ",  decodeTime(null, (Long) entry.getValue()));
-                //jsonObjMap.put(entry.getKey(), "31-12-2080");      
-            }
-        }
-        
-        
-    }
+ 
     
     public Date decodeTime(String baseDn, Long strDate) {
         log.error("Decode date value - baseDn:{}, strDate:{} ", baseDn, strDate);
