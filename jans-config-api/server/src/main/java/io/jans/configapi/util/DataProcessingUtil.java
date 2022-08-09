@@ -1,10 +1,8 @@
 package io.jans.configapi.util;
 
-import io.jans.as.model.json.JsonApplier;
+
 import io.jans.configapi.configuration.ConfigurationFactory;
-import io.jans.configapi.core.util.DataUtil;
-import io.jans.configapi.core.util.Jackson;
-import io.jans.orm.exception.MappingException;
+import io.jans.orm.PersistenceEntryManager;
 import io.jans.orm.reflect.property.Getter;
 import io.jans.orm.reflect.property.Setter;
 import io.jans.orm.reflect.util.ReflectHelper;
@@ -33,14 +31,18 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import io.jans.orm.PersistenceEntryManager;
+
 @ApplicationScoped
 public class DataProcessingUtil {
 
     @Inject
     Logger log;
 	
+
     @Inject
-    ConfigurationFactory configurationFactory;
+    PersistenceEntryManager persistenceEntryManager;
+
     
    
     public <T> T encodeObjDataType(T obj) throws ClassNotFoundException, IllegalAccessException,

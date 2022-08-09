@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 
 import static io.jans.as.model.util.Util.escapeLog;
 
+import io.jans.configapi.core.interceptor.RequestInterceptor;
+
 @Path(Constants.CONFIG_USER)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
