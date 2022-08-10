@@ -37,6 +37,7 @@ import io.jans.configapi.core.interceptor.RequestInterceptor;
 @Path(Constants.CONFIG_USER)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RequestInterceptor
 @ApplicationScoped
 public class UserResource extends BaseResource {
 

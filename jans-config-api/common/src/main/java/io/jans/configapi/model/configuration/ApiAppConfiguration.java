@@ -2,6 +2,7 @@ package io.jans.configapi.model.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.jans.as.model.configuration.Configuration;
+import io.jans.configapi.core.util.DataTypeConversionMapping;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,10 +33,11 @@ public class ApiAppConfiguration implements Configuration {
     private String externalLoggerConfiguration;
     private Boolean disableJdkLogger = true;
     private int maxCount;
-    
+
     private List<String> userExclusionAttributes;
     private List<String> userMandatoryAttributes;
     private AgamaConfiguration agamaConfiguration;
+    private DataTypeConversionMapping dataTypeConversionMap;
 
     public boolean isConfigOauthEnabled() {
         return configOauthEnabled;
@@ -222,7 +224,7 @@ public class ApiAppConfiguration implements Configuration {
     public void setUserMandatoryAttributes(List<String> userMandatoryAttributes) {
         this.userMandatoryAttributes = userMandatoryAttributes;
     }
-        
+
     public AgamaConfiguration getAgamaConfiguration() {
         return agamaConfiguration;
     }
@@ -231,21 +233,28 @@ public class ApiAppConfiguration implements Configuration {
         this.agamaConfiguration = agamaConfiguration;
     }
 
+    public DataTypeConversionMapping getDataTypeConversionMap() {
+        return dataTypeConversionMap;
+    }
+
+    public void setDataTypeConversionMap(DataTypeConversionMapping dataTypeConversionMap) {
+        this.dataTypeConversionMap = dataTypeConversionMap;
+    }
+
     @Override
     public String toString() {
-        return "ApiAppConfiguration [" + " apiApprovedIssuer=" + apiApprovedIssuer + ", apiProtectionType="
-                + apiProtectionType + ", apiClientId=" + apiClientId + ", apiClientPassword=" + apiClientPassword
-                + ", endpointInjectionEnabled=" + endpointInjectionEnabled + ", authIssuerUrl=" + authIssuerUrl
-                + ", authOpenidConfigurationUrl=" + authOpenidConfigurationUrl + ", authOpenidIntrospectionUrl="
-                + authOpenidIntrospectionUrl + ", authOpenidTokenUrl=" + authOpenidTokenUrl + ", authOpenidRevokeUrl="
-                + authOpenidRevokeUrl + ", smallryeHealthRootPath=" + smallryeHealthRootPath
-                + ", corsConfigurationFilters=" + corsConfigurationFilters + ", exclusiveAuthScopes="
-                + exclusiveAuthScopes + ", loggingLevel=" + loggingLevel + " , loggingLayout=" + loggingLayout
-                + " , externalLoggerConfiguration=" + externalLoggerConfiguration + " , disableJdkLogger="
-                + disableJdkLogger + " , maxCount =" + maxCount
-                + " , userExclusionAttributes="+ userExclusionAttributes
-                + " , userMandatoryAttributes="+ userMandatoryAttributes
-                + " , agamaConfiguration="+ agamaConfiguration
+        return "ApiAppConfiguration [configOauthEnabled=" + configOauthEnabled + ", apiApprovedIssuer="
+                + apiApprovedIssuer + ", apiProtectionType=" + apiProtectionType + ", apiClientId=" + apiClientId
+                + ", apiClientPassword=" + apiClientPassword + ", endpointInjectionEnabled=" + endpointInjectionEnabled
+                + ", authIssuerUrl=" + authIssuerUrl + ", authOpenidConfigurationUrl=" + authOpenidConfigurationUrl
+                + ", authOpenidIntrospectionUrl=" + authOpenidIntrospectionUrl + ", authOpenidTokenUrl="
+                + authOpenidTokenUrl + ", authOpenidRevokeUrl=" + authOpenidRevokeUrl + ", smallryeHealthRootPath="
+                + smallryeHealthRootPath + ", exclusiveAuthScopes=" + exclusiveAuthScopes
+                + ", corsConfigurationFilters=" + corsConfigurationFilters + ", loggingLevel=" + loggingLevel
+                + ", loggingLayout=" + loggingLayout + ", externalLoggerConfiguration=" + externalLoggerConfiguration
+                + ", disableJdkLogger=" + disableJdkLogger + ", maxCount=" + maxCount + ", userExclusionAttributes="
+                + userExclusionAttributes + ", userMandatoryAttributes=" + userMandatoryAttributes
+                + ", agamaConfiguration=" + agamaConfiguration + ", dataTypeConversionMap=" + dataTypeConversionMap
                 + "]";
     }
 

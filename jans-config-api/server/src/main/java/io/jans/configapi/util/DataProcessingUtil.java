@@ -1,6 +1,8 @@
 package io.jans.configapi.util;
 
 
+import io.jans.agama.model.Flow;
+import io.jans.configapi.core.util.DataTypeConversionMapping;
 import io.jans.configapi.configuration.ConfigurationFactory;
 import io.jans.orm.PersistenceEntryManager;
 import io.jans.orm.reflect.property.Getter;
@@ -8,6 +10,9 @@ import io.jans.orm.reflect.property.Setter;
 import io.jans.orm.reflect.util.ReflectHelper;
 import io.jans.util.StringHelper;
 import io.jans.util.security.StringEncrypter;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,6 +27,7 @@ import java.util.HashMap;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -31,7 +37,8 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import io.jans.orm.PersistenceEntryManager;
+
+import io.jans.configapi.core.util.DataUtil;
 
 @ApplicationScoped
 public class DataProcessingUtil {
@@ -41,7 +48,11 @@ public class DataProcessingUtil {
 	
 
     @Inject
-    PersistenceEntryManager persistenceEntryManager;
+    ConfigurationFactory configurationFactory;
+    
+    public DataTypeConversionMapping getDataTypeConversionMapping() {
+        return this.configurationFactory.getApiAppConfiguration().getDataTypeConversionMap();
+    }
 
     
    
@@ -52,7 +63,7 @@ public class DataProcessingUtil {
             return (T) obj;
         }
 
-        //obj = DataUtil.encodeObjDataType(obj, getDataTypeConversionMapping());
+        obj = DataUtil.encodeObjDataType(obj, getDataTypeConversionMapping());
         
         log.error("Data after encoding - obj:{}", obj);
 
@@ -61,4 +72,5 @@ public class DataProcessingUtil {
 
      
 
+   
 }
