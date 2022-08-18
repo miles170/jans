@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import io.jans.configapi.core.interceptor.RequestInterceptor;
 import io.jans.orm.PersistenceEntryManager;
+import io.jans.orm.reflect.property.PropertyAnnotation;
 import io.jans.configapi.core.rest.ProtectedApi;
 import io.jans.configapi.core.util.DataUtil;
 import io.jans.configapi.security.service.AuthorizationService;
@@ -50,6 +51,8 @@ import java.util.stream.Stream;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -59,6 +62,13 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 
+import io.jans.orm.annotation.AttributeName;
+import io.jans.orm.annotation.AttributesList;
+import io.jans.orm.annotation.JsonObject;
+import io.jans.orm.annotation.LanguageTag;
+import io.jans.orm.model.AttributeData;
+import io.jans.orm.reflect.property.PropertyAnnotation;
+
 @Interceptor
 @RequestInterceptor
 @Priority(Interceptor.Priority.APPLICATION)
@@ -66,7 +76,8 @@ public class RequestReaderInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestReaderInterceptor.class);
     private static final String[] IGNORE_METHODS = { "@jakarta.ws.rs.GET()", "@jakarta.ws.rs.DELETE()", "@jakarta.ws.rs.OPTIONS()", "@jakarta.ws.rs.PATCH()" };
-
+    private static final Class<?>[] LDAP_ENTRY_PROPERTY_ANNOTATIONS = { AttributeName.class, AttributesList.class,
+            JsonObject.class, LanguageTag.class };
     @Inject
     private Logger log;
 
@@ -168,7 +179,7 @@ public class RequestReaderInterceptor {
         logger.error(
                 "RequestReaderInterceptor - Processing  Data -  paramCount:{} , parameters:{}, clazzArray:{} , dataProcessingUtil:{}",
                 paramCount, parameters, clazzArray, dataProcessingUtil);
-
+    
         if (clazzArray != null && clazzArray.length > 0) {
             for (int i = 0; i < clazzArray.length; i++) {
                 Class<?> clazz = clazzArray[i];
@@ -179,7 +190,7 @@ public class RequestReaderInterceptor {
                 Object obj = ctxParameters[i];
                
                 if (!clazz.isPrimitive()) {                 
-                                      
+                    getAttributesListForPersist(clazz, getEntryPropertyAnnotations(clazz));           
                     performDataConversion(castObject(obj, clazz));
 
                     logger.error("RequestReaderInterceptor final - obj -  obj:{} ", obj);
@@ -212,6 +223,20 @@ public class RequestReaderInterceptor {
     public Date decodeTime(String baseDn, Long strDate) {
         log.error("Decode date value - baseDn:{}, strDate:{} ", baseDn, strDate);
         return persistenceEntryManager.decodeTime(baseDn, strDate.toString());
+    }
+    
+    
+    private <T> List<PropertyAnnotation> getEntryPropertyAnnotations(Class<T> entryClass) {
+        final List<PropertyAnnotation> annotations = persistenceEntryManager.getEntryPropertyAnnotations(entryClass, "property_", LDAP_ENTRY_PROPERTY_ANNOTATIONS);
+        log.error("RequestReaderInterceptor::getEntryPropertyAnnotations() - annotations:{} ", annotations);
+        return annotations;
+    }
+    
+    private <T> List<AttributeData> getAttributesListForPersist(Class<T> entryClass,
+            List<PropertyAnnotation> propertiesAnnotations) {
+        final List<AttributeData> attributeData = persistenceEntryManager.getAttributesListForPersist(entryClass, propertiesAnnotations);
+        log.error("RequestReaderInterceptor::getAttributesListForPersist() - attributeData:{} ", attributeData);
+        return attributeData;
     }
 
 }
