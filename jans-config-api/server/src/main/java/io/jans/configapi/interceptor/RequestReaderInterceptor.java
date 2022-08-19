@@ -124,7 +124,7 @@ public class RequestReaderInterceptor {
             
             
             boolean contains = isIgnoreMethod(context);
-            logger.error("====== context.getMethod():{} isIgnoreMethod:{}", contains);
+            logger.error("====== isIgnoreMethod:{}", contains);
             
             if (contains) {
                 logger.error("====== Exiting RequestReaderInterceptor as no action required for {} method. ======",
@@ -190,7 +190,7 @@ public class RequestReaderInterceptor {
                 Object obj = ctxParameters[i];
                
                 if (!clazz.isPrimitive()) {                 
-                    getAttributesListForPersist(clazz, getEntryPropertyAnnotations(clazz));           
+                    getAttributesListForPersist(castObject(obj, clazz), getEntryPropertyAnnotations(castObject(obj, clazz)));           
                     performDataConversion(castObject(obj, clazz));
 
                     logger.error("RequestReaderInterceptor final - obj -  obj:{} ", obj);
@@ -226,15 +226,17 @@ public class RequestReaderInterceptor {
     }
     
     
-    private <T> List<PropertyAnnotation> getEntryPropertyAnnotations(Class<T> entryClass) {
-        final List<PropertyAnnotation> annotations = persistenceEntryManager.getEntryPropertyAnnotations(entryClass, "property_", LDAP_ENTRY_PROPERTY_ANNOTATIONS);
+    private <T> List<PropertyAnnotation> getEntryPropertyAnnotations(T obj) {
+        log.error("RequestReaderInterceptor::getEntryPropertyAnnotations() - obj:{}, obj.getClass():{} ", obj, obj.getClass());
+        final List<PropertyAnnotation> annotations = persistenceEntryManager.getEntryPropertyAnnotations(obj.getClass());
         log.error("RequestReaderInterceptor::getEntryPropertyAnnotations() - annotations:{} ", annotations);
         return annotations;
     }
     
-    private <T> List<AttributeData> getAttributesListForPersist(Class<T> entryClass,
+    private <T> List<AttributeData> getAttributesListForPersist(T obj,
             List<PropertyAnnotation> propertiesAnnotations) {
-        final List<AttributeData> attributeData = persistenceEntryManager.getAttributesListForPersist(entryClass, propertiesAnnotations);
+        log.error("RequestReaderInterceptor::getAttributesListForPersist() - obj:{}, obj.getClass():{} ", obj, obj.getClass());
+        final List<AttributeData> attributeData = persistenceEntryManager.getAttributesListForPersist(obj.getClass(), propertiesAnnotations);
         log.error("RequestReaderInterceptor::getAttributesListForPersist() - attributeData:{} ", attributeData);
         return attributeData;
     }
