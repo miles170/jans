@@ -95,16 +95,18 @@ public class DataProcessingUtil {
 
             // check if attribute is in exclusion map
             log.error(
-                    "obj.getClass().getName():{}, entry.getKey():{} dataTypeConversionMap.getExclusion():{}, isAttributeInExclusion:{}",
-                    obj.getClass().getName(), entry.getKey(), dataTypeConversionMap.getExclusion(),
-                    DataUtil.isAttributeInExclusion(obj.getClass().getName(), entry.getKey(),
-                            dataTypeConversionMap.getExclusion()));
-            if (DataUtil.isAttributeInExclusion(obj.getClass().getName(), entry.getKey(),
+                    "obj.getClass().getName():{}, entry.getKey():{}", obj.getClass().getName(), entry.getKey());
+            
+            if("List".contentEquals(entry.getValue())){
+                log.error("\n\n\n *********  It is a List ********* \n\n\n");
+            }
+   
+            /*if (DataUtil.isAttributeInExclusion(obj.getClass().getName(), entry.getKey(),
                     dataTypeConversionMap.getExclusion())) {
                 log.error("Breaking as the filed:{} is in exclusion list for obj:{}", obj.getClass().getName(),
                         entry.getKey());
                 break;
-            }
+            }*/
 
             // encode data
             encodeData(obj, entry, dataTypeConversionMap.getDataTypeConverterClassName(),
@@ -125,10 +127,14 @@ public class DataProcessingUtil {
                 || encoderMap.isEmpty()) {
             return obj;
         }
-
+        if("List".contentEquals(entryData.getValue())){
+            log.error("\n\n\n In encodeData *********  It is a List!!!! ********* \n\n\n");
+        }
      
         log.error("DataUtil.isKeyPresentInMap(entryData.getValue():{}, encoderMap:{}):{} ", entryData.getValue(), encoderMap,
                 DataUtil.isKeyPresentInMap(entryData.getValue(), encoderMap));
+        
+        
 
         if (DataUtil.isKeyPresentInMap(entryData.getValue(), encoderMap)) {
             Getter getterMethod = DataUtil.getGetterMethod(obj.getClass(), entryData.getKey());
