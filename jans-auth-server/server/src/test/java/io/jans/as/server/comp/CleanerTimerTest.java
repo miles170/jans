@@ -128,6 +128,7 @@ public class CleanerTimerTest extends BaseComponentTest {
         final Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MINUTE, -10);
         grantLdap.setExpirationDate(calendar.getTime());
+        grantLdap.setDeletable(true);
 
         getGrantService().merge(grantLdap);
 
@@ -164,6 +165,7 @@ public class CleanerTimerTest extends BaseComponentTest {
         final Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
         calendar.add(Calendar.MINUTE, -10);
         rpt.setExpirationDate(calendar.getTime());
+        rpt.setDeletable(true);
 
         getUmaRptService().merge(rpt);
 
@@ -205,6 +207,7 @@ public class CleanerTimerTest extends BaseComponentTest {
 
         calendar.add(Calendar.MINUTE, -10);
         resource.setExpirationDate(calendar.getTime());
+        resource.setDeletable(true);
 
         getUmaResourceService().updateResource(resource, true);
 
@@ -251,6 +254,7 @@ public class CleanerTimerTest extends BaseComponentTest {
         final Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MINUTE, -10);
         permission.setExpirationDate(calendar.getTime());
+        permission.setDeletable(true);
 
         getUmaPermissionService().merge(permission);
 
@@ -285,6 +289,7 @@ public class CleanerTimerTest extends BaseComponentTest {
         final Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MINUTE, -10);
         pct.setExpirationDate(calendar.getTime());
+        pct.setDeletable(true);
 
         getUmaPctService().merge(pct);
 
