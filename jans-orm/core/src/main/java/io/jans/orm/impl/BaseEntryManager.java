@@ -631,23 +631,28 @@ public abstract class BaseEntryManager<O extends PersistenceOperationService> im
 
 	protected <T> Map<String, PropertyAnnotation> getAttributesMap(T entry, List<PropertyAnnotation> propertiesAnnotations,
 			boolean isIgnoreAttributesList) {
+	    //LOG.error("\n\n\n BaseEntryManager:::getAttributesMap() - entry:{}, propertiesAnnotations:{}, isIgnoreAttributesList:{}",entry, propertiesAnnotations, isIgnoreAttributesList);
 		Map<String, PropertyAnnotation> attributes = new HashMap<String, PropertyAnnotation>();
 
 		for (PropertyAnnotation propertiesAnnotation : propertiesAnnotations) {
+		    //LOG.error("\n\n\n BaseEntryManager:::getAttributesMap() - propertiesAnnotation:{}",propertiesAnnotation);
 			String propertyName = propertiesAnnotation.getPropertyName();
 			Annotation ldapAttribute;
-
+			 //LOG.error("\n\n\n BaseEntryManager:::getAttributesMap() - propertyName:{}, isIgnoreAttributesList:{} ",propertyName,isIgnoreAttributesList);
 			if (!isIgnoreAttributesList) {
 				ldapAttribute = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
 						AttributesList.class);
+				//LOG.error("\n\n\n BaseEntryManager:::getAttributesMap() - ldapAttribute:{} ",ldapAttribute);
 				if (ldapAttribute != null) {
 					if (entry == null) {
 						return null;
 					} else {
 						List<AttributeData> attributesList = getAttributeDataListFromCustomAttributesList(entry,
 								(AttributesList) ldapAttribute, propertyName);
+						//LOG.error("\n\n\n BaseEntryManager:::getAttributesMap() - attributesList:{} ",attributesList);
 						for (AttributeData attributeData : attributesList) {
 							String ldapAttributeName = attributeData.getName();
+							//LOG.error("\n\n\n BaseEntryManager:::getAttributesMap() - ldapAttributeName:{} ",ldapAttributeName);
 							if (!attributes.containsKey(ldapAttributeName)) {
 								attributes.put(ldapAttributeName, propertiesAnnotation);
 							}
@@ -1570,28 +1575,36 @@ public abstract class BaseEntryManager<O extends PersistenceOperationService> im
 	//puja
 	public List<AttributeData> getAttributesListForPersist(Object entry,
 			List<PropertyAnnotation> propertiesAnnotations) {
+	    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - entry:{}, propertiesAnnotations():{} ",entry , propertiesAnnotations);
 		// Prepare list of properties to persist
 		List<AttributeData> attributes = new ArrayList<AttributeData>();
 		for (PropertyAnnotation propertiesAnnotation : propertiesAnnotations) {
+		    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - attributes:{} ",attributes);
 			String propertyName = propertiesAnnotation.getPropertyName();
+			//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - propertyName:{} ",propertyName);
 			Annotation ldapAttribute;
             Annotation languageTag;
 
 			// Process properties with AttributeName annotation
 			ldapAttribute = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
 					AttributeName.class);
+			//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - ldapAttribute:{} ",ldapAttribute);
             languageTag = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
                     LanguageTag.class);
+            //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - languageTag:{} ",languageTag);
 			if (ldapAttribute != null) {
                 if (languageTag != null) {
                     List<AttributeData> listAttributes = getAttributeDataFromLocalizedString(
                             entry, ldapAttribute, propertyName);
+                    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - listAttributes:{} ",listAttributes);
                     if (listAttributes != null) {
                         attributes.addAll(listAttributes);
                     }
                 } else {
+                    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - call getAttributeDataFromAttribute() ");
                     AttributeData attribute = getAttributeDataFromAttribute(entry, ldapAttribute, propertiesAnnotation,
                             propertyName);
+                    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - attribute:{} ",attribute);
                     if (attribute != null) {
                         attributes.add(attribute);
                     }
@@ -1603,9 +1616,11 @@ public abstract class BaseEntryManager<O extends PersistenceOperationService> im
 			// Process properties with @AttributesList annotation
 			ldapAttribute = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
 					AttributesList.class);
+			//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - ldapAttribute:{} ",ldapAttribute);
 			if (ldapAttribute != null) {
 				List<AttributeData> listAttributes = getAttributeDataListFromCustomAttributesList(entry, (AttributesList) ldapAttribute,
 						propertyName);
+				//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - listAttributes:{} ",listAttributes);
 				if (listAttributes != null) {
 					attributes.addAll(listAttributes);
 				}
@@ -1613,32 +1628,36 @@ public abstract class BaseEntryManager<O extends PersistenceOperationService> im
 				continue;
 			}
 		}
-
+		//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - final attributes:{} ",attributes);
 		return attributes;
 	}
 
 	private AttributeData getAttributeDataFromAttribute(Object entry, Annotation ldapAttribute,
 			PropertyAnnotation propertiesAnnotation, String propertyName) {
 		Class<?> entryClass = entry.getClass();
-
+		//LOG.error("\n\n BaseEntryManager:::getAttributeDataFromAttribute() - entry:{}, ldapAttribute:{}, propertiesAnnotation:{}, propertiesAnnotation:{}, propertyName:{} ",entry, ldapAttribute, propertiesAnnotation, propertyName);
 		String ldapAttributeName = ((AttributeName) ldapAttribute).name();
+		//LOG.error("\n\n BaseEntryManager:::getAttributeDataFromAttribute() - ldapAttributeName:{} ",ldapAttributeName);
 		if (StringHelper.isEmpty(ldapAttributeName)) {
 			ldapAttributeName = propertyName;
 		}
 
 		Getter getter = getGetter(entryClass, propertyName);
+		//LOG.error("\n\n BaseEntryManager:::getAttributeDataFromAttribute() - entryClass:{}, propertyName:{} ",entryClass,propertyName);
 		if (getter == null) {
 			throw new MappingException("Entry should has getter for property " + propertyName);
 		}
 
 		Class<?> parameterType = getSetterPropertyType(entryClass, propertyName);
+		//LOG.error("\n\n BaseEntryManager:::getAttributeDataFromAttribute() - parameterType:{} ",parameterType);
 		boolean multiValued = isMultiValued(parameterType);
-
+		//LOG.error("\n\n BaseEntryManager:::getAttributeDataFromAttribute() - multiValued:{} ",multiValued);
 		Annotation ldapJsonObject = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
 				JsonObject.class);
+		//LOG.error("\n\n BaseEntryManager:::getAttributeDataFromAttribute() - ldapJsonObject:{} ",ldapJsonObject);
 		boolean jsonObject = ldapJsonObject != null;
 		AttributeData attribute = getAttributeData(propertyName, ldapAttributeName, getter, entry, multiValued, jsonObject);
-
+		//LOG.error("\n\n BaseEntryManager:::getAttributeDataFromAttribute() - attribute:{} ",attribute);
 		return attribute;
 	}
 

@@ -190,7 +190,7 @@ public class RequestReaderInterceptor {
                 Object obj = ctxParameters[i];
                
                 if (!clazz.isPrimitive()) {                 
-                    getAttributesListForPersist(castObject(obj, clazz), getEntryPropertyAnnotations(castObject(obj, clazz)));           
+                    //getAttributesListForPersist(castObject(obj, clazz), getEntryPropertyAnnotations(castObject(obj, clazz)));           
                     performDataConversion(castObject(obj, clazz));
 
                     logger.error("RequestReaderInterceptor final - obj -  obj:{} ", obj);
