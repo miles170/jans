@@ -6,12 +6,20 @@
 
 package io.jans.as.server;
 
+import io.jans.as.model.config.Conf;
+import io.jans.as.model.config.Constants;
+import io.jans.as.model.jwk.JSONWebKey;
+import io.jans.as.server.model.config.ConfigurationFactory;
 import io.jans.as.server.util.TestUtil;
+import io.jans.orm.PersistenceEntryManager;
+import io.jans.service.cdi.util.CdiUtil;
+import org.json.JSONObject;
 import org.testng.Assert;
 
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -20,6 +28,8 @@ import java.util.Map.Entry;
  * @author Yuriy Movchan Date: 10.10.2011
  */
 public abstract class BaseTest extends ConfigurableTest {
+
+    private static HashMap<String, String> HM_WEB_KEYS = new HashMap<>();
 
     public static void showTitle(String title) {
         title = "TEST: " + title;
@@ -92,6 +102,28 @@ public abstract class BaseTest extends ConfigurableTest {
             return uriArquillianTestServer.getPath();
         }
         return null;
+    }
+
+    public static String getWebKeyId(String keyAlg) {
+        if (HM_WEB_KEYS.isEmpty()) {
+            readWebKeys();
+        }
+        return HM_WEB_KEYS.get(keyAlg);
+    }
+
+    public static void readWebKeys() {
+        ConfigurationFactory configurationFactory = CdiUtil.bean(ConfigurationFactory.class);
+        PersistenceEntryManager ldapEntryManager = CdiUtil.bean(PersistenceEntryManager.class);
+        String dn = configurationFactory.getBaseConfiguration().getString(Constants.SERVER_KEY_OF_CONFIGURATION_ENTRY);
+        Conf conf = ldapEntryManager.find(Conf.class, dn);
+        for (JSONWebKey jwk : conf.getWebKeys().getKeys()) {
+            String nameTestParam = jwk.getAlg().name().replaceAll("-", "_") + "_keyId";
+            if (jwk.getKid().contains("_")) {
+                HM_WEB_KEYS.put(nameTestParam, jwk.getKid().split("_")[0]);
+            } else {
+                HM_WEB_KEYS.put(nameTestParam, jwk.getKid());
+            }
+        }
     }
 
 }

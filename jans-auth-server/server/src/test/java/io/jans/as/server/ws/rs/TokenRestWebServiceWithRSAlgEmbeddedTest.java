@@ -54,7 +54,6 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
 
     private static String clientId1;
     private static String clientSecret1;
-    private static String clientToken1;
     private static String clientId2;
     private static String clientSecret2;
     private static String clientId3;
@@ -105,7 +104,6 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
 
             clientId1 = jsonObj.getString(RegisterResponseParam.CLIENT_ID.toString());
             clientSecret1 = jsonObj.getString(CLIENT_SECRET.toString());
-            clientToken1 = jsonObj.getString(REGISTRATION_ACCESS_TOKEN.toString());
         } catch (JSONException e) {
             e.printStackTrace();
             fail(e.getMessage() + "\nResponse was: " + entity);
@@ -132,12 +130,13 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret1);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS256);
-        tokenRequest.setKeyId(clientToken1);
+        tokenRequest.setKeyId(getWebKeyId("RS256_keyId"));
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
+        Entity entityA = Entity.form(new MultivaluedHashMap<String, String>(tokenRequest.getParameters()));
         Response response = request
-                .post(Entity.form(new MultivaluedHashMap<String, String>(tokenRequest.getParameters())));
+                .post(entityA);
         String entity = response.readEntity(String.class);
 
         showResponse("requestAccessTokenWithClientSecretJwtRS256Step2", response, entity);
@@ -224,7 +223,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret2);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS384);
-        tokenRequest.setKeyId(keyId);
+        tokenRequest.setKeyId(getWebKeyId("RS384_keyId"));
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
@@ -317,7 +316,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret3);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS512);
-        tokenRequest.setKeyId(keyId);
+        tokenRequest.setKeyId(getWebKeyId("RS512_keyId"));
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
@@ -410,7 +409,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret4);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS256);
-        tokenRequest.setKeyId(keyId);
+        tokenRequest.setKeyId(getWebKeyId("RS256_keyId"));
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
@@ -503,7 +502,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret5);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS384);
-        tokenRequest.setKeyId(keyId);
+        tokenRequest.setKeyId(getWebKeyId("RS384_keyId"));
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
@@ -595,7 +594,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret6);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS512);
-        tokenRequest.setKeyId(keyId);
+        tokenRequest.setKeyId(getWebKeyId("RS512_keyId"));
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
