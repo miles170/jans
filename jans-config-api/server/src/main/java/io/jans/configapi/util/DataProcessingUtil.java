@@ -1,11 +1,11 @@
 package io.jans.configapi.util;
 
-
 import io.jans.as.common.model.common.User;
 import io.jans.configapi.core.util.DataTypeConversionMapping;
 import io.jans.configapi.configuration.ConfigurationFactory;
 import io.jans.configapi.service.auth.AttributeService;
 import io.jans.model.GluuAttribute;
+import io.jans.model.attribute.AttributeDataType;
 import io.jans.orm.PersistenceEntryManager;
 import io.jans.orm.annotation.AttributesList;
 import io.jans.orm.model.AttributeData;
@@ -56,8 +56,8 @@ public class DataProcessingUtil {
 
     @Inject
     PersistenceEntryManager persistenceEntryManager;
-    
-    @Inject 
+
+    @Inject
     AttributeService attributeService;
 
     public DataTypeConversionMapping getDataTypeConversionMapping() {
@@ -89,116 +89,168 @@ public class DataProcessingUtil {
         }
 
         log.error("Getting propertMap for obj:{} ", obj.getClass());
-        Map<String, String> objectPropertyMap = DataUtil.getFieldTypeMap(obj.getClass());
-        log.error("\n DataProcessingUtil:::encodeObjDataType() -  obj:{} objectPropertyMap:{} ", obj.getClass(),
-                objectPropertyMap);
 
         List<PropertyAnnotation> propertiesAnnotations = persistenceEntryManager
                 .getEntryPropertyAnnotations(obj.getClass());
         log.error("\n DataProcessingUtil:::encodeObjDataType() -  propertiesAnnotations:{} ", propertiesAnnotations);
 
-       List<AttributeData> attributes = persistenceEntryManager.getAttributesListForPersist(obj, propertiesAnnotations);
-       log.error("\n DataProcessingUtil:::encodeObjDataType() -  attributes:{} ", attributes);
+        List<AttributeData> attributes = persistenceEntryManager.getAttributesListForPersist(obj,
+                propertiesAnnotations);
+        log.error("\n DataProcessingUtil:::encodeObjDataType() -  attributes:{} ", attributes);
 
-        for (Map.Entry<String, String> entry : objectPropertyMap.entrySet()) {
-            log.error("entry.getKey():{}, entry.getValue():{}", entry.getKey(), entry.getValue());
+        for (PropertyAnnotation property : propertiesAnnotations) {
+            log.error("property:{}", property);
 
             // check if attribute is in exclusion map
-            log.error("obj.getClass().getName():{}, entry.getKey():{}", obj.getClass().getName(), entry.getKey());
-
-            if ("List".contentEquals(entry.getValue())) {
-                log.error("\n\n\n *********  It is a List ********* \n\n\n");
-            }
+            log.error("Is propertyName:{} to be excluded ", property.getPropertyName(), DataUtil.isAttributeInExclusion(
+                    obj.getClass().getName(), property.getPropertyName(), dataTypeConversionMap.getExclusion()));
 
             // ignore if the attribute is to be excluded from conversion
-            if (DataUtil.isAttributeInExclusion(obj.getClass().getName(), entry.getKey(),
+            if (DataUtil.isAttributeInExclusion(obj.getClass().getName(), property.getPropertyName(),
                     dataTypeConversionMap.getExclusion())) {
-                log.error("Breaking as the filed:{} is in exclusion list for obj:{}", obj.getClass().getName(),
-                        entry.getKey());
+                log.error("Breaking as the filed:{} is in exclusion list for obj:{}", property.getPropertyName(),
+                        obj.getClass().getName());
                 break;
             }
 
             // encode data
-            encodeData(obj, entry, dataTypeConversionMap.getDataTypeConverterClassName(),
-                    dataTypeConversionMap.getEncoder(), propertiesAnnotations, attributes);
+            encodeData(obj, dataTypeConversionMap, property);
             log.error("Final obj:{} ", obj);
         }
 
         return obj;
     }
 
-    public <T> T encodeData(T obj, Map.Entry<String, String> entryData, String dataTypeConverterClassName,
-            Map<String, String> encoderMap, List<PropertyAnnotation> propertiesAnnotations,
-            List<AttributeData> attributes) throws ClassNotFoundException, IllegalAccessException,
+    public <T> T encodeData(T obj, DataTypeConversionMapping dataTypeConversionMap,
+            PropertyAnnotation propertyAnnotation) throws ClassNotFoundException, IllegalAccessException,
             InstantiationException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
-        log.error("Encoding data for obj:{} , entryData:{}, dataTypeConverterClassName:{}, encoderMap:{} ", obj,
-                entryData, dataTypeConverterClassName, encoderMap);
 
-        if (obj == null || entryData == null || dataTypeConverterClassName == null || encoderMap == null
-                || encoderMap.isEmpty()) {
+        String dataTypeConverterClassName = dataTypeConversionMap.getDataTypeConverterClassName();
+        Map<String, String> encoderMap = dataTypeConversionMap.getEncoder();
+
+        log.error("Encoding data for obj:{}, propertyAnnotation:{}, dataTypeConverterClassName:{}, encoderMap:{} ", obj,
+                propertyAnnotation, dataTypeConverterClassName, encoderMap);
+
+        if (obj == null || dataTypeConverterClassName == null || encoderMap == null || encoderMap.isEmpty()) {
             return obj;
         }
-        if ("List".contentEquals(entryData.getValue())) {
-            log.error("\n\n\n In encodeData *********  It is a List!!!! ********* \n\n\n");
-
+        // Check if list
+        if (propertyAnnotation.getAnnotations() != null
+                && propertyAnnotation.getAnnotations().contains("io.jans.orm.annotation.AttributesList")) {
+            log.error(
+                    "\n In DataProcessingUtil:::encodeObjDataType() *********  It is a AttributesList!!!! ********* \n\n\n");
+            // process AttributesList
+            Annotation ldapAttribute = ReflectHelper.getAnnotationByType(propertyAnnotation.getAnnotations(),
+                    AttributesList.class);
+            getAttributeDataList(obj, dataTypeConversionMap, (AttributesList) ldapAttribute,
+                    propertyAnnotation.getPropertyName());
         }
 
-        log.error("DataUtil.isKeyPresentInMap(entryData.getValue():{}, encoderMap:{}):{} ", entryData.getValue(),
-                encoderMap, DataUtil.isKeyPresentInMap(entryData.getValue(), encoderMap));
-
+        // Get Attribute details
+        String propertyName = propertyAnnotation.getPropertyName();
+        AttributeDataType attributeDataType = getAttributeDetails(propertyName);
+        log.error("\n In DataProcessingUtil:::encodeObjDataType() - propertyName:{}, attributeDataType.getValue():{}",
+                propertyName, attributeDataType.getValue());
         try {
 
-            if (DataUtil.isKeyPresentInMap(entryData.getValue(), encoderMap)) {
-                Getter getterMethod = DataUtil.getGetterMethod(obj.getClass(), entryData.getKey());
-                log.error("getterMethod:{}, getValue(obj:{},entryData.getKey():{}) ->:{} ", getterMethod, obj,
-                        entryData.getKey(), DataUtil.getValue(obj, entryData.getKey()));
+            if (DataUtil.isKeyPresentInMap(attributeDataType.getValue(), encoderMap)) {
+                Getter getterMethod = DataUtil.getGetterMethod(obj.getClass(), propertyName);
+                log.error("propertyName:{}, getterMethod:{} ", propertyName, getterMethod);
 
                 Object propertyValue = getterMethod.getMethod().invoke(obj);
                 log.error("from getterMethod() method -  key:{}, propertyValue:{} , getterMethod.getReturnType():{},",
-                        entryData.getKey(), propertyValue, getterMethod.getReturnType());
+                        propertyName, propertyValue, getterMethod.getReturnType());
 
-                propertyValue = DataUtil.getValue(obj, entryData.getKey());
+                propertyValue = DataUtil.getValue(obj, propertyName);
                 log.error("from getValue() method - key:{}, propertyValue:{} , getterMethod.getReturnType():{},",
-                        entryData.getKey(), propertyValue, getterMethod.getReturnType());
+                        propertyName, propertyValue, getterMethod.getReturnType());
 
                 if (propertyValue != null) {
                     // Invoke encode method
-                    propertyValue = getEncodeMethod(dataTypeConverterClassName, entryData, encoderMap, propertyValue);
-                    log.error("After encoding value key:{}, propertyValue:{}  ", entryData.getKey(), propertyValue);
+                    propertyValue = getEncodedPropertyValue(dataTypeConverterClassName, encoderMap, propertyName,
+                            attributeDataType, propertyValue);
+                    log.error("After encoding value key:{}, propertyValue:{}  ", propertyName, propertyValue);
 
-                    Setter setterMethod = DataUtil.getSetterMethod(obj.getClass(), entryData.getKey());
+                    Setter setterMethod = DataUtil.getSetterMethod(obj.getClass(), propertyName);
                     propertyValue = setterMethod.getMethod().invoke(obj, propertyValue);
-                    log.error("After setterMethod invoked key:{}, propertyValue:{} ", entryData.getKey(),
-                            propertyValue);
+                    log.error("After setterMethod invoked key:{}, propertyValue:{} ", propertyName, propertyValue);
 
                     propertyValue = getterMethod.get(obj);
-                    log.error("Final - key:{}, propertyValue:{} ", entryData.getKey(), propertyValue);
+                    log.error("Final - key:{}, propertyValue:{} ", propertyName, propertyValue);
                 }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            log.error("Error while encoding data:{} is:{} ", entryData, ex);
+            log.error("Error while encoding propertyName:{} is:{} ", propertyName, ex);
         }
 
         return obj;
     }
 
-    public Object getEncodeMethod(String dataTypeConverterClassName, Map.Entry<String, String> entryData,
-            Map<String, String> encoderMap, Object value) throws ClassNotFoundException, IllegalAccessException,
-            InstantiationException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+    public <T> T encodeData2(T obj, DataTypeConversionMapping dataTypeConversionMap, String propertyName) {
+        log.error("\n In DataProcessingUtil:::encodeData2() - obj:{}, dataTypeConversionMap:{}, propertyName:{}", obj,
+                dataTypeConversionMap, propertyName);
+        String dataTypeConverterClassName = dataTypeConversionMap.getDataTypeConverterClassName();
+        Map<String, String> encoderMap = dataTypeConversionMap.getEncoder();
+        log.error("\n In DataProcessingUtil:::encodeData2() - dataTypeConverterClassName:{}, encoderMap:{}",
+                dataTypeConverterClassName, encoderMap);
+
+        AttributeDataType attributeDataType = getAttributeDetails(propertyName);
+        log.error("\n In DataProcessingUtil:::encodeData() - propertyName:{}, attributeDataType.getValue():{}",
+                propertyName, attributeDataType.getValue());
+        try {
+
+            if (DataUtil.isKeyPresentInMap(attributeDataType.getValue(), encoderMap)) {
+                Getter getterMethod = DataUtil.getGetterMethod(obj.getClass(), propertyName);
+                log.error("propertyName:{}, getterMethod:{} ", propertyName, getterMethod);
+
+                Object propertyValue = getterMethod.getMethod().invoke(obj);
+                log.error("from getterMethod() method -  key:{}, propertyValue:{} , getterMethod.getReturnType():{},",
+                        propertyName, propertyValue, getterMethod.getReturnType());
+
+                propertyValue = DataUtil.getValue(obj, propertyName);
+                log.error("from getValue() method - key:{}, propertyValue:{} , getterMethod.getReturnType():{},",
+                        propertyName, propertyValue, getterMethod.getReturnType());
+
+                if (propertyValue != null) {
+                    // Invoke encode method
+                    propertyValue = getEncodedPropertyValue(dataTypeConverterClassName, encoderMap, propertyName,
+                            attributeDataType, propertyValue);
+                    log.error("After encoding value key:{}, propertyValue:{}  ", propertyName, propertyValue);
+
+                    Setter setterMethod = DataUtil.getSetterMethod(obj.getClass(), propertyName);
+                    propertyValue = setterMethod.getMethod().invoke(obj, propertyValue);
+                    log.error("After setterMethod invoked key:{}, propertyValue:{} ", propertyName, propertyValue);
+
+                    propertyValue = getterMethod.get(obj);
+                    log.error("Final - key:{}, propertyValue:{} ", propertyName, propertyValue);
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("Error while encoding propertyName:{} is:{} ", propertyName, ex);
+        }
+
+        return obj;
+    }
+
+    public Object getEncodedPropertyValue(String dataTypeConverterClassName, Map<String, String> encoderMap,
+            String propertyName, AttributeDataType attributeDataType, Object value)
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException,
+            IllegalArgumentException, InvocationTargetException {
         log.error(
-                "Invoke encode method from dataTypeConverterClassName:{} for entryData:{} based on encoderMap:{}, value:{}",
-                dataTypeConverterClassName, entryData, encoderMap, value);
+                "Invoke encode method from dataTypeConverterClassName:{} based on encoderMap:{} for propertyName:{} attributeDataType:{}  value:{}",
+                dataTypeConverterClassName, encoderMap, propertyName, attributeDataType, value);
 
         Object returnValue = null;
-        if (entryData == null || encoderMap == null || encoderMap.isEmpty()) {
+        if (attributeDataType == null || encoderMap == null || encoderMap.isEmpty()) {
             return returnValue;
         }
 
-        log.error(" From map:{} the value of entryData.getKey():{} is :{}", encoderMap, entryData.getKey(),
-                encoderMap.get(entryData.getValue()));
-        String methodName = encoderMap.get(entryData.getValue());
-        log.error(" key:{} methodName:{}", entryData.getKey(), methodName);
+        log.error(" From map:{} the value of attributeDataType():{} is :{}", encoderMap, attributeDataType,
+                encoderMap.get(attributeDataType.getValue()));
+        String methodName = encoderMap.get(attributeDataType.getValue());
+        log.error(" key:{} methodName:{}", propertyName, methodName);
 
         Class<?> clazz = DataUtil.getClass(dataTypeConverterClassName);
         log.error(" dataTypeConverterClassName:{}, clazz.isPrimitive():{} ", clazz, clazz.isPrimitive());
@@ -217,46 +269,78 @@ public class DataProcessingUtil {
             returnValue = method.invoke(value);
             log.error(" dataTypeConverterClass returnValue:{} ", returnValue);
         }
-        log.error(" key:{} value:{} -> returnValue:{}", entryData.getKey(), value, returnValue);
+        log.error(" key:{} value:{} -> returnValue:{}", propertyName, value, returnValue);
         return returnValue;
 
     }
 
-    private void getAttributeData(Object entry, List<PropertyAnnotation> propertiesAnnotations) {
-        log.error(" DataProcessingUtil:::getAttributeData() - entry:{} propertiesAnnotations:{}", propertiesAnnotations,
-                propertiesAnnotations);
+    /*
+     * 
+     * public Object getEncodeMethod(String dataTypeConverterClassName, Map<String,
+     * String> encoderMap, String propertyName, AttributeDataType attributeDataType,
+     * Object value) throws ClassNotFoundException, IllegalAccessException,
+     * InstantiationException, NoSuchMethodException, IllegalArgumentException,
+     * InvocationTargetException { log.error(
+     * "Invoke encode method from dataTypeConverterClassName:{} based on encoderMap:{} for propertyName:{} attributeDataType:{}  value:{}"
+     * , dataTypeConverterClassName, encoderMap, propertyName, attributeDataType,
+     * value);
+     * 
+     * Object returnValue = null; if (attributeDataType == null || encoderMap ==
+     * null || encoderMap.isEmpty()) { return returnValue; }
+     * 
+     * log.error(" From map:{} the value of attributeDataType():{} is :{}",
+     * encoderMap, attributeDataType, encoderMap.get(attributeDataType.getValue()));
+     * String methodName = encoderMap.get(attributeDataType.getValue());
+     * log.error(" key:{} methodName:{}", propertyName, methodName);
+     * 
+     * Class<?> clazz = DataUtil.getClass(dataTypeConverterClassName);
+     * log.error(" dataTypeConverterClassName:{}, clazz.isPrimitive():{} ", clazz,
+     * clazz.isPrimitive());
+     * 
+     * Object obj = null;
+     * 
+     * if (!clazz.isPrimitive()) { obj = clazz.cast(DataUtil.getInstance(clazz));
+     * log.error(" obj:{} ", obj); // Getter getterMethod = getGetterMethod(clazz,
+     * methodName); // log.error(" dataTypeConverterClass getterMethod:{} ",
+     * getterMethod); // returnValue = method.invoke(obj, value); Method method =
+     * clazz.getMethod(methodName); log.error(" dataTypeConverterClass method:{} ",
+     * method);
+     * 
+     * returnValue = method.invoke(value);
+     * log.error(" dataTypeConverterClass returnValue:{} ", returnValue); }
+     * log.error(" key:{} value:{} -> returnValue:{}", propertyName, value,
+     * returnValue); return returnValue;
+     * 
+     * }
+     */
+    private AttributeDataType getAttributeDetails(String attributeName) {
+        log.error(" DataProcessingUtil:::getAttributeDetails() attributeNames:{}", attributeName);
 
-        for (PropertyAnnotation propertiesAnnotation : propertiesAnnotations) {
-            log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - propertiesAnnotation:{}", propertiesAnnotation);
-            String propertyName = propertiesAnnotation.getPropertyName();
-            Annotation ldapAttribute;
-            // LOG.error("\n\n\n DataProcessingUtil:::getAttributesMap() - propertyName:{},
-            // isIgnoreAttributesList:{} ",propertyName,isIgnoreAttributesList);
-            ldapAttribute = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
-                    AttributesList.class);
-            log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - ldapAttribute:{} ", ldapAttribute);
-            if (ldapAttribute != null) {
-                if (entry == null) {
-                    return;
-                } else {
-                    List<AttributeData> attributesList = persistenceEntryManager
-                            .getAttributeDataListFromCustomAttributesList(entry, (AttributesList) ldapAttribute,
-                                    propertyName);
-                    log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - attributesList:{} ", attributesList);
-                    for (AttributeData attributeData : attributesList) {
-                        String ldapAttributeName = attributeData.getName();
-                        log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - ldapAttributeName:{} ",
-                                ldapAttributeName);
-                        
-                        //get attribute details
-                        GluuAttribute gluuAttribute = attributeService.getAttributeByName(ldapAttributeName);
-                        log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - gluuAttribute:{} ",
-                                gluuAttribute);
-                    }
-                }
-            }
+        // get attribute details
+        GluuAttribute gluuAttribute = attributeService.getAttributeByName(attributeName);
+        log.error(
+                "\n\n\n DataProcessingUtil:::getAttributeDetails() - attributeName:{}, gluuAttribute:{}, gluuAttribute.getDataType():{} ",
+                attributeName, gluuAttribute, gluuAttribute.getDataType());
+        return gluuAttribute.getDataType();
 
+    }
+
+    private <T> void getAttributeDataList(T obj, DataTypeConversionMapping dataTypeConversionMap,
+            AttributesList attributesList, String propertyName) {
+        log.error(
+                " DataProcessingUtil:::getAttributeDataList() - obj:{}, dataTypeConversionMap:{}, attributesList:{}, propertyName:{}",
+                obj, dataTypeConversionMap, attributesList, propertyName);
+
+        List<AttributeData> attributes = persistenceEntryManager.getAttributeDataListFromCustomAttributesList(obj,
+                attributesList, propertyName);
+        log.error("\n DataProcessingUtil:::getAttributeDataList() -  attributes:{} ", attributes);
+
+        for (AttributeData attributeData : attributes) {
+            log.error("\n DataProcessingUtil:::getAttributeDataList() -  attributeData:{} ", attributeData);
+            // Get Attribute Details
+            encodeData2(obj, dataTypeConversionMap, propertyName);
         }
+
     }
 
 }
