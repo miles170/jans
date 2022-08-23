@@ -118,17 +118,18 @@ public abstract class BaseEntryManager<O extends PersistenceOperationService> im
 		Class<?> entryClass = entry.getClass();
 		checkEntryClass(entryClass, false);
 		List<PropertyAnnotation> propertiesAnnotations = getEntryPropertyAnnotations(entryClass);
-
+		LOG.error("\n BaseEntryManager:::persist() - entry:{}, entry.getClass:{}, propertiesAnnotations:{}",entry, entry.getClass(), propertiesAnnotations);
 		Object dnValue = getDNValue(entry, entryClass);
 
 		Integer expirationValue = getExpirationValue(entry, entryClass, false);
 
 		List<AttributeData> attributes = getAttributesListForPersist(entry, propertiesAnnotations);
+		LOG.error("\n BaseEntryManager:::persist() - entry.getClass:{}, attributes:{}", entry.getClass(), attributes);
 
 		// Add object classes
 		String[] objectClasses = getObjectClasses(entry, entryClass);
 		attributes.add(new AttributeData(OBJECT_CLASS, objectClasses, true));
-
+		LOG.error("\n BaseEntryManager:::persist() - entry.getClass:{}, objectClasses:{}, attributes:{}", entry.getClass(), objectClasses, attributes);
 		LOG.debug(String.format("LDAP attributes for persist: %s", attributes));
 
 		persist(dnValue.toString(), objectClasses, attributes, expirationValue);
@@ -1575,7 +1576,7 @@ public abstract class BaseEntryManager<O extends PersistenceOperationService> im
 	//puja
 	public List<AttributeData> getAttributesListForPersist(Object entry,
 			List<PropertyAnnotation> propertiesAnnotations) {
-	    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - entry:{}, propertiesAnnotations():{} ",entry , propertiesAnnotations);
+	    LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - entry:{}, propertiesAnnotations():{} ",entry , propertiesAnnotations);
 		// Prepare list of properties to persist
 		List<AttributeData> attributes = new ArrayList<AttributeData>();
 		for (PropertyAnnotation propertiesAnnotation : propertiesAnnotations) {

@@ -206,6 +206,7 @@ public class RequestReaderInterceptor {
             logger.error("RequestReaderInterceptor -  Data  after encoding -  obj:{} , obj.getClass():{}", obj,
                     obj.getClass());
         } catch (Exception ex) {
+            ex.printStackTrace();
             logger.error("Exception while data conversion ", ex.getMessage());
         }
         return obj;

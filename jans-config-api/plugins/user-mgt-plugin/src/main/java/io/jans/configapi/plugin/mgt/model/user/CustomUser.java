@@ -3,8 +3,12 @@ package io.jans.configapi.plugin.mgt.model.user;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.jans.as.common.model.common.User;
+import io.jans.orm.annotation.DataEntry;
+import io.jans.orm.annotation.ObjectClass;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@DataEntry
+@ObjectClass
 public class CustomUser extends User {
  
     private static final long serialVersionUID = 1L;

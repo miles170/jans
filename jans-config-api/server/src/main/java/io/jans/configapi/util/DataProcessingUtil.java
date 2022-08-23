@@ -1,9 +1,13 @@
 package io.jans.configapi.util;
 
-import io.jans.agama.model.Flow;
+
+import io.jans.as.common.model.common.User;
 import io.jans.configapi.core.util.DataTypeConversionMapping;
 import io.jans.configapi.configuration.ConfigurationFactory;
+import io.jans.configapi.service.auth.AttributeService;
+import io.jans.model.GluuAttribute;
 import io.jans.orm.PersistenceEntryManager;
+import io.jans.orm.annotation.AttributesList;
 import io.jans.orm.model.AttributeData;
 import io.jans.orm.reflect.property.Getter;
 import io.jans.orm.reflect.property.PropertyAnnotation;
@@ -19,6 +23,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -51,6 +56,9 @@ public class DataProcessingUtil {
 
     @Inject
     PersistenceEntryManager persistenceEntryManager;
+    
+    @Inject 
+    AttributeService attributeService;
 
     public DataTypeConversionMapping getDataTypeConversionMapping() {
         return this.configurationFactory.getApiAppConfiguration().getDataTypeConversionMap();
@@ -82,7 +90,15 @@ public class DataProcessingUtil {
 
         log.error("Getting propertMap for obj:{} ", obj.getClass());
         Map<String, String> objectPropertyMap = DataUtil.getFieldTypeMap(obj.getClass());
-        log.error("obj:{} objectPropertyMap:{} ", obj.getClass(), objectPropertyMap);
+        log.error("\n DataProcessingUtil:::encodeObjDataType() -  obj:{} objectPropertyMap:{} ", obj.getClass(),
+                objectPropertyMap);
+
+        List<PropertyAnnotation> propertiesAnnotations = persistenceEntryManager
+                .getEntryPropertyAnnotations(obj.getClass());
+        log.error("\n DataProcessingUtil:::encodeObjDataType() -  propertiesAnnotations:{} ", propertiesAnnotations);
+
+       List<AttributeData> attributes = persistenceEntryManager.getAttributesListForPersist(obj, propertiesAnnotations);
+       log.error("\n DataProcessingUtil:::encodeObjDataType() -  attributes:{} ", attributes);
 
         for (Map.Entry<String, String> entry : objectPropertyMap.entrySet()) {
             log.error("entry.getKey():{}, entry.getValue():{}", entry.getKey(), entry.getValue());
@@ -94,16 +110,17 @@ public class DataProcessingUtil {
                 log.error("\n\n\n *********  It is a List ********* \n\n\n");
             }
 
-            /*
-             * if (DataUtil.isAttributeInExclusion(obj.getClass().getName(), entry.getKey(),
-             * dataTypeConversionMap.getExclusion())) {
-             * log.error("Breaking as the filed:{} is in exclusion list for obj:{}",
-             * obj.getClass().getName(), entry.getKey()); break; }
-             */
+            // ignore if the attribute is to be excluded from conversion
+            if (DataUtil.isAttributeInExclusion(obj.getClass().getName(), entry.getKey(),
+                    dataTypeConversionMap.getExclusion())) {
+                log.error("Breaking as the filed:{} is in exclusion list for obj:{}", obj.getClass().getName(),
+                        entry.getKey());
+                break;
+            }
 
             // encode data
             encodeData(obj, entry, dataTypeConversionMap.getDataTypeConverterClassName(),
-                    dataTypeConversionMap.getEncoder());
+                    dataTypeConversionMap.getEncoder(), propertiesAnnotations, attributes);
             log.error("Final obj:{} ", obj);
         }
 
@@ -111,7 +128,8 @@ public class DataProcessingUtil {
     }
 
     public <T> T encodeData(T obj, Map.Entry<String, String> entryData, String dataTypeConverterClassName,
-            Map<String, String> encoderMap) throws ClassNotFoundException, IllegalAccessException,
+            Map<String, String> encoderMap, List<PropertyAnnotation> propertiesAnnotations,
+            List<AttributeData> attributes) throws ClassNotFoundException, IllegalAccessException,
             InstantiationException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         log.error("Encoding data for obj:{} , entryData:{}, dataTypeConverterClassName:{}, encoderMap:{} ", obj,
                 entryData, dataTypeConverterClassName, encoderMap);
@@ -122,6 +140,7 @@ public class DataProcessingUtil {
         }
         if ("List".contentEquals(entryData.getValue())) {
             log.error("\n\n\n In encodeData *********  It is a List!!!! ********* \n\n\n");
+
         }
 
         log.error("DataUtil.isKeyPresentInMap(entryData.getValue():{}, encoderMap:{}):{} ", entryData.getValue(),
@@ -157,6 +176,7 @@ public class DataProcessingUtil {
                 }
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             log.error("Error while encoding data:{} is:{} ", entryData, ex);
         }
 
@@ -200,6 +220,43 @@ public class DataProcessingUtil {
         log.error(" key:{} value:{} -> returnValue:{}", entryData.getKey(), value, returnValue);
         return returnValue;
 
+    }
+
+    private void getAttributeData(Object entry, List<PropertyAnnotation> propertiesAnnotations) {
+        log.error(" DataProcessingUtil:::getAttributeData() - entry:{} propertiesAnnotations:{}", propertiesAnnotations,
+                propertiesAnnotations);
+
+        for (PropertyAnnotation propertiesAnnotation : propertiesAnnotations) {
+            log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - propertiesAnnotation:{}", propertiesAnnotation);
+            String propertyName = propertiesAnnotation.getPropertyName();
+            Annotation ldapAttribute;
+            // LOG.error("\n\n\n DataProcessingUtil:::getAttributesMap() - propertyName:{},
+            // isIgnoreAttributesList:{} ",propertyName,isIgnoreAttributesList);
+            ldapAttribute = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
+                    AttributesList.class);
+            log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - ldapAttribute:{} ", ldapAttribute);
+            if (ldapAttribute != null) {
+                if (entry == null) {
+                    return;
+                } else {
+                    List<AttributeData> attributesList = persistenceEntryManager
+                            .getAttributeDataListFromCustomAttributesList(entry, (AttributesList) ldapAttribute,
+                                    propertyName);
+                    log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - attributesList:{} ", attributesList);
+                    for (AttributeData attributeData : attributesList) {
+                        String ldapAttributeName = attributeData.getName();
+                        log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - ldapAttributeName:{} ",
+                                ldapAttributeName);
+                        
+                        //get attribute details
+                        GluuAttribute gluuAttribute = attributeService.getAttributeByName(ldapAttributeName);
+                        log.error("\n\n\n DataProcessingUtil:::getAttributesMap() - gluuAttribute:{} ",
+                                gluuAttribute);
+                    }
+                }
+            }
+
+        }
     }
 
 }
