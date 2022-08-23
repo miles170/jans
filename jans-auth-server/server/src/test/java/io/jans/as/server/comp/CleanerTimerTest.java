@@ -54,7 +54,7 @@ public class CleanerTimerTest extends BaseComponentTest {
         getCacheService().clear();
 
         // 4. no client in persistence
-        assertNull(getClientService().getClient(client.getClientId()));
+        assertNotNull(getClientService().getClient(client.getClientId()).getExpirationDate());
     }
 
     @Test
@@ -137,7 +137,7 @@ public class CleanerTimerTest extends BaseComponentTest {
         getCacheService().clear();
 
         // 6. no token in persistence
-        assertNull(getGrantService().getGrantByCode(accessToken.getCode()));
+        assertNotNull(getGrantService().getGrantByCode(accessToken.getCode()).getExpirationDate());
     }
 
     @Test
@@ -174,7 +174,7 @@ public class CleanerTimerTest extends BaseComponentTest {
         getCacheService().clear();
 
         // 6. no RPT in persistence
-        assertNull(getUmaRptService().getRPTByCode(rpt.getNotHashedCode()));
+        assertNotNull(getUmaRptService().getRPTByCode(rpt.getNotHashedCode()).getExpirationDate());
     }
 
     @Test
@@ -298,7 +298,7 @@ public class CleanerTimerTest extends BaseComponentTest {
         getCacheService().clear();
 
         // 6. no pct in persistence
-        assertNull(getUmaPctService().getByCode(pct.getCode()));
+        assertNotNull(getUmaPctService().getByCode(pct.getCode()).getExpirationDate());
     }
 
     private Client createClient() throws StringEncrypter.EncryptionException {

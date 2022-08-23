@@ -54,6 +54,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
 
     private static String clientId1;
     private static String clientSecret1;
+    private static String clientToken1;
     private static String clientId2;
     private static String clientSecret2;
     private static String clientId3;
@@ -104,6 +105,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
 
             clientId1 = jsonObj.getString(RegisterResponseParam.CLIENT_ID.toString());
             clientSecret1 = jsonObj.getString(CLIENT_SECRET.toString());
+            clientToken1 = jsonObj.getString(REGISTRATION_ACCESS_TOKEN.toString());
         } catch (JSONException e) {
             e.printStackTrace();
             fail(e.getMessage() + "\nResponse was: " + entity);
@@ -130,7 +132,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret1);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS256);
-        tokenRequest.setKeyId(keyId);
+        tokenRequest.setKeyId(clientToken1);
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
