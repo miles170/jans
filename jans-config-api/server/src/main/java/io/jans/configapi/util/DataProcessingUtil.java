@@ -98,6 +98,9 @@ public class DataProcessingUtil {
                 propertiesAnnotations);
         log.error("\n DataProcessingUtil:::encodeObjDataType() -  attributes:{} ", attributes);
 
+        boolean flag = false;
+        
+        if(flag) {
         for (PropertyAnnotation property : propertiesAnnotations) {
             log.error("property:{}", property);
 
@@ -116,7 +119,7 @@ public class DataProcessingUtil {
             // encode data
             encodeData(obj, dataTypeConversionMap, property);
             log.error("Final obj:{} ", obj);
-        }
+        }}
 
         return obj;
     }

@@ -1580,32 +1580,32 @@ public abstract class BaseEntryManager<O extends PersistenceOperationService> im
 		// Prepare list of properties to persist
 		List<AttributeData> attributes = new ArrayList<AttributeData>();
 		for (PropertyAnnotation propertiesAnnotation : propertiesAnnotations) {
-		    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - attributes:{} ",attributes);
+		   LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - attributes:{} ",attributes);
 			String propertyName = propertiesAnnotation.getPropertyName();
-			//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - propertyName:{} ",propertyName);
+			LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - propertyName:{} ",propertyName);
 			Annotation ldapAttribute;
             Annotation languageTag;
 
 			// Process properties with AttributeName annotation
 			ldapAttribute = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
 					AttributeName.class);
-			//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - ldapAttribute:{} ",ldapAttribute);
+			LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - ldapAttribute:{} ",ldapAttribute);
             languageTag = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
                     LanguageTag.class);
-            //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - languageTag:{} ",languageTag);
+            LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - languageTag:{} ",languageTag);
 			if (ldapAttribute != null) {
                 if (languageTag != null) {
                     List<AttributeData> listAttributes = getAttributeDataFromLocalizedString(
                             entry, ldapAttribute, propertyName);
-                    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - listAttributes:{} ",listAttributes);
+                    LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - listAttributes:{} ",listAttributes);
                     if (listAttributes != null) {
                         attributes.addAll(listAttributes);
                     }
                 } else {
-                    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - call getAttributeDataFromAttribute() ");
+                    LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - call getAttributeDataFromAttribute() ");
                     AttributeData attribute = getAttributeDataFromAttribute(entry, ldapAttribute, propertiesAnnotation,
                             propertyName);
-                    //LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - attribute:{} ",attribute);
+                    LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - attribute:{} ",attribute);
                     if (attribute != null) {
                         attributes.add(attribute);
                     }
@@ -1617,11 +1617,11 @@ public abstract class BaseEntryManager<O extends PersistenceOperationService> im
 			// Process properties with @AttributesList annotation
 			ldapAttribute = ReflectHelper.getAnnotationByType(propertiesAnnotation.getAnnotations(),
 					AttributesList.class);
-			//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - ldapAttribute:{} ",ldapAttribute);
+			LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - ldapAttribute:{} ",ldapAttribute);
 			if (ldapAttribute != null) {
 				List<AttributeData> listAttributes = getAttributeDataListFromCustomAttributesList(entry, (AttributesList) ldapAttribute,
 						propertyName);
-				//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - listAttributes:{} ",listAttributes);
+				LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - listAttributes:{} ",listAttributes);
 				if (listAttributes != null) {
 					attributes.addAll(listAttributes);
 				}
@@ -1629,7 +1629,7 @@ public abstract class BaseEntryManager<O extends PersistenceOperationService> im
 				continue;
 			}
 		}
-		//LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - final attributes:{} ",attributes);
+		LOG.error("\n\n BaseEntryManager:::getAttributesListForPersist() - final attributes:{} ",attributes);
 		return attributes;
 	}
 
