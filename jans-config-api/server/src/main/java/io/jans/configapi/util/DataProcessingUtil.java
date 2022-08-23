@@ -1,6 +1,5 @@
 package io.jans.configapi.util;
 
-
 import io.jans.agama.model.Flow;
 import io.jans.configapi.core.util.DataTypeConversionMapping;
 import io.jans.configapi.configuration.ConfigurationFactory;
@@ -39,7 +38,6 @@ import org.slf4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
-
 import io.jans.configapi.core.util.DataUtil;
 
 @ApplicationScoped
@@ -47,38 +45,34 @@ public class DataProcessingUtil {
 
     @Inject
     Logger log;
-	
 
     @Inject
     ConfigurationFactory configurationFactory;
-    
-    @Inject 
+
+    @Inject
     PersistenceEntryManager persistenceEntryManager;
-    
+
     public DataTypeConversionMapping getDataTypeConversionMapping() {
         return this.configurationFactory.getApiAppConfiguration().getDataTypeConversionMap();
     }
-   
-   
-    public <T> T encodeObjDataType(T obj) throws ClassNotFoundException, IllegalAccessException,
-    InstantiationException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+
+    public <T> T encodeObjDataType(T obj) throws ClassNotFoundException, IllegalAccessException, InstantiationException,
+            NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         log.error("Encode DataType for obj:{} with  name:{}", obj, obj.getClass().getName());
         if (obj == null) {
             return (T) obj;
         }
 
         obj = encodeObjDataType(obj, getDataTypeConversionMapping());
-        
+
         log.error("Data after encoding - obj:{}", obj);
 
         return obj;
     }
-    
-    
 
     public <T> T encodeObjDataType(T obj, DataTypeConversionMapping dataTypeConversionMap)
-            throws ClassNotFoundException, IllegalAccessException,
-            InstantiationException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException,
+            IllegalArgumentException, InvocationTargetException {
 
         log.error("Encode DataType for obj:{} using dataTypeConversionMap:{} ", obj, dataTypeConversionMap);
 
@@ -94,19 +88,18 @@ public class DataProcessingUtil {
             log.error("entry.getKey():{}, entry.getValue():{}", entry.getKey(), entry.getValue());
 
             // check if attribute is in exclusion map
-            log.error(
-                    "obj.getClass().getName():{}, entry.getKey():{}", obj.getClass().getName(), entry.getKey());
-            
-            if("List".contentEquals(entry.getValue())){
+            log.error("obj.getClass().getName():{}, entry.getKey():{}", obj.getClass().getName(), entry.getKey());
+
+            if ("List".contentEquals(entry.getValue())) {
                 log.error("\n\n\n *********  It is a List ********* \n\n\n");
             }
-   
-            /*if (DataUtil.isAttributeInExclusion(obj.getClass().getName(), entry.getKey(),
-                    dataTypeConversionMap.getExclusion())) {
-                log.error("Breaking as the filed:{} is in exclusion list for obj:{}", obj.getClass().getName(),
-                        entry.getKey());
-                break;
-            }*/
+
+            /*
+             * if (DataUtil.isAttributeInExclusion(obj.getClass().getName(), entry.getKey(),
+             * dataTypeConversionMap.getExclusion())) {
+             * log.error("Breaking as the filed:{} is in exclusion list for obj:{}",
+             * obj.getClass().getName(), entry.getKey()); break; }
+             */
 
             // encode data
             encodeData(obj, entry, dataTypeConversionMap.getDataTypeConverterClassName(),
@@ -119,7 +112,7 @@ public class DataProcessingUtil {
 
     public <T> T encodeData(T obj, Map.Entry<String, String> entryData, String dataTypeConverterClassName,
             Map<String, String> encoderMap) throws ClassNotFoundException, IllegalAccessException,
-    InstantiationException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+            InstantiationException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         log.error("Encoding data for obj:{} , entryData:{}, dataTypeConverterClassName:{}, encoderMap:{} ", obj,
                 entryData, dataTypeConverterClassName, encoderMap);
 
@@ -127,43 +120,49 @@ public class DataProcessingUtil {
                 || encoderMap.isEmpty()) {
             return obj;
         }
-        if("List".contentEquals(entryData.getValue())){
+        if ("List".contentEquals(entryData.getValue())) {
             log.error("\n\n\n In encodeData *********  It is a List!!!! ********* \n\n\n");
         }
-     
-        log.error("DataUtil.isKeyPresentInMap(entryData.getValue():{}, encoderMap:{}):{} ", entryData.getValue(), encoderMap,
-                DataUtil.isKeyPresentInMap(entryData.getValue(), encoderMap));
-        
-        
 
-        if (DataUtil.isKeyPresentInMap(entryData.getValue(), encoderMap)) {
-            Getter getterMethod = DataUtil.getGetterMethod(obj.getClass(), entryData.getKey());
-            log.error("getterMethod:{}, getValue(obj:{},entryData.getKey():{}) ->:{} ", getterMethod, obj,
-                    entryData.getKey(), DataUtil.getValue(obj, entryData.getKey()));
+        log.error("DataUtil.isKeyPresentInMap(entryData.getValue():{}, encoderMap:{}):{} ", entryData.getValue(),
+                encoderMap, DataUtil.isKeyPresentInMap(entryData.getValue(), encoderMap));
 
-            Object propertyValue = getterMethod.getMethod().invoke(obj);
-            log.error("from getterMethod() method -  key:{}, propertyValue:{} , getterMethod.getReturnType():{},",
-                    entryData.getKey(), propertyValue, getterMethod.getReturnType());
+        try {
 
-            propertyValue = DataUtil.getValue(obj, entryData.getKey());
-            log.error("from getValue() method - key:{}, propertyValue:{} , getterMethod.getReturnType():{},",
-                    entryData.getKey(), propertyValue, getterMethod.getReturnType());
+            if (DataUtil.isKeyPresentInMap(entryData.getValue(), encoderMap)) {
+                Getter getterMethod = DataUtil.getGetterMethod(obj.getClass(), entryData.getKey());
+                log.error("getterMethod:{}, getValue(obj:{},entryData.getKey():{}) ->:{} ", getterMethod, obj,
+                        entryData.getKey(), DataUtil.getValue(obj, entryData.getKey()));
 
-            // Invoke encode method
-            propertyValue = getEncodeMethod(dataTypeConverterClassName, entryData, encoderMap, propertyValue);
-            log.error("After encoding value key:{}, propertyValue:{}  ", entryData.getKey(), propertyValue);
+                Object propertyValue = getterMethod.getMethod().invoke(obj);
+                log.error("from getterMethod() method -  key:{}, propertyValue:{} , getterMethod.getReturnType():{},",
+                        entryData.getKey(), propertyValue, getterMethod.getReturnType());
 
-            Setter setterMethod = DataUtil.getSetterMethod(obj.getClass(), entryData.getKey());
-            propertyValue = setterMethod.getMethod().invoke(obj, propertyValue);
-            log.error("After setterMethod invoked key:{}, propertyValue:{} ", entryData.getKey(), propertyValue);
+                propertyValue = DataUtil.getValue(obj, entryData.getKey());
+                log.error("from getValue() method - key:{}, propertyValue:{} , getterMethod.getReturnType():{},",
+                        entryData.getKey(), propertyValue, getterMethod.getReturnType());
 
-            propertyValue = getterMethod.get(obj);
-            log.error("Final - key:{}, propertyValue:{} ", entryData.getKey(), propertyValue);
+                if (propertyValue != null) {
+                    // Invoke encode method
+                    propertyValue = getEncodeMethod(dataTypeConverterClassName, entryData, encoderMap, propertyValue);
+                    log.error("After encoding value key:{}, propertyValue:{}  ", entryData.getKey(), propertyValue);
+
+                    Setter setterMethod = DataUtil.getSetterMethod(obj.getClass(), entryData.getKey());
+                    propertyValue = setterMethod.getMethod().invoke(obj, propertyValue);
+                    log.error("After setterMethod invoked key:{}, propertyValue:{} ", entryData.getKey(),
+                            propertyValue);
+
+                    propertyValue = getterMethod.get(obj);
+                    log.error("Final - key:{}, propertyValue:{} ", entryData.getKey(), propertyValue);
+                }
+            }
+        } catch (Exception ex) {
+            log.error("Error while encoding data:{} is:{} ", entryData, ex);
         }
 
         return obj;
     }
-    
+
     public Object getEncodeMethod(String dataTypeConverterClassName, Map.Entry<String, String> entryData,
             Map<String, String> encoderMap, Object value) throws ClassNotFoundException, IllegalAccessException,
             InstantiationException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
@@ -202,9 +201,5 @@ public class DataProcessingUtil {
         return returnValue;
 
     }
-    
 
-     
-
-   
 }
