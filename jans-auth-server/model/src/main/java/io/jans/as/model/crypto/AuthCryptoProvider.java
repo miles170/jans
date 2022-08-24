@@ -117,6 +117,8 @@ public class AuthCryptoProvider extends AbstractCryptoProvider {
             this.keyStoreFile = keyStoreFile;
             this.keyStoreSecret = keyStoreSecret;
             this.dnName = dnName;
+            LOG.error("ARCHIVO keyStoreFile: " + this.keyStoreFile);
+            LOG.error("VALOR keyStoreSecret: " + this.keyStoreSecret);
             keyStore = KeyStore.getInstance("PKCS12");
             try {
                 File f = new File(keyStoreFile);
@@ -232,6 +234,13 @@ public class AuthCryptoProvider extends AbstractCryptoProvider {
                             + "(check whether web keys JSON in persistence corresponds to keystore file), keySelectionStrategy: "
                             + keySelectionStrategy;
                     LOG.error(error);
+
+                    try {
+                        LOG.error(keyStore.aliases().toString());
+                    } catch (KeyStoreException e) {
+
+                    }
+
                     throw new IllegalStateException(error);
                 }
 
