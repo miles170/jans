@@ -118,11 +118,11 @@ public abstract class BaseTest extends ConfigurableTest {
         Conf conf = ldapEntryManager.find(Conf.class, dn);
         for (JSONWebKey jwk : conf.getWebKeys().getKeys()) {
             String nameTestParam = jwk.getAlg().name().replaceAll("-", "_") + "_keyId";
-            if (jwk.getKid().contains("_")) {
-                HM_WEB_KEYS.put(nameTestParam, jwk.getKid().split("_")[0]);
-            } else {
+//            if (jwk.getKid().contains("_")) {
+//                HM_WEB_KEYS.put(nameTestParam, jwk.getKid().split("_")[0]);
+//            } else {
                 HM_WEB_KEYS.put(nameTestParam, jwk.getKid());
-            }
+//            }
         }
     }
 
