@@ -30,6 +30,8 @@ import java.util.Map.Entry;
 public abstract class BaseTest extends ConfigurableTest {
 
     private static HashMap<String, String> HM_WEB_KEYS = new HashMap<>();
+    private static String KEYSTORE_FILE = "";
+    private static String KEYSTORE_SECRET = "";
 
     public static void showTitle(String title) {
         title = "TEST: " + title;
@@ -111,6 +113,20 @@ public abstract class BaseTest extends ConfigurableTest {
         return HM_WEB_KEYS.get(keyAlg);
     }
 
+    public static String getKeystoreFile() {
+        if (KEYSTORE_FILE == null) {
+            readKeystoreInfo();
+        }
+        return KEYSTORE_FILE;
+    }
+
+    public static String getKeystoreSecret() {
+        if (KEYSTORE_SECRET == null) {
+            readKeystoreInfo();
+        }
+        return KEYSTORE_SECRET;
+    }
+
     public static void readWebKeys() {
         ConfigurationFactory configurationFactory = CdiUtil.bean(ConfigurationFactory.class);
         PersistenceEntryManager ldapEntryManager = CdiUtil.bean(PersistenceEntryManager.class);
@@ -118,12 +134,17 @@ public abstract class BaseTest extends ConfigurableTest {
         Conf conf = ldapEntryManager.find(Conf.class, dn);
         for (JSONWebKey jwk : conf.getWebKeys().getKeys()) {
             String nameTestParam = jwk.getAlg().name().replaceAll("-", "_") + "_keyId";
-//            if (jwk.getKid().contains("_")) {
-//                HM_WEB_KEYS.put(nameTestParam, jwk.getKid().split("_")[0]);
-//            } else {
-                HM_WEB_KEYS.put(nameTestParam, jwk.getKid());
-//            }
+            HM_WEB_KEYS.put(nameTestParam, jwk.getKid());
         }
+    }
+
+    public static void readKeystoreInfo() {
+        ConfigurationFactory configurationFactory = CdiUtil.bean(ConfigurationFactory.class);
+        PersistenceEntryManager ldapEntryManager = CdiUtil.bean(PersistenceEntryManager.class);
+        String dn = configurationFactory.getBaseConfiguration().getString(Constants.SERVER_KEY_OF_CONFIGURATION_ENTRY);
+        Conf conf = ldapEntryManager.find(Conf.class, dn);
+        KEYSTORE_FILE = conf.getDynamic().getKeyStoreFile();
+        KEYSTORE_SECRET = conf.getDynamic().getKeyStoreSecret();
     }
 
 }
