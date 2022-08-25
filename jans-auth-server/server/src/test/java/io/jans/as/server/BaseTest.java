@@ -9,6 +9,8 @@ package io.jans.as.server;
 import io.jans.as.model.config.Conf;
 import io.jans.as.model.config.Constants;
 import io.jans.as.model.jwk.JSONWebKey;
+import io.jans.as.model.util.StringUtils;
+import io.jans.as.model.util.Util;
 import io.jans.as.server.model.config.ConfigurationFactory;
 import io.jans.as.server.util.TestUtil;
 import io.jans.orm.PersistenceEntryManager;
@@ -30,8 +32,8 @@ import java.util.Map.Entry;
 public abstract class BaseTest extends ConfigurableTest {
 
     private static HashMap<String, String> HM_WEB_KEYS = new HashMap<>();
-    private static String KEYSTORE_FILE = "";
-    private static String KEYSTORE_SECRET = "";
+    private static String KEYSTORE_FILE;
+    private static String KEYSTORE_SECRET;
 
     public static void showTitle(String title) {
         title = "TEST: " + title;
@@ -114,14 +116,14 @@ public abstract class BaseTest extends ConfigurableTest {
     }
 
     public static String getKeystoreFile() {
-        if (KEYSTORE_FILE == null) {
+        if (Util.isNullOrEmpty(KEYSTORE_FILE)) {
             readKeystoreInfo();
         }
         return KEYSTORE_FILE;
     }
 
     public static String getKeystoreSecret() {
-        if (KEYSTORE_SECRET == null) {
+        if (Util.isNullOrEmpty(KEYSTORE_SECRET)) {
             readKeystoreInfo();
         }
         return KEYSTORE_SECRET;
