@@ -118,7 +118,7 @@ public class TokenRestWebServiceWithESAlgEmbeddedTest extends BaseTest {
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -210,7 +210,7 @@ public class TokenRestWebServiceWithESAlgEmbeddedTest extends BaseTest {
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -303,7 +303,7 @@ public class TokenRestWebServiceWithESAlgEmbeddedTest extends BaseTest {
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -397,7 +397,7 @@ public class TokenRestWebServiceWithESAlgEmbeddedTest extends BaseTest {
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -487,7 +487,7 @@ public class TokenRestWebServiceWithESAlgEmbeddedTest extends BaseTest {
                                                                         final String keyStoreSecret) throws Exception {
         Builder request = ResteasyClientBuilder.newClient().target(getApiTagetURL(url) + tokenPath).request();
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -580,7 +580,7 @@ public class TokenRestWebServiceWithESAlgEmbeddedTest extends BaseTest {
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);

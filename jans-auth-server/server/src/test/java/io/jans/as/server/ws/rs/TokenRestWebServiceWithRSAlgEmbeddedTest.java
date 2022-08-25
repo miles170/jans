@@ -30,7 +30,6 @@ import jakarta.ws.rs.client.Invocation.Builder;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.Response;
-
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -111,15 +110,16 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         }
     }
 
-    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS256_keyId"})
+    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS256_keyId", "keyStoreFile", "keyStoreSecret"})
     @Test(dependsOnMethods = "requestAccessTokenWithClientSecretJwtRS256Step1")
     public void requestAccessTokenWithClientSecretJwtRS256Step2(final String tokenPath, final String userId,
-                                                                final String userSecret, final String audience, final String keyId) throws Exception {
+                                                                final String userSecret, final String audience, final String keyId, final String keyStoreFile,
+                                                                final String keyStoreSecret) throws Exception {
         Builder request = ResteasyClientBuilder.newClient().target(getApiTagetURL(url) + tokenPath).request();
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -130,13 +130,12 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret1);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS256);
-        tokenRequest.setKeyId(getWebKeyId("RS256_keyId"));
+        tokenRequest.setKeyId(keyId);
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
-        Entity entityA = Entity.form(new MultivaluedHashMap<String, String>(tokenRequest.getParameters()));
         Response response = request
-                .post(entityA);
+                .post(Entity.form(new MultivaluedHashMap<String, String>(tokenRequest.getParameters())));
         String entity = response.readEntity(String.class);
 
         showResponse("requestAccessTokenWithClientSecretJwtRS256Step2", response, entity);
@@ -203,15 +202,16 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         }
     }
 
-    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS384_keyId"})
+    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS384_keyId", "keyStoreFile", "keyStoreSecret"})
     @Test(dependsOnMethods = "requestAccessTokenWithClientSecretJwtRS384Step1")
     public void requestAccessTokenWithClientSecretJwtRS384Step2(final String tokenPath, final String userId,
-                                                                final String userSecret, final String audience, final String keyId) throws Exception {
+                                                                final String userSecret, final String audience, final String keyId, final String keyStoreFile,
+                                                                final String keyStoreSecret) throws Exception {
         Builder request = ResteasyClientBuilder.newClient().target(getApiTagetURL(url) + tokenPath).request();
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -222,7 +222,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret2);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS384);
-        tokenRequest.setKeyId(getWebKeyId("RS384_keyId"));
+        tokenRequest.setKeyId(keyId);
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
@@ -295,15 +295,16 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         }
     }
 
-    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS512_keyId"})
+    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS512_keyId", "keyStoreFile", "keyStoreSecret"})
     @Test(dependsOnMethods = "requestAccessTokenWithClientSecretJwtRS512Step1")
     public void requestAccessTokenWithClientSecretJwtRS512Step2(final String tokenPath, final String userId,
-                                                                final String userSecret, final String audience, final String keyId) throws Exception {
+                                                                final String userSecret, final String audience, final String keyId, final String keyStoreFile,
+                                                                final String keyStoreSecret) throws Exception {
         Builder request = ResteasyClientBuilder.newClient().target(getApiTagetURL(url) + tokenPath).request();
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -314,7 +315,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret3);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS512);
-        tokenRequest.setKeyId(getWebKeyId("RS512_keyId"));
+        tokenRequest.setKeyId(keyId);
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
@@ -387,16 +388,16 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         }
     }
 
-    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS256_keyId"})
+    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS256_keyId", "keyStoreFile", "keyStoreSecret"})
     @Test(dependsOnMethods = "requestAccessTokenWithClientSecretJwtRS256X509CertStep1")
     public void requestAccessTokenWithClientSecretJwtRS256X509CertStep2(final String tokenPath, final String userId,
-                                                                        final String userSecret, final String audience, final String keyId) throws Exception {
-
+                                                                        final String userSecret, final String audience, final String keyId, final String keyStoreFile,
+                                                                        final String keyStoreSecret) throws Exception {
         Builder request = ResteasyClientBuilder.newClient().target(getApiTagetURL(url) + tokenPath).request();
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -407,7 +408,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret4);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS256);
-        tokenRequest.setKeyId(getWebKeyId("RS256_keyId"));
+        tokenRequest.setKeyId(keyId);
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
@@ -480,15 +481,16 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         }
     }
 
-    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS384_keyId"})
+    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS384_keyId", "keyStoreFile", "keyStoreSecret"})
     @Test(dependsOnMethods = "requestAccessTokenWithClientSecretJwtRS384X509CertStep1")
     public void requestAccessTokenWithClientSecretJwtRS384X509CertStep2(final String tokenPath, final String userId,
-                                                                        final String userSecret, final String audience, final String keyId) throws Exception {
+                                                                        final String userSecret, final String audience, final String keyId, final String keyStoreFile,
+                                                                        final String keyStoreSecret) throws Exception {
         Builder request = ResteasyClientBuilder.newClient().target(getApiTagetURL(url) + tokenPath).request();
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -499,7 +501,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret5);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS384);
-        tokenRequest.setKeyId(getWebKeyId("RS384_keyId"));
+        tokenRequest.setKeyId(keyId);
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
@@ -571,15 +573,16 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         }
     }
 
-    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS512_keyId"})
+    @Parameters({"tokenPath", "userId", "userSecret", "audience", "RS512_keyId", "keyStoreFile", "keyStoreSecret"})
     @Test(dependsOnMethods = "requestAccessTokenWithClientSecretJwtRS512X509CertStep1")
     public void requestAccessTokenWithClientSecretJwtRS512X509CertStep2(final String tokenPath, final String userId,
-                                                                        final String userSecret, final String audience, final String keyId) throws Exception {
+                                                                        final String userSecret, final String audience, final String keyId, final String keyStoreFile,
+                                                                        final String keyStoreSecret) throws Exception {
         Builder request = ResteasyClientBuilder.newClient().target(getApiTagetURL(url) + tokenPath).request();
 
         request.header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED);
 
-        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(getKeystoreFile(), getKeystoreSecret(), null);
+        AuthCryptoProvider cryptoProvider = new AuthCryptoProvider(keyStoreFile, keyStoreSecret, null);
 
         TokenRequest tokenRequest = new TokenRequest(GrantType.RESOURCE_OWNER_PASSWORD_CREDENTIALS);
         tokenRequest.setUsername(userId);
@@ -590,7 +593,7 @@ public class TokenRestWebServiceWithRSAlgEmbeddedTest extends BaseTest {
         tokenRequest.setAuthPassword(clientSecret6);
         tokenRequest.setAuthenticationMethod(AuthenticationMethod.CLIENT_SECRET_JWT);
         tokenRequest.setAlgorithm(SignatureAlgorithm.RS512);
-        tokenRequest.setKeyId(getWebKeyId("RS512_keyId"));
+        tokenRequest.setKeyId(keyId);
         tokenRequest.setCryptoProvider(cryptoProvider);
         tokenRequest.setAudience(audience);
 
