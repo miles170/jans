@@ -18,13 +18,14 @@ The Janssen Project is an open source member of the Linux Foundation. Informatio
 
 ## Script Catalog
 
-Interception scripts (or custom scripts) allow you to define custom business logic for various features offered by the OpenID Provider (Jans-auth server). Some examples of features which can be customized are - implementing a 2FA authentication method, consent gathering, client registration, adding business specific claims to ID token or Access token etc. Scripts can easily be upgraded and doesn't require forking the Jans Server code or re-building it.
+Interception scripts enable Janssen admins to customize the behavior for the platform at key points in various transaction flows. Some examples of features which can be customized: implementing a 2FA authentication method, consent gathering, client registration, adding business specific claims to ID token or Access token etc. Scripts can easily be upgraded and don't require forking the Jans Server code or re-building it.
 
 The definitive location for scripts and their documentation is the [Script Catalog](./script-catalog/index.md).
 
 ## Agama
 
-[Agama](./admin/developer/agama/index.md) is a component of the Janssen authentication server that offers an alternative way to build web-based authentication flows. Typically, person authentication flows are defined in the server by means of jython scripts that adhere to a predefined API. With Agama, flows are coded using a DSL (domain specific language) designed for the sole purpose of writing web flows.
+[Agama](./admin/developer/agama/index.md) is a programming language for cloud authentication.  You can use it to implement any multi-step authentication workflow. 
+[Learn how to make a project](./admin/developer/agama/quick-start) and watch for the upcoming Agama Project Catalog, and [connect](https://github.com/JanssenProject/jans/discussions) with other Agama developers.
 
 ## Support
 
