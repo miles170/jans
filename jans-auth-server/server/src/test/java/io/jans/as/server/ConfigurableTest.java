@@ -6,9 +6,6 @@
 
 package io.jans.as.server;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.jans.as.server.util.Deployments;
 import io.jans.util.StringHelper;
 import io.jans.util.properties.FileConfiguration;
@@ -26,8 +23,6 @@ import org.testng.Reporter;
 import org.testng.annotations.BeforeSuite;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -94,25 +89,6 @@ public abstract class ConfigurableTest extends Arquillian {
         context.getSuite().getXmlSuite().setParameters(parameters);
 
         initialized = true;
-    }
-
-    private void loadTestJansWebKeys(ITestContext context) throws FileNotFoundException {
-//        String certsFile = "/etc/certs/json-web-keys.json";
-//
-//        Gson gson = new Gson();
-//        JsonParser parser = new JsonParser();
-//        JsonObject object = (JsonObject) parser.parse(new FileReader(certsFile));
-//        List<> gson.fromJson(object, classObject);
-//
-//        Map<String, String> parameters = new HashMap<String, String>();
-//        for (Entry<Object, Object> entry : prop.entrySet()) {
-//            Object key = entry.getKey();
-//            Object value = entry.getValue();
-//            parameters.put(key.toString(), value.toString());
-//        }
-//
-//        // Override test parameters
-//        context.getSuite().getXmlSuite().setParameters(parameters);
     }
 
     /**
