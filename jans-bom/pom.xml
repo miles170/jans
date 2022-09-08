@@ -5,7 +5,7 @@
 	<artifactId>jans-bom</artifactId>
 	<packaging>pom</packaging>
 	<name>jans-bom</name>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>1.0.3-SNAPSHOT</version>
 
     <distributionManagement>
 	  <repository>
@@ -52,7 +52,7 @@
 		<guava.version>31.0.1-jre</guava.version>
 	
 		<aws.sns.version>1.12.94</aws.sns.version>
-		<jackrabbit.version>2.21.8</jackrabbit.version>
+		<jackrabbit.version>2.21.12</jackrabbit.version>
 		
 	</properties>
 
@@ -270,7 +270,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.15.2</version>
+				<version>9.23</version>
 			</dependency>
 
 			<!-- Weld -->
@@ -374,7 +374,7 @@
 			<!-- <dependency>
 				<groupId>javax.persistence</groupId>
 				<artifactId>persistence-api</artifactId>
-				<version>1.0.2</version>
+				<version>1.0.3-SNAPSHOT</version>
 			</dependency> -->
 
 			<!-- hibernate -->

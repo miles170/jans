@@ -488,7 +488,7 @@ public class CouchbaseOperationServiceImpl implements CouchbaseOperationService 
             }
         }
 
-        StringBuilder baseQuery = new StringBuilder("SELECT ").append(StringHelper.toString(select)).append(" FROM `").append(bucketMapping.getBucketName()).append("` AS gluu_doc ").
+        StringBuilder baseQuery = new StringBuilder("SELECT ").append(StringHelper.toString(backticksAttributes(select))).append(" FROM `").append(bucketMapping.getBucketName()).append("` AS jans_doc ").
         		append("WHERE ").append(finalExpression);
 
         StringBuilder baseQueryWithOrder = new StringBuilder(baseQuery);
@@ -518,7 +518,7 @@ public class CouchbaseOperationServiceImpl implements CouchbaseOperationService 
 	
 	            StringBuilder query = null;
 	            int currentLimit;
-	            int lastResultCount = 0;
+	            int lastCountRows = 0;
 	            try {
 	                List<JsonObject> lastSearchResultList;
 					do {
@@ -539,26 +539,26 @@ public class CouchbaseOperationServiceImpl implements CouchbaseOperationService 
 	    	            }
 	
 	                    lastSearchResultList = lastResult.rowsAsObject();
-		                lastResultCount = lastSearchResultList.size();
+		                lastCountRows = lastSearchResultList.size();
 
 	                    if (batchOperation != null) {
-	                        collectSearchResult = batchOperation.collectSearchResult(lastResultCount);
+	                        collectSearchResult = batchOperation.collectSearchResult(lastCountRows);
 	                    }
 	                    if (collectSearchResult) {
 	                        searchResultList.addAll(lastSearchResultList);
 	                    }
 	
-	                    if ((batchOperation != null) && (lastResultCount > 0)) {
+	                    if ((batchOperation != null) && (lastCountRows > 0)) {
 	                        List<O> entries = batchOperationWraper.createEntities(lastSearchResultList);
 	                        batchOperation.performAction(entries);
 	                    }
 	
-	                    totalEntriesCount += lastResultCount;
+	                    totalEntriesCount += lastCountRows;
 	
-	                    if ((count > 0) && (totalEntriesCount >= count)) {
+	                    if ((count > 0) && (totalEntriesCount >= count) || (lastCountRows < currentLimit)) {
 	                        break;
 	                    }
-	                } while (lastResultCount > 0);
+	                } while (lastCountRows > 0);
 	            } catch (CouchbaseException ex) {
 	                throw new SearchException("Failed to search entries. Query: '" + query + "'", ex);
 	            }
@@ -597,7 +597,7 @@ public class CouchbaseOperationServiceImpl implements CouchbaseOperationService 
         result.setStart(start);
 
         if ((SearchReturnDataType.COUNT == returnDataType) || (SearchReturnDataType.SEARCH_COUNT == returnDataType)) {
-            StringBuilder selectCountQuery = new StringBuilder("SELECT COUNT(*) as TOTAL").append(" FROM `").append(bucketMapping.getBucketName()).append("` AS gluu_doc ").
+            StringBuilder selectCountQuery = new StringBuilder("SELECT COUNT(*) as TOTAL").append(" FROM `").append(bucketMapping.getBucketName()).append("` AS jans_doc ").
             		append("WHERE ").append(finalExpression);
             try {
                 LOG.debug("Calculating count. Execution query: '" + selectCountQuery + "'");
@@ -616,6 +616,23 @@ public class CouchbaseOperationServiceImpl implements CouchbaseOperationService 
 
         return result;
     }
+
+	private String[] backticksAttributes(String[] attributes) {
+		if (ArrayHelper.isEmpty(attributes)) {
+			return attributes;
+		}
+		
+		String[] resultAttributes = new String[attributes.length];
+		for (int i = 0; i < attributes.length; i++) {
+			if (attributes[i].contains("*")) {
+				resultAttributes[i] = attributes[i];
+			} else {
+				resultAttributes[i] = '`' + attributes[i] + "`";
+			}
+		}
+
+		return resultAttributes;
+	}
 
     public String[] createStoragePassword(String[] passwords) {
         if (ArrayHelper.isEmpty(passwords)) {

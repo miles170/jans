@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -653,7 +654,7 @@ public class SpannerOperationServiceImpl implements SpannerOperationService {
 	
 	                    resultCount += lastCountRows;
 	
-	                    if ((count > 0) && (resultCount >= count)) {
+	                    if ((count > 0) && (resultCount >= count) || (lastCountRows < currentLimit)) {
 	                        break;
 	                    }
 	                } while (lastCountRows > 0);
@@ -706,7 +707,7 @@ public class SpannerOperationServiceImpl implements SpannerOperationService {
 
     		Function countFunction = new Function();
     		countFunction.setName("COUNT");
-    		countFunction.setAllColumns(true);
+    		countFunction.setParameters(new ExpressionList(Collections.<Expression>singletonList(new Column("*"))));
 
     		SelectExpressionItem selectCountItem = new SelectExpressionItem(countFunction);
     		selectCountItem.setAlias(new Alias("TOTAL", false));

@@ -70,11 +70,11 @@ class JansInstaller(BaseInstaller, SetupUtils):
 
             txt += 'Install Apache 2 web server'.ljust(30) + repr(Config.installHttpd).rjust(35) + (' *' if 'installHttpd' in Config.addPostSetupService else '') + "\n"
             txt += 'Install Auth Server'.ljust(30) + repr(Config.installOxAuth).rjust(35) + "\n"
-            txt += 'Install Jans Auth Config Api'.ljust(30) + repr(Config.install_config_api).rjust(35) + "\n"
+            txt += 'Install Jans Config API'.ljust(30) + repr(Config.install_config_api).rjust(35) + "\n"
             if Config.profile == 'jans':
                 txt += 'Install Fido2 Server'.ljust(30) + repr(Config.installFido2).rjust(35) + (' *' if 'installFido2' in Config.addPostSetupService else '') + "\n"
                 txt += 'Install Scim Server'.ljust(30) + repr(Config.install_scim_server).rjust(35) + (' *' if 'install_scim_server' in Config.addPostSetupService else '') + "\n"
-                txt += 'Install Jans Client Api'.ljust(30) + repr(Config.install_client_api).rjust(35) + (' *' if 'install_client_api' in Config.addPostSetupService else '') + "\n"
+                txt += 'Install Jans Client API'.ljust(30) + repr(Config.install_client_api).rjust(35) + (' *' if 'install_client_api' in Config.addPostSetupService else '') + "\n"
                 #txt += 'Install Oxd '.ljust(30) + repr(Config.installOxd).rjust(35) + (' *' if 'installOxd' in Config.addPostSetupService else '') + "\n"
 
             if Config.profile == 'jans' and Config.installEleven:

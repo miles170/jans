@@ -142,6 +142,12 @@ Branch name should have component name as prefix, eg `jans-core-mybranch`
 ### Issues 
 - Issue titles should follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 
+### Backport changes to a different version
+
+Backport changes are now supported through a [workflow](https://github.com/zeebe-io/backport-action#backport-action) through labels prefixed with `backport/`.
+For-example to backport changes in a certain PR to version `v1.0.0` a label to that PR matching the version must be added i.e `backport/v1.0.0`.
+The flow consists of creating a new branch, cherry-picking the changes of the original PR and creating a new PR to merge them.
+
 # Contributing to the documentation
 Great documentation is a reflection of software's maturity and the great community that stands behind it. Contributing to the Janssen Project documentation is the easiest way to learn about the Janssen Project and to get involved in the community process. 
 
@@ -169,6 +175,12 @@ This glossary helps to keep terms and their meanings consistent across documenta
 
 ## Documentation Style Guide
 
+Janssen Project documentation uses Markdown. Guidelines below are intended to bring consistency in writing and formatting documents. 
+
+!!! Testing
+
+    [Janssen Project documentation site](https://docs.jans.io) is published using MkDocs. Markdown parsers used by Github and the one used by MkDocs may have slight variations in how they generate HTML. So, for a small number of cases, document may look different between Github and [Janssen Project documentation site](https://docs.jans.io). Hence it is critical to [test documentation](developer/testing.md#documentation-local-testing) changes locally before pushing to repository. This will ensure that final HTML rendering of documents by MkDocs is as desired.
+
 ### General Text
  - Allow long lines to wrap, rather than manually breaking them. For example, the Introduction paragraph is a single line
  - Keep explanations short and clear
@@ -185,6 +197,7 @@ This glossary helps to keep terms and their meanings consistent across documenta
  - Organize the information in the document from least technical to most technical if possible. Start conceptual, then get detailed
  
 ### Lists
+ - Leave a blank line between text and first item in the list
  - Only use a numbered list if the order of the list matters
  - A line of a list should not end with a period. If it's multiple sentences, like this one, drop the last period
  - Start each item in the list with a capital letter
@@ -198,10 +211,13 @@ This glossary helps to keep terms and their meanings consistent across documenta
     1. This is the third item
     ```
  
-It will look like this:
-1. This is the first item
-1. This is the second item
-1. This is the third item
+    It will look like this:
+
+    ```
+    1. This is the first item
+    2. This is the second item
+    3. This is the third item
+    ```
  
  - To include additional lines in a list item, start the sub-line with four spaces. For example:
  
@@ -225,7 +241,7 @@ It will look like this:
 
 #### Other formatting considerations
 
- - [Admonitions](#admonitions) cannot be nested inside a list. They must be aligned all the way left. Inserting them within a list will break the list sequence (starting back over from 1).
+ - Admonitions cannot be nested inside a list. They must be aligned all the way left. Inserting them within a list will break the list sequence (starting back over from 1).
     
  - Nesting a [fenced block of code](#code-formatting) in a numbered list is more challenging, as the list and code block syntaxes clash. To nest a code block into a list, insert four spaces to the left of all lines of the formatting. For example:
 
@@ -281,7 +297,7 @@ Navigate to `Configuration` > `Authentication` and click the `Passport` tab
 
 We recommend using relative linking syntax when linking to other artifacts in repository. Linking to a page within the same repo use this format: `[text for the link](../where/the/link/goes.md)`
  - You must link to the `.md` file on GitHub for it to work properly
- - As an example, to make [this link](./example.md) to an example page, you'd type it as `[this link](./example.md)`
+ - As an example, to make text `this link` link to a Markdown document named `example.md` in the same directory, you'd type it as `[this link](./example.md)`
  
 #### Service Commands 
 
@@ -319,7 +335,12 @@ It looks like this:
 |1       |2      |3     |4        |
 |Word    |Code   |Text  |Table    |
 
+### Help On Technical Writing
 
+It is essential for everyone in the community to actively participate in the documentation. At the same time, not everyone is formally trained or experienced in writing technical documents. To help everyone understand the basics of good technical writing, we have listed a few resources below. Going through these resources will not take a lot of time and will help in writing better technical documents.
+
+- [Introduction to Technical Writing (part-1)](https://developers.google.com/tech-writing/one)
+- [Introduction to Technical Writing (part-2)](https://developers.google.com/tech-writing/two)
 
 # Contribution Workflow
 

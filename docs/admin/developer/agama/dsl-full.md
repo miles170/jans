@@ -58,7 +58,7 @@ The “special” value `null` can be used (responsibly) to represent the absenc
 
 - They are in essence associative arrays (a.k.a. dictionaries): unordered collections of key/value pairs 
 
-- Example: `{ brand: "Ford", color: null, model: 1963, overhaulsIn: [ 1979, 1999 ] }`. This map keys are brand, color, model, and overhaulsIn 
+- Example: `{ brand: "Ford", color: null, model: 1963, overhaulsIn: [ 1979, 1999 ] }`. This map keys are `brand`, `color`, `model`, and `overhaulsIn` 
 
 - In literal notation, keys names must follow the pattern `[a-zA-Z]( _ | [a-zA-Z] | [0-9] )*` so these are all valid key names: `a`, `Agama`, `b_a`, `a0_0`; on the contrary, `_a`, `9`, `-a`, and `"aha"` are invalid key names 
 
@@ -815,7 +815,7 @@ When E is not null
 ```
 
 </td>
-		<td>Similar to the first example.<br/>If an exception is thrown by the invocation, it's caught and assigned to variable <code>E</code>, while <code>number</code> is assigned <code>null</code>.<br/>Note both checked and unchecked exceptions are caught</td>
+		<td>Similar to the first example.<br/>If an exception is thrown by the invocation, it's caught and assigned to variable <code>E</code>.<br/>Note both checked and unchecked exceptions are caught</td>
 	</tr>
 	<tr>
 <td>
@@ -878,7 +878,11 @@ When using `Call`, the method to execute is picked based on the name (e.g. after
 
 Once a concrete method is picked, a best effort is made to convert (if required) the values passed as arguments so that they match the expected parameter types in the method signature. If a conversion fails, this will degenerate in an `IllegalArgumentException`.
 
-_list_ and _map_ literals cannot be passed as arguments to method calls directly. This means the following is illegal: `Call co.Utils#myMethod { key: [ 1, 2 , 3] } [ "Yeeha!" ]`. To achieve the same effect assign the literal value to a variable and pass that instead.
+**Limitations:**
+
+- _list_ and _map_ literals cannot be passed as arguments to method calls directly. This means the following is illegal: `Call co.Utils#myMethod { key: [ 1, 2 , 3] } [ "Yeeha!" ]`. To achieve the same effect assign the literal value to a variable and pass that instead
+
+- `Call`ing a method that mutates one or more of the arguments passed will not work properly if the corresponding parameters in the method signature have type information attached. For example, copying a list into another using `java.util.Collections#copy​(List<? super T> dest, List<? extends T> src)` may not behave as expected. Conversely, calling `java.lang.reflect.Array#set​(Object array, int index, Object value)` works fine because `array` does not have a parameterized type. The practice of mutating passed arguments is unusual and sometimes discouraged in programming
 
 ### Exception handling
 
