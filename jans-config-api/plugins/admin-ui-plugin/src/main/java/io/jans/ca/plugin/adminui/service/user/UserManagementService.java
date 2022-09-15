@@ -9,13 +9,11 @@ import io.jans.ca.plugin.adminui.model.exception.ApplicationException;
 import io.jans.ca.plugin.adminui.utils.AppConstants;
 import io.jans.ca.plugin.adminui.utils.ErrorResponse;
 import io.jans.orm.PersistenceEntryManager;
-import jakarta.validation.constraints.NotNull;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.Response;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,11 +41,13 @@ public class UserManagementService {
         try {
             AdminConf adminConf = entryManager.find(AdminConf.class, AppConstants.CONFIG_DN);
             List<AdminRole> roles = adminConf.getDynamic().getRoles().stream().filter(ele -> ele.getRole().equals(role)).collect(Collectors.toList());
-            if (roles.isEmpty()) {
-                log.error(ErrorResponse.ROLE_NOT_FOUND.getDescription());
-                throw new ApplicationException(Response.Status.BAD_REQUEST.getStatusCode(), ErrorResponse.ROLE_NOT_FOUND.getDescription());
+            Optional<AdminRole> adminRoleOptional =  roles.stream().findFirst();
+            if (adminRoleOptional.isPresent()) {
+                return adminRoleOptional.get();
             }
-            return roles.stream().findFirst().get();
+            log.error(ErrorResponse.ROLE_NOT_FOUND.getDescription());
+            throw new ApplicationException(Response.Status.BAD_REQUEST.getStatusCode(), ErrorResponse.ROLE_NOT_FOUND.getDescription());
+
         } catch (ApplicationException e) {
             log.error(ErrorResponse.GET_ADMIUI_ROLES_ERROR.getDescription());
             throw e;
@@ -158,11 +158,13 @@ public class UserManagementService {
         try {
             AdminConf adminConf = entryManager.find(AdminConf.class, AppConstants.CONFIG_DN);
             List<AdminPermission> permissions = adminConf.getDynamic().getPermissions().stream().filter(ele -> ele.getPermission().equals(permission)).collect(Collectors.toList());
-            if (permissions.isEmpty()) {
-                log.error(ErrorResponse.ROLE_NOT_FOUND.getDescription());
-                throw new ApplicationException(Response.Status.BAD_REQUEST.getStatusCode(), ErrorResponse.ROLE_NOT_FOUND.getDescription());
+            Optional<AdminPermission> adminPermissionOptional = permissions.stream().findFirst();
+            if (adminPermissionOptional.isPresent()) {
+                return adminPermissionOptional.get();
             }
-            return permissions.stream().findFirst().get();
+            log.error(ErrorResponse.PERMISSION_NOT_FOUND.getDescription());
+            throw new ApplicationException(Response.Status.BAD_REQUEST.getStatusCode(), ErrorResponse.PERMISSION_NOT_FOUND.getDescription());
+
         } catch (ApplicationException e) {
             log.error(ErrorResponse.GET_ADMIUI_PERMISSIONS_ERROR.getDescription());
             throw e;
@@ -333,12 +335,13 @@ public class UserManagementService {
             List<RolePermissionMapping> roleScopeMapping = adminConf.getDynamic().getRolePermissionMapping()
                     .stream().filter(ele -> ele.getRole().equalsIgnoreCase(role))
                     .collect(Collectors.toList());
-
-            if (roleScopeMapping.isEmpty()) {
-                log.error(ErrorResponse.ROLE_PERMISSION_MAP_NOT_FOUND.getDescription());
-                throw new ApplicationException(Response.Status.BAD_REQUEST.getStatusCode(), ErrorResponse.ROLE_PERMISSION_MAP_NOT_FOUND.getDescription());
+            Optional<RolePermissionMapping> rolePermissionMappingOptional = roleScopeMapping.stream().findFirst();
+            if (rolePermissionMappingOptional.isPresent()) {
+                return rolePermissionMappingOptional.get();
             }
-            return roleScopeMapping.stream().findFirst().get();
+            log.error(ErrorResponse.ROLE_PERMISSION_MAP_NOT_FOUND.getDescription());
+            throw new ApplicationException(Response.Status.BAD_REQUEST.getStatusCode(), ErrorResponse.ROLE_PERMISSION_MAP_NOT_FOUND.getDescription());
+
         } catch (Exception e) {
             log.error(ErrorResponse.ERROR_READING_ROLE_PERMISSION_MAP.getDescription(), e);
             throw new ApplicationException(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), ErrorResponse.ERROR_READING_ROLE_PERMISSION_MAP.getDescription());
